@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - CineBook</title>
+  <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div class="search-bar">
+        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+      </div>
+      <div class="header-right">
+        <div class="location-selector">
+          📍 Select Location
+        </div>
+        <a href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
+        <div class="menu-icon">☰</div>
+      </div>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/" th:href="@{/}">Movies</a></li>
+        <li><a href="#stream">Stream</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#plays">Plays</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#buzz">Buzz</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Booking Summary -->
+    <section>
+      <div class="booking-summary">
+        <div class="summary-item">
+          <span class="summary-label">Movie</span>
+          <span class="summary-value">Action Adventure Placeholder</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Theatre</span>
+          <span class="summary-value">Grand Cinema Multiplex</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Showtime</span>
+          <span class="summary-value">03:00 PM</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Seats</span>
+          <span class="summary-value">A1, A2, A3</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Ticket Count</span>
+          <span class="summary-value">3</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Amount</span>
+          <span class="summary-value">$45.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Payment Form -->
+    <section id="payment-form">
+      <h1 class="section-title">Payment Details</h1>
+      
+      <form onsubmit="event.preventDefault(); window.location.href='/success';">
+        <div class="form-group">
+          <label for="cardholder">Name on Card</label>
+          <input type="text" id="cardholder" placeholder="John Doe" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cardnumber">Card Number</label>
+          <input type="text" id="cardnumber" placeholder="1234 5678 9012 3456" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="expiry">Expiry Date</label>
+            <input type="text" id="expiry" placeholder="MM/YY" required>
+          </div>
+          <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input type="text" id="cvv" placeholder="123" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Pay Now</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 CineBook. All rights reserved.</p>
+  </footer>
+</body>
+</html>

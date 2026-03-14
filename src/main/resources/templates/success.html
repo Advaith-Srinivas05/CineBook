@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Confirmed - CineBook</title>
+  <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div class="search-bar">
+        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+      </div>
+      <div class="header-right">
+        <div class="location-selector">
+          📍 Select Location
+        </div>
+        <button class="signin-btn">Sign In</button>
+        <div class="menu-icon">☰</div>
+      </div>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/" th:href="@{/}">Movies</a></li>
+        <li><a href="#stream">Stream</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#plays">Plays</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#buzz">Buzz</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Confirmation Message -->
+    <section class="confirmation-box">
+      <div class="confirmation-icon">✓</div>
+      <div class="confirmation-message">Booking Confirmed!</div>
+      <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Your ticket has been successfully booked.</p>
+
+      <!-- Booking Summary -->
+      <div class="booking-summary" style="max-width: 500px; margin: 0 auto;">
+        <div class="summary-item">
+          <span class="summary-label">Movie</span>
+          <span class="summary-value">Action Adventure Placeholder</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Theatre</span>
+          <span class="summary-value">Grand Cinema Multiplex</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Showtime</span>
+          <span class="summary-value">03:00 PM</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Seats</span>
+          <span class="summary-value">A1, A2, A3</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Ticket Count</span>
+          <span class="summary-value">3</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Booking ID</span>
+          <span class="summary-value">#CB2024-85392</span>
+        </div>
+      </div>
+
+      <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 2rem;">A confirmation email has been sent to your registered email address.</p>
+      
+      <a href="index.html" class="btn btn-primary" style="margin-top: 2rem; max-width: 300px;">Back to Home</a>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 CineBook. All rights reserved.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineBook - Movie Ticket Booking</title>
+  <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div class="search-bar">
+        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+      </div>
+      <div class="header-right">
+        <div class="location-selector">
+          📍 Select Location
+        </div>
+        <a href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
+        <div class="menu-icon">☰</div>
+      </div>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/" th:href="@{/}">Movies</a></li>
+        <li><a href="#stream">Stream</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#plays">Plays</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#buzz">Buzz</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Hero Banner -->
+    <!-- <section class="hero-banner">
+      Discover Your Next Favorite Movie
+    </section> -->
+    <div class="carousel-container">
+      <div class="carousel">
+        <div class="slider" th:each="img : ${carouselImages}">
+          <img th:src="@{/carousel/image/{id}(id=${img.id})}" th:alt="${img.imageName}" />
+        </div>
+      </div>
+      <div th:if="${#lists.isEmpty(carouselImages)}">
+        <p>No carousel images available.</p>
+      </div>
+    </div>
+
+    <!-- Recommended Movies -->
+    <section>
+      <h1 class="section-title">Recommended Movies</h1>
+      <div id="movies-grid">
+        <!-- Movie 1 -->
+        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="1">
+          <div class="movie-poster">Movie Poster</div>
+          <div class="movie-info">
+            <h2 class="movie-title">Action Adventure Placeholder</h2>
+            <p class="movie-genre">Action, Adventure, Drama</p>
+            <p class="movie-rating">⭐ 8.5/10</p>
+          </div>
+        </a>
+
+        <!-- Movie 2 -->
+        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="2">
+          <div class="movie-poster">Movie Poster</div>
+          <div class="movie-info">
+            <h2 class="movie-title">Comedy Romance Placeholder</h2>
+            <p class="movie-genre">Comedy, Romance</p>
+            <p class="movie-rating">⭐ 7.8/10</p>
+          </div>
+        </a>
+
+        <!-- Movie 3 -->
+        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="3">
+          <div class="movie-poster">Movie Poster</div>
+          <div class="movie-info">
+            <h2 class="movie-title">Thriller Mystery Placeholder</h2>
+            <p class="movie-genre">Thriller, Mystery</p>
+            <p class="movie-rating">⭐ 8.2/10</p>
+          </div>
+        </a>
+
+        <!-- Movie 4 -->
+        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="4">
+          <div class="movie-poster">Movie Poster</div>
+          <div class="movie-info">
+            <h2 class="movie-title">Sci-Fi Fantasy Placeholder</h2>
+            <p class="movie-genre">Sci-Fi, Fantasy</p>
+            <p class="movie-rating">⭐ 9.1/10</p>
+          </div>
+        </a>
+
+        <!-- Movie 5 -->
+        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="5">
+          <div class="movie-poster">Movie Poster</div>
+          <div class="movie-info">
+            <h2 class="movie-title">Drama History Placeholder</h2>
+            <p class="movie-genre">Drama, History</p>
+            <p class="movie-rating">⭐ 8.7/10</p>
+          </div>
+        </a>
+
+        <!-- Movie 6 -->
+        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="6">
+          <div class="movie-poster">Movie Poster</div>
+          <div class="movie-info">
+            <h2 class="movie-title">Horror Suspense Placeholder</h2>
+            <p class="movie-genre">Horror, Suspense</p>
+            <p class="movie-rating">⭐ 7.4/10</p>
+          </div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 CineBook. All rights reserved.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - CineBook</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}" href="/css/styles.css">
+  <script th:src="@{/js/ui.js}" src="/js/ui.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div class="search-bar">
+        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+      </div>
+      <div class="header-right">
+        <div class="location-selector">
+          📍 Select Location
+        </div>
+        <a th:href="@{/login}" href="/login" class="signin-btn">Sign In</a>
+        <div class="menu-icon">☰</div>
+      </div>
+    </div>
+    <!-- <nav>
+      <ul class="nav-links">
+        <li><a href="/" th:href="@{/}">Movies</a></li>
+        <li><a href="#stream">Stream</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#plays">Plays</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#buzz">Buzz</a></li>
+      </ul>
+    </nav> -->
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <section id="admin-container">
+      <h1 class="admin-title">Admin Dashboard</h1>
+
+      <!-- Add Movie Section -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">Add Movie</h2>
+        <form>
+          <div class="form-group">
+            <label for="movie-title">Movie Title</label>
+            <input type="text" id="movie-title" placeholder="Enter movie title" required>
+          </div>
+          <div class="form-group">
+            <label for="movie-duration">Duration (minutes)</label>
+            <input type="number" id="movie-duration" placeholder="120" required>
+          </div>
+          <div class="form-group">
+            <label for="movie-language">Language</label>
+            <input type="text" id="movie-language" placeholder="English, Hindi, etc." required>
+          </div>
+          <div class="form-group">
+            <label for="movie-rating">Rating (1-10)</label>
+            <input type="number" id="movie-rating" min="1" max="10" step="0.1" placeholder="8.5" required>
+          </div>
+          <button type="submit" class="admin-btn">Add Movie</button>
+        </form>
+      </div>
+
+      <!-- Remove Movie Section -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">Remove Movie</h2>
+        <div class="movie-list">
+          <div class="movie-item">
+            <span class="movie-name">Movie 1</span>
+            <button type="button" class="admin-remove-btn">Remove</button>
+          </div>
+          <div class="movie-item">
+            <span class="movie-name">Movie 2</span>
+            <button type="button" class="admin-remove-btn">Remove</button>
+          </div>
+          <div class="movie-item">
+            <span class="movie-name">Movie 3</span>
+            <button type="button" class="admin-remove-btn">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Theater Section -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">Add Theater</h2>
+        <form>
+          <div class="form-group">
+            <label for="theater-name">Theater Name</label>
+            <input type="text" id="theater-name" placeholder="Enter theater name" required>
+          </div>
+          <div class="form-group">
+            <label for="theater-location">Location</label>
+            <input type="text" id="theater-location" placeholder="City / Address" required>
+          </div>
+          <div class="form-group">
+            <label for="screen-count">Screen Count</label>
+            <input type="number" id="screen-count" placeholder="5" required>
+          </div>
+          <button type="submit" class="admin-btn">Add Theater</button>
+        </form>
+      </div>
+
+      <!-- Schedule Show Section -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">Schedule Show</h2>
+        <form>
+          <div class="form-group">
+            <label for="show-movie">Movie</label>
+            <select id="show-movie" required>
+              <option value="">Select a movie</option>
+              <option value="movie1">Movie 1</option>
+              <option value="movie2">Movie 2</option>
+              <option value="movie3">Movie 3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="show-theater">Theater</label>
+            <select id="show-theater" required>
+              <option value="">Select a theater</option>
+              <option value="theater1">Grand Cinema Multiplex</option>
+              <option value="theater2">Downtown Cinema</option>
+              <option value="theater3">StarLux Cinemas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="show-screen">Screen</label>
+            <input type="number" id="show-screen" placeholder="1" required>
+          </div>
+          <div class="form-group">
+            <label for="show-start">Start Time</label>
+            <input type="time" id="show-start" required>
+          </div>
+          <div class="form-group">
+            <label for="show-end">End Time</label>
+            <input type="time" id="show-end" required>
+          </div>
+          <button type="submit" class="admin-btn">Schedule Show</button>
+        </form>
+      </div>
+
+      <!-- Manage Shows Section -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">Manage Shows</h2>
+        <div class="shows-table-wrapper">
+          <table class="shows-table">
+            <thead>
+              <tr>
+                <th>Movie</th>
+                <th>Theater</th>
+                <th>Screen</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Movie 1</td>
+                <td>Grand Cinema Multiplex</td>
+                <td>1</td>
+                <td>02:00 PM</td>
+                <td>04:15 PM</td>
+                <td>
+                  <button class="admin-action-btn edit">Edit</button>
+                  <button class="admin-action-btn delete">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Movie 2</td>
+                <td>Downtown Cinema</td>
+                <td>2</td>
+                <td>04:30 PM</td>
+                <td>07:00 PM</td>
+                <td>
+                  <button class="admin-action-btn edit">Edit</button>
+                  <button class="admin-action-btn delete">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Movie 3</td>
+                <td>StarLux Cinemas</td>
+                <td>3</td>
+                <td>07:15 PM</td>
+                <td>09:30 PM</td>
+                <td>
+                  <button class="admin-action-btn edit">Edit</button>
+                  <button class="admin-action-btn delete">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 CineBook. All rights reserved.</p>
+  </footer>
+</body>
+</html>

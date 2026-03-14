@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Tickets - CineBook</title>
+  <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div class="search-bar">
+        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+      </div>
+      <div class="header-right">
+        <div class="location-selector">
+          📍 Select Location
+        </div>
+        <button class="signin-btn">Sign In</button>
+        <div class="menu-icon">☰</div>
+      </div>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/" th:href="@{/}">Movies</a></li>
+        <li><a href="#stream">Stream</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#plays">Plays</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#buzz">Buzz</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Booking Summary -->
+    <section>
+      <div class="booking-summary">
+        <div class="summary-item">
+          <span class="summary-label">Movie</span>
+          <span class="summary-value">Action Adventure Placeholder</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Theatre</span>
+          <span class="summary-value">Grand Cinema Multiplex</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Showtime</span>
+          <span class="summary-value">03:00 PM</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Date</span>
+          <span class="summary-value">March 15, 2024</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ticket Selection -->
+    <section id="ticket-selector">
+      <h1 class="section-title">Select Number of Tickets</h1>
+      <div class="ticket-count-grid">
+        <button class="ticket-count" data-ticket-count="1">1</button>
+        <button class="ticket-count" data-ticket-count="2">2</button>
+        <button class="ticket-count" data-ticket-count="3">3</button>
+        <button class="ticket-count" data-ticket-count="4">4</button>
+        <button class="ticket-count" data-ticket-count="5">5</button>
+        <button class="ticket-count" data-ticket-count="6">6</button>
+        <button class="ticket-count" data-ticket-count="7">7</button>
+        <button class="ticket-count" data-ticket-count="8">8</button>
+        <button class="ticket-count" data-ticket-count="9">9</button>
+        <button class="ticket-count" data-ticket-count="10">10</button>
+      </div>
+      <a href="/seats" th:href="@{/seats}" class="btn btn-primary">Select Seats</a>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 CineBook. All rights reserved.</p>
+  </footer>
+</body>
+</html>

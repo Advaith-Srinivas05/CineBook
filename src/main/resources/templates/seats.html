@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Seats - CineBook</title>
+  <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div class="search-bar">
+        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+      </div>
+      <div class="header-right">
+        <div class="location-selector">
+          📍 Select Location
+        </div>
+        <a href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
+        <div class="menu-icon">☰</div>
+      </div>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/" th:href="@{/}">Movies</a></li>
+        <li><a href="#stream">Stream</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#plays">Plays</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#buzz">Buzz</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Booking Summary -->
+    <section>
+      <div class="booking-summary">
+        <div class="summary-item">
+          <span class="summary-label">Movie</span>
+          <span class="summary-value">Action Adventure Placeholder</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Theatre</span>
+          <span class="summary-value">Grand Cinema Multiplex</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Showtime</span>
+          <span class="summary-value">03:00 PM</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Tickets</span>
+          <span class="summary-value">3</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seat Selection -->
+    <section id="seat-map">
+      <div class="screen-label">SCREEN</div>
+
+      <!-- Seat Legend -->
+      <div class="seat-legend">
+        <div class="legend-item">
+          <div class="legend-box available"></div>
+          <span>Available</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box booked"></div>
+          <span>Booked</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box selected"></div>
+          <span>Selected</span>
+        </div>
+      </div>
+
+      <!-- Seat Grid -->
+      <div class="seat-grid">
+        <!-- Front Section: A-D -->
+        <!-- Row A -->
+        <div class="seat-row">
+          <div class="seat-row-label">A</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="A1">A1</button>
+              <button class="seat available" data-seat-number="A2">A2</button>
+              <button class="seat available" data-seat-number="A3">A3</button>
+              <button class="seat available" data-seat-number="A4">A4</button>
+              <button class="seat available" data-seat-number="A5">A5</button>
+              <button class="seat available" data-seat-number="A6">A6</button>
+              <button class="seat available" data-seat-number="A7">A7</button>
+              <button class="seat available" data-seat-number="A8">A8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="A9">A9</button>
+              <button class="seat available" data-seat-number="A10">A10</button>
+              <button class="seat available" data-seat-number="A11">A11</button>
+              <button class="seat available" data-seat-number="A12">A12</button>
+              <button class="seat available" data-seat-number="A13">A13</button>
+              <button class="seat available" data-seat-number="A14">A14</button>
+              <button class="seat available" data-seat-number="A15">A15</button>
+              <button class="seat available" data-seat-number="A16">A16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row B -->
+        <div class="seat-row">
+          <div class="seat-row-label">B</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="B1">B1</button>
+              <button class="seat booked" data-seat-number="B2">B2</button>
+              <button class="seat available" data-seat-number="B3">B3</button>
+              <button class="seat available" data-seat-number="B4">B4</button>
+              <button class="seat available" data-seat-number="B5">B5</button>
+              <button class="seat booked" data-seat-number="B6">B6</button>
+              <button class="seat available" data-seat-number="B7">B7</button>
+              <button class="seat available" data-seat-number="B8">B8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="B9">B9</button>
+              <button class="seat available" data-seat-number="B10">B10</button>
+              <button class="seat available" data-seat-number="B11">B11</button>
+              <button class="seat available" data-seat-number="B12">B12</button>
+              <button class="seat available" data-seat-number="B13">B13</button>
+              <button class="seat available" data-seat-number="B14">B14</button>
+              <button class="seat available" data-seat-number="B15">B15</button>
+              <button class="seat available" data-seat-number="B16">B16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row C -->
+        <div class="seat-row">
+          <div class="seat-row-label">C</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="C1">C1</button>
+              <button class="seat available" data-seat-number="C2">C2</button>
+              <button class="seat available" data-seat-number="C3">C3</button>
+              <button class="seat available" data-seat-number="C4">C4</button>
+              <button class="seat available" data-seat-number="C5">C5</button>
+              <button class="seat available" data-seat-number="C6">C6</button>
+              <button class="seat available" data-seat-number="C7">C7</button>
+              <button class="seat booked" data-seat-number="C8">C8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="C9">C9</button>
+              <button class="seat available" data-seat-number="C10">C10</button>
+              <button class="seat available" data-seat-number="C11">C11</button>
+              <button class="seat available" data-seat-number="C12">C12</button>
+              <button class="seat available" data-seat-number="C13">C13</button>
+              <button class="seat available" data-seat-number="C14">C14</button>
+              <button class="seat available" data-seat-number="C15">C15</button>
+              <button class="seat available" data-seat-number="C16">C16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row D -->
+        <div class="seat-row">
+          <div class="seat-row-label">D</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="D1">D1</button>
+              <button class="seat available" data-seat-number="D2">D2</button>
+              <button class="seat available" data-seat-number="D3">D3</button>
+              <button class="seat booked" data-seat-number="D4">D4</button>
+              <button class="seat available" data-seat-number="D5">D5</button>
+              <button class="seat available" data-seat-number="D6">D6</button>
+              <button class="seat available" data-seat-number="D7">D7</button>
+              <button class="seat available" data-seat-number="D8">D8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="D9">D9</button>
+              <button class="seat available" data-seat-number="D10">D10</button>
+              <button class="seat available" data-seat-number="D11">D11</button>
+              <button class="seat available" data-seat-number="D12">D12</button>
+              <button class="seat available" data-seat-number="D13">D13</button>
+              <button class="seat available" data-seat-number="D14">D14</button>
+              <button class="seat available" data-seat-number="D15">D15</button>
+              <button class="seat available" data-seat-number="D16">D16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Walkway Gap between sections -->
+        <div class="seat-row walkway"></div>
+
+        <!-- Back Section: E-K -->
+        <!-- Row E -->
+        <div class="seat-row">
+          <div class="seat-row-label">E</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="E1">E1</button>
+              <button class="seat available" data-seat-number="E2">E2</button>
+              <button class="seat available" data-seat-number="E3">E3</button>
+              <button class="seat available" data-seat-number="E4">E4</button>
+              <button class="seat available" data-seat-number="E5">E5</button>
+              <button class="seat available" data-seat-number="E6">E6</button>
+              <button class="seat available" data-seat-number="E7">E7</button>
+              <button class="seat available" data-seat-number="E8">E8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="E9">E9</button>
+              <button class="seat booked" data-seat-number="E10">E10</button>
+              <button class="seat available" data-seat-number="E11">E11</button>
+              <button class="seat available" data-seat-number="E12">E12</button>
+              <button class="seat available" data-seat-number="E13">E13</button>
+              <button class="seat available" data-seat-number="E14">E14</button>
+              <button class="seat available" data-seat-number="E15">E15</button>
+              <button class="seat available" data-seat-number="E16">E16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row F -->
+        <div class="seat-row">
+          <div class="seat-row-label">F</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="F1">F1</button>
+              <button class="seat available" data-seat-number="F2">F2</button>
+              <button class="seat available" data-seat-number="F3">F3</button>
+              <button class="seat available" data-seat-number="F4">F4</button>
+              <button class="seat booked" data-seat-number="F5">F5</button>
+              <button class="seat available" data-seat-number="F6">F6</button>
+              <button class="seat available" data-seat-number="F7">F7</button>
+              <button class="seat available" data-seat-number="F8">F8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="F9">F9</button>
+              <button class="seat available" data-seat-number="F10">F10</button>
+              <button class="seat available" data-seat-number="F11">F11</button>
+              <button class="seat available" data-seat-number="F12">F12</button>
+              <button class="seat available" data-seat-number="F13">F13</button>
+              <button class="seat available" data-seat-number="F14">F14</button>
+              <button class="seat available" data-seat-number="F15">F15</button>
+              <button class="seat available" data-seat-number="F16">F16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row G -->
+        <div class="seat-row">
+          <div class="seat-row-label">G</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="G1">G1</button>
+              <button class="seat available" data-seat-number="G2">G2</button>
+              <button class="seat available" data-seat-number="G3">G3</button>
+              <button class="seat available" data-seat-number="G4">G4</button>
+              <button class="seat available" data-seat-number="G5">G5</button>
+              <button class="seat available" data-seat-number="G6">G6</button>
+              <button class="seat available" data-seat-number="G7">G7</button>
+              <button class="seat available" data-seat-number="G8">G8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="G9">G9</button>
+              <button class="seat available" data-seat-number="G10">G10</button>
+              <button class="seat available" data-seat-number="G11">G11</button>
+              <button class="seat available" data-seat-number="G12">G12</button>
+              <button class="seat available" data-seat-number="G13">G13</button>
+              <button class="seat available" data-seat-number="G14">G14</button>
+              <button class="seat available" data-seat-number="G15">G15</button>
+              <button class="seat booked" data-seat-number="G16">G16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row H -->
+        <div class="seat-row">
+          <div class="seat-row-label">H</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="H1">H1</button>
+              <button class="seat available" data-seat-number="H2">H2</button>
+              <button class="seat available" data-seat-number="H3">H3</button>
+              <button class="seat available" data-seat-number="H4">H4</button>
+              <button class="seat available" data-seat-number="H5">H5</button>
+              <button class="seat available" data-seat-number="H6">H6</button>
+              <button class="seat available" data-seat-number="H7">H7</button>
+              <button class="seat available" data-seat-number="H8">H8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="H9">H9</button>
+              <button class="seat available" data-seat-number="H10">H10</button>
+              <button class="seat available" data-seat-number="H11">H11</button>
+              <button class="seat available" data-seat-number="H12">H12</button>
+              <button class="seat available" data-seat-number="H13">H13</button>
+              <button class="seat available" data-seat-number="H14">H14</button>
+              <button class="seat available" data-seat-number="H15">H15</button>
+              <button class="seat available" data-seat-number="H16">H16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row I -->
+        <div class="seat-row">
+          <div class="seat-row-label">I</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat booked" data-seat-number="I1">I1</button>
+              <button class="seat available" data-seat-number="I2">I2</button>
+              <button class="seat available" data-seat-number="I3">I3</button>
+              <button class="seat available" data-seat-number="I4">I4</button>
+              <button class="seat available" data-seat-number="I5">I5</button>
+              <button class="seat available" data-seat-number="I6">I6</button>
+              <button class="seat available" data-seat-number="I7">I7</button>
+              <button class="seat available" data-seat-number="I8">I8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="I9">I9</button>
+              <button class="seat available" data-seat-number="I10">I10</button>
+              <button class="seat available" data-seat-number="I11">I11</button>
+              <button class="seat available" data-seat-number="I12">I12</button>
+              <button class="seat available" data-seat-number="I13">I13</button>
+              <button class="seat available" data-seat-number="I14">I14</button>
+              <button class="seat booked" data-seat-number="I15">I15</button>
+              <button class="seat available" data-seat-number="I16">I16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row J -->
+        <div class="seat-row">
+          <div class="seat-row-label">J</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="J1">J1</button>
+              <button class="seat available" data-seat-number="J2">J2</button>
+              <button class="seat available" data-seat-number="J3">J3</button>
+              <button class="seat available" data-seat-number="J4">J4</button>
+              <button class="seat available" data-seat-number="J5">J5</button>
+              <button class="seat available" data-seat-number="J6">J6</button>
+              <button class="seat available" data-seat-number="J7">J7</button>
+              <button class="seat available" data-seat-number="J8">J8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="J9">J9</button>
+              <button class="seat available" data-seat-number="J10">J10</button>
+              <button class="seat available" data-seat-number="J11">J11</button>
+              <button class="seat available" data-seat-number="J12">J12</button>
+              <button class="seat available" data-seat-number="J13">J13</button>
+              <button class="seat available" data-seat-number="J14">J14</button>
+              <button class="seat available" data-seat-number="J15">J15</button>
+              <button class="seat available" data-seat-number="J16">J16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row K -->
+        <div class="seat-row">
+          <div class="seat-row-label">K</div>
+          <div class="seat-row-seats aisle-seats">
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="K1">K1</button>
+              <button class="seat available" data-seat-number="K2">K2</button>
+              <button class="seat available" data-seat-number="K3">K3</button>
+              <button class="seat available" data-seat-number="K4">K4</button>
+              <button class="seat available" data-seat-number="K5">K5</button>
+              <button class="seat available" data-seat-number="K6">K6</button>
+              <button class="seat available" data-seat-number="K7">K7</button>
+              <button class="seat available" data-seat-number="K8">K8</button>
+            </div>
+            <div class="seat-row-section">
+              <button class="seat available" data-seat-number="K9">K9</button>
+              <button class="seat available" data-seat-number="K10">K10</button>
+              <button class="seat available" data-seat-number="K11">K11</button>
+              <button class="seat available" data-seat-number="K12">K12</button>
+              <button class="seat available" data-seat-number="K13">K13</button>
+              <button class="seat available" data-seat-number="K14">K14</button>
+              <button class="seat available" data-seat-number="K15">K15</button>
+              <button class="seat available" data-seat-number="K16">K16</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen Indicator -->
+        <div class="screen-indicator"></div>
+      </div>
+
+      <br>
+      <a href="/payment" th:href="@{/payment}" class="btn btn-primary">Proceed to Payment</a>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 CineBook. All rights reserved.</p>
+  </footer>
+</body>
+</html>

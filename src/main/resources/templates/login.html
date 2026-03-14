@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Sign Up - CineBook</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}" href="/css/styles.css">
+  <script th:src="@{/js/ui.js}" src="/js/ui.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div class="search-bar">
+        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+      </div>
+      <div class="header-right">
+        <div class="location-selector">
+          📍 Select Location
+        </div>
+        <a href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
+        <div class="menu-icon">☰</div>
+      </div>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/" th:href="@{/}">Movies</a></li>
+        <li><a href="#stream">Stream</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#plays">Plays</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#buzz">Buzz</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <section id="auth-container">
+      <div class="auth-card">
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form" class="auth-form active">
+          <h2>Welcome Back</h2>
+          <form>
+            <div class="form-group">
+              <label for="login-email">Email</label>
+              <input type="email" id="login-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="auth-submit-btn">Login</button>
+          </form>
+          <p class="auth-switch">Don't have an account? <a href="#" class="auth-switch-link" data-switch="signup">Create Account</a></p>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signup-form" class="auth-form">
+          <h2>Create Account</h2>
+          <form>
+            <div class="form-group">
+              <label for="signup-name">Name</label>
+              <input type="text" id="signup-name" placeholder="Your full name" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input type="email" id="signup-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-phone">Phone</label>
+              <input type="tel" id="signup-phone" placeholder="+1 (555) 123-4567" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-password">Password</label>
+              <input type="password" id="signup-password" placeholder="Create a password" required>
+            </div>
+            <button type="submit" class="auth-submit-btn">Create Account</button>
+          </form>
+          <p class="auth-switch">Already have an account? <a href="#" class="auth-switch-link" data-switch="login">Login</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 CineBook. All rights reserved.</p>
+  </footer>
+</body>
+</html>
