@@ -918,6 +918,25 @@ footer {
   }
 }
 
+.autocomplete-suggestions {
+  position: relative;
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  max-height: 260px;
+  overflow: auto;
+  z-index: 50;
+  margin-top: 0.25rem;
+}
+.autocomplete-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+.autocomplete-item:hover {
+  background: rgba(0,0,0,0.04);
+}
+
 .admin-title {
   font-size: 2rem;
   font-weight: 700;

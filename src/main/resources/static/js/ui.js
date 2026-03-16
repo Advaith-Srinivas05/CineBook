@@ -63,6 +63,96 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// Autocomplete helper for admin schedule inputs
+function debounce(fn, wait) {
+  let t;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+function setupAutocomplete(opts) {
+  const input = document.getElementById(opts.inputId);
+  const hidden = document.getElementById(opts.hiddenId);
+  const suggestions = document.getElementById(opts.suggestionsId);
+  if (!input || !suggestions) return;
+
+  async function query(q) {
+    if (!q) {
+      render([]);
+      if (hidden) hidden.value = '';
+      return;
+    }
+    try {
+      const res = await fetch(opts.endpoint + '?q=' + encodeURIComponent(q), { credentials: 'same-origin' });
+      if (!res.ok) return render([]);
+      const json = await res.json();
+      render(json);
+    } catch (e) {
+      render([]);
+    }
+  }
+
+  const debouncedQuery = debounce((e) => query(e.target.value.trim()), 250);
+
+  input.addEventListener('input', debouncedQuery);
+
+  input.addEventListener('focus', function(e) {
+    if (input.value && input.value.trim()) {
+      query(input.value.trim());
+    }
+  });
+
+  function render(items) {
+    suggestions.innerHTML = '';
+    if (!items || items.length === 0) {
+      suggestions.style.display = 'none';
+      return;
+    }
+    suggestions.style.display = 'block';
+    items.forEach(it => {
+      const div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      const label = opts.labelKey ? it[opts.labelKey] : (it.title || it.name || '');
+      div.textContent = label;
+      div.dataset.id = it.id;
+      div.addEventListener('click', function() {
+        input.value = label;
+        if (hidden) hidden.value = this.dataset.id;
+        suggestions.innerHTML = '';
+        suggestions.style.display = 'none';
+      });
+      suggestions.appendChild(div);
+    });
+  }
+
+  // click outside to close
+  document.addEventListener('click', function(e) {
+    if (!suggestions.contains(e.target) && e.target !== input) {
+      suggestions.style.display = 'none';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setupAutocomplete({
+    inputId: 'show-movie-input',
+    hiddenId: 'show-movie-id',
+    suggestionsId: 'show-movie-suggestions',
+    endpoint: '/api/movies/search',
+    labelKey: 'title'
+  });
+
+  setupAutocomplete({
+    inputId: 'show-theater-input',
+    hiddenId: 'show-theater-id',
+    suggestionsId: 'show-theater-suggestions',
+    endpoint: '/api/theaters/search',
+    labelKey: 'name'
+  });
+});
+
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute('data-theme');
   const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -325,6 +415,87 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       return; // skip generic handler
+    }
+
+    // Generic admin form behaviour (visual only)
+    // Special handler for schedule show form
+    if (form.id === 'schedule-show-form') {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // clear previous errors
+        clearError(document.getElementById('show-movie-input'));
+        clearError(document.getElementById('show-theater-input'));
+        clearError(document.getElementById('show-screen'));
+        clearError(document.getElementById('show-start'));
+        clearError(document.getElementById('show-end'));
+
+        const movieIdEl = document.getElementById('show-movie-id');
+        const theaterIdEl = document.getElementById('show-theater-id');
+        const movieInput = document.getElementById('show-movie-input');
+        const theaterInput = document.getElementById('show-theater-input');
+        const screenEl = document.getElementById('show-screen');
+        const startEl = document.getElementById('show-start');
+        const endEl = document.getElementById('show-end');
+
+        let hasError = false;
+        if (!movieIdEl || !movieIdEl.value) {
+          showError(movieInput, 'Please choose a movie from suggestions');
+          hasError = true;
+        }
+        if (!theaterIdEl || !theaterIdEl.value) {
+          showError(theaterInput, 'Please choose a theater from suggestions');
+          hasError = true;
+        }
+        const screen = parseInt(screenEl.value, 10);
+        if (!screen || isNaN(screen) || screen < 1) {
+          showError(screenEl, 'Enter a valid screen number');
+          hasError = true;
+        }
+        const startVal = startEl.value;
+        const endVal = endEl.value;
+        if (!startVal) { showError(startEl, 'Start time required'); hasError = true; }
+        if (!endVal) { showError(endEl, 'End time required'); hasError = true; }
+        if (startVal && endVal) {
+          const s = new Date(startVal);
+          const e = new Date(endVal);
+          if (!(e > s)) { showError(endEl, 'End must be after start'); hasError = true; }
+        }
+        if (hasError) return;
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.textContent = 'Scheduling...';
+          submitBtn.style.opacity = '0.8';
+        }
+
+        const formData = new FormData(this);
+        try {
+          const res = await fetch('/admin/shows', { method: 'POST', body: formData, credentials: 'same-origin' });
+          if (res.ok) {
+            if (submitBtn) submitBtn.textContent = 'Scheduled!';
+            setTimeout(() => {
+              if (submitBtn) { submitBtn.textContent = originalText; submitBtn.style.opacity = '1'; }
+              this.reset();
+              // clear hidden ids
+              if (movieIdEl) movieIdEl.value = '';
+              if (theaterIdEl) theaterIdEl.value = '';
+            }, 1200);
+          } else {
+            const msg = await res.text();
+            // try to place message near relevant field
+            if (res.status === 400 && msg) {
+              // generic handling: show under end field if date issue, else top
+              showError(endEl, msg);
+            }
+            if (submitBtn) { submitBtn.textContent = originalText; submitBtn.style.opacity = '1'; }
+          }
+        } catch (err) {
+          if (submitBtn) { submitBtn.textContent = 'Error'; setTimeout(() => { submitBtn.textContent = originalText; submitBtn.style.opacity = '1'; }, 1200); }
+        }
+      });
+      return;
     }
 
     // Generic admin form behaviour (visual only)

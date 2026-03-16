@@ -8,5 +8,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
 	Optional<Movie> findByTitle(String title);
 
+	java.util.List<Movie> findTop10ByTitleContainingIgnoreCase(String title);
+
 
 }

@@ -24,6 +24,9 @@ public class MovieController {
     
     @Autowired
     private com.CineBook.repository.TheaterRepository theaterRepository;
+    
+    @Autowired
+    private com.CineBook.repository.ShowRepository showRepository;
 
     @GetMapping("/")
     public String indexString(Model model, HttpSession session) {
@@ -148,6 +151,102 @@ public class MovieController {
             t.setLocation(location);
             t.setScreenCount(screenCount == null ? 1 : screenCount);
             theaterRepository.save(t);
+            return ResponseEntity.ok("OK");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
+    @GetMapping("/api/movies/search")
+    public ResponseEntity<java.util.List<java.util.Map<String,Object>>> searchMovies(@RequestParam(value = "q", required = false) String q) {
+        if (q == null) q = "";
+        java.util.List<Movie> list = movieRepository.findTop10ByTitleContainingIgnoreCase(q);
+        java.util.List<java.util.Map<String,Object>> out = new java.util.ArrayList<>();
+        for (Movie m : list) {
+            java.util.Map<String,Object> map = new java.util.HashMap<>();
+            map.put("id", m.getId());
+            map.put("title", m.getTitle());
+            out.add(map);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    @GetMapping("/api/theaters/search")
+    public ResponseEntity<java.util.List<java.util.Map<String,Object>>> searchTheaters(@RequestParam(value = "q", required = false) String q) {
+        if (q == null) q = "";
+        java.util.List<com.CineBook.model.Theater> list = theaterRepository.findTop10ByNameContainingIgnoreCaseOrLocationContainingIgnoreCase(q, q);
+        java.util.List<java.util.Map<String,Object>> out = new java.util.ArrayList<>();
+        for (com.CineBook.model.Theater t : list) {
+            java.util.Map<String,Object> map = new java.util.HashMap<>();
+            map.put("id", t.getId());
+            map.put("name", t.getName());
+            map.put("location", t.getLocation());
+            out.add(map);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    @PostMapping("/admin/shows")
+    public ResponseEntity<String> scheduleShow(@RequestParam("movie_id") Long movieId,
+                                               @RequestParam("theater_id") Long theaterId,
+                                               @RequestParam("screen") Integer screen,
+                                               @RequestParam("start_time") String startTimeStr,
+                                               @RequestParam("end_time") String endTimeStr,
+                                               HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        try {
+            java.util.Optional<Movie> mOpt = movieRepository.findById(movieId);
+            java.util.Optional<com.CineBook.model.Theater> tOpt = theaterRepository.findById(theaterId);
+            if (mOpt.isEmpty() || tOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Invalid movie or theater");
+            }
+
+            Movie movie = mOpt.get();
+            com.CineBook.model.Theater theater = tOpt.get();
+
+            if (screen == null || screen < 1) {
+                return ResponseEntity.badRequest().body("Invalid screen number");
+            }
+            if (theater.getScreenCount() != null && screen > theater.getScreenCount()) {
+                return ResponseEntity.badRequest().body("Screen number exceeds theater screen count");
+            }
+
+            // parse start/end times. Accept either OffsetDateTime string or local datetime (from datetime-local input)
+            java.time.OffsetDateTime start;
+            java.time.OffsetDateTime end;
+            try {
+                if (startTimeStr.endsWith("Z") || startTimeStr.contains("+")) {
+                    start = java.time.OffsetDateTime.parse(startTimeStr);
+                } else {
+                    java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(startTimeStr);
+                    start = ldt.atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime();
+                }
+                if (endTimeStr.endsWith("Z") || endTimeStr.contains("+")) {
+                    end = java.time.OffsetDateTime.parse(endTimeStr);
+                } else {
+                    java.time.LocalDateTime ldt2 = java.time.LocalDateTime.parse(endTimeStr);
+                    end = ldt2.atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime();
+                }
+            } catch (Exception ex) {
+                return ResponseEntity.badRequest().body("Invalid date/time format");
+            }
+
+            if (!end.isAfter(start)) {
+                return ResponseEntity.badRequest().body("End time must be after start time");
+            }
+
+            com.CineBook.model.Show s = new com.CineBook.model.Show();
+            s.setMovie(movie);
+            s.setTheater(theater);
+            s.setScreen(screen);
+            s.setStartTime(start);
+            s.setEndTime(end);
+
+            showRepository.save(s);
             return ResponseEntity.ok("OK");
         } catch (Exception ex) {
             return ResponseEntity.status(500).body("Server error");

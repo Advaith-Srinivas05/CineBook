@@ -98,6 +98,38 @@
         </div>
       </div>
 
+      <!-- Schedule Show Section -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">Schedule Show</h2>
+        <form id="schedule-show-form" action="/admin/shows" method="post">
+          <div class="form-group">
+            <label for="show-movie-input">Movie</label>
+            <input type="text" id="show-movie-input" placeholder="Type to search movies" autocomplete="off">
+            <input type="hidden" id="show-movie-id" name="movie_id">
+            <div class="autocomplete-suggestions" id="show-movie-suggestions" style="display:none"></div>
+          </div>
+          <div class="form-group">
+            <label for="show-theater-input">Theater</label>
+            <input type="text" id="show-theater-input" placeholder="Type to search theaters" autocomplete="off">
+            <input type="hidden" id="show-theater-id" name="theater_id">
+            <div class="autocomplete-suggestions" id="show-theater-suggestions" style="display:none"></div>
+          </div>
+          <div class="form-group">
+            <label for="show-screen">Screen</label>
+            <input type="number" id="show-screen" name="screen" placeholder="1" required>
+          </div>
+          <div class="form-group">
+            <label for="show-start">Start Time</label>
+            <input type="datetime-local" id="show-start" name="start_time" required>
+          </div>
+          <div class="form-group">
+            <label for="show-end">End Time</label>
+            <input type="datetime-local" id="show-end" name="end_time" required>
+          </div>
+          <button type="submit" class="admin-btn">Schedule Show</button>
+        </form>
+      </div>
+
       <!-- Remove Movie Section -->
       <div class="admin-card">
         <h2 class="admin-card-title">Remove Movie</h2>
@@ -115,44 +147,6 @@
             <button type="button" class="admin-remove-btn">Remove</button>
           </div>
         </div>
-      </div>
-
-      <!-- Schedule Show Section -->
-      <div class="admin-card">
-        <h2 class="admin-card-title">Schedule Show</h2>
-        <form>
-          <div class="form-group">
-            <label for="show-movie">Movie</label>
-            <select id="show-movie" required>
-              <option value="">Select a movie</option>
-              <option value="movie1">Movie 1</option>
-              <option value="movie2">Movie 2</option>
-              <option value="movie3">Movie 3</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="show-theater">Theater</label>
-            <select id="show-theater" required>
-              <option value="">Select a theater</option>
-              <option value="theater1">Grand Cinema Multiplex</option>
-              <option value="theater2">Downtown Cinema</option>
-              <option value="theater3">StarLux Cinemas</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="show-screen">Screen</label>
-            <input type="number" id="show-screen" placeholder="1" required>
-          </div>
-          <div class="form-group">
-            <label for="show-start">Start Time</label>
-            <input type="time" id="show-start" required>
-          </div>
-          <div class="form-group">
-            <label for="show-end">End Time</label>
-            <input type="time" id="show-end" required>
-          </div>
-          <button type="submit" class="admin-btn">Schedule Show</button>
-        </form>
       </div>
 
       <!-- Manage Shows Section -->
