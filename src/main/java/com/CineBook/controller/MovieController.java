@@ -108,6 +108,10 @@ public class MovieController {
         }
 
         try {
+            // prevent duplicate movie titles
+            if (movieRepository.findByTitle(title).isPresent()) {
+                return ResponseEntity.status(409).body("Movie with this title already exists");
+            }
             Movie m = new Movie();
             m.setTitle(title);
             m.setDurationMinutes(duration);
@@ -135,6 +139,10 @@ public class MovieController {
         }
 
         try {
+            // prevent duplicate theater names
+            if (theaterRepository.findByName(name).isPresent()) {
+                return ResponseEntity.status(409).body("Theater with this name already exists");
+            }
             com.CineBook.model.Theater t = new com.CineBook.model.Theater();
             t.setName(name);
             t.setLocation(location);

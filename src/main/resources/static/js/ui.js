@@ -222,6 +222,11 @@ document.addEventListener('DOMContentLoaded', function() {
               }
               this.reset();
             }, 1500);
+          } else if (res.status === 409) {
+            const msg = await res.text();
+            showError(titleEl, msg || 'Duplicate movie');
+            if (submitBtn) submitBtn.textContent = originalText;
+            if (submitBtn) submitBtn.style.opacity = '1';
           } else {
             if (submitBtn) submitBtn.textContent = 'Error';
             setTimeout(() => {
@@ -301,6 +306,11 @@ document.addEventListener('DOMContentLoaded', function() {
               }
               this.reset();
             }, 1500);
+          } else if (res.status === 409) {
+            const msg = await res.text();
+            showError(nameEl, msg || 'Duplicate theater');
+            if (submitBtn) submitBtn.textContent = originalText;
+            if (submitBtn) submitBtn.style.opacity = '1';
           } else {
             if (submitBtn) submitBtn.textContent = 'Error';
             setTimeout(() => {

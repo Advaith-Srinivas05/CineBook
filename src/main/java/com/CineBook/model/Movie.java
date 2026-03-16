@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 import jakarta.persistence.PrePersist;
 
 @Entity
-@Table(name = "movies")
+@Table(name = "movies", uniqueConstraints = {@jakarta.persistence.UniqueConstraint(columnNames = {"title"})})
 public class Movie {
 
 	@Id
