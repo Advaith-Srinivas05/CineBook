@@ -86,6 +86,26 @@ function toggleSeatSelection(event) {
   }
 }
 
+function showError(inputEl, message) {
+  if (!inputEl) return;
+  const id = inputEl.id ? `${inputEl.id}-error` : null;
+  let container = id ? document.getElementById(id) : null;
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'field-error';
+    if (inputEl.parentNode) inputEl.parentNode.appendChild(container);
+  }
+  container.textContent = message;
+  container.style.color = 'red';
+}
+
+function clearError(inputEl) {
+  if (!inputEl) return;
+  const id = inputEl.id ? `${inputEl.id}-error` : null;
+  const container = id ? document.getElementById(id) : null;
+  if (container) container.textContent = '';
+}
+
 // Attach DOM-dependent listeners after DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
   // Authentication Tab Switching
@@ -125,6 +145,58 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form.id === 'add-movie-form') {
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        // clear previous errors
+        clearError(document.getElementById('movie-title'));
+        clearError(document.getElementById('movie-duration'));
+        clearError(document.getElementById('movie-language'));
+        clearError(document.getElementById('movie-poster'));
+
+        // validation
+        let hasError = false;
+        const titleEl = document.getElementById('movie-title');
+        const durationEl = document.getElementById('movie-duration');
+        const languageEl = document.getElementById('movie-language');
+        const posterEl = document.getElementById('movie-poster');
+
+        const title = titleEl.value && titleEl.value.trim();
+        const duration = parseInt(durationEl.value, 10);
+        const language = languageEl.value && languageEl.value.trim();
+        const posterFile = posterEl.files && posterEl.files[0];
+
+        if (!title) {
+          showError(titleEl, 'Movie title is required');
+          hasError = true;
+        }
+        if (!duration || isNaN(duration)) {
+          showError(durationEl, 'Duration is required');
+          hasError = true;
+        } else if (duration <= 60) {
+          showError(durationEl, 'Duration must be greater than 60 minutes');
+          hasError = true;
+        }
+        if (!language) {
+          showError(languageEl, 'Language is required');
+          hasError = true;
+        }
+        if (!posterFile) {
+          showError(posterEl, 'Movie poster is required');
+          hasError = true;
+        } else {
+          const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+          if (!validTypes.includes(posterFile.type)) {
+            // fallback to extension check if browser doesn't set type
+            const name = posterFile.name || '';
+            const ext = name.split('.').pop().toLowerCase();
+            if (!['jpg','jpeg','png'].includes(ext)) {
+              showError(posterEl, 'Accepted formats: jpg, jpeg, png');
+              hasError = true;
+            }
+          }
+        }
+
+        if (hasError) return; // do not submit
+
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.textContent : '';
         if (submitBtn) {
@@ -170,6 +242,40 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form.id === 'add-theater-form') {
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        // clear previous errors
+        clearError(document.getElementById('theater-name'));
+        clearError(document.getElementById('theater-location'));
+        clearError(document.getElementById('screen-count'));
+
+        // validation
+        let hasError = false;
+        const nameEl = document.getElementById('theater-name');
+        const locationEl = document.getElementById('theater-location');
+        const screenEl = document.getElementById('screen-count');
+
+        const name = nameEl.value && nameEl.value.trim();
+        const location = locationEl.value && locationEl.value.trim();
+        const screenCount = parseInt(screenEl.value, 10);
+
+        if (!name) {
+          showError(nameEl, 'Theater name is required');
+          hasError = true;
+        }
+        if (!location) {
+          showError(locationEl, 'Location is required');
+          hasError = true;
+        }
+        if (!screenCount || isNaN(screenCount)) {
+          showError(screenEl, 'Screen count is required');
+          hasError = true;
+        } else if (screenCount < 1) {
+          showError(screenEl, 'Screen count must be at least 1');
+          hasError = true;
+        }
+
+        if (hasError) return; // do not submit
+
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.textContent : '';
         if (submitBtn) {

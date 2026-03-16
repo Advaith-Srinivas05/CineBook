@@ -52,18 +52,22 @@
           <div class="form-group">
             <label for="movie-title">Movie Title</label>
             <input type="text" id="movie-title" name="title" placeholder="Enter movie title" required>
+            <div class="field-error" id="movie-title-error"></div>
           </div>
           <div class="form-group">
             <label for="movie-duration">Duration (minutes)</label>
             <input type="number" id="movie-duration" name="duration" placeholder="120" required>
+            <div class="field-error" id="movie-duration-error"></div>
           </div>
           <div class="form-group">
             <label for="movie-language">Language</label>
             <input type="text" id="movie-language" name="language" placeholder="English, Hindi, etc." required>
+            <div class="field-error" id="movie-language-error"></div>
           </div>
           <div class="form-group">
             <label for="movie-poster">Movie Poster (jpg, jpeg, png)</label>
             <input type="file" id="movie-poster" name="poster" accept=".jpg,.jpeg,.png" required>
+            <div class="field-error" id="movie-poster-error"></div>
           </div>
           <button type="submit" class="admin-btn">Add Movie</button>
         </form>
@@ -95,14 +99,17 @@
           <div class="form-group">
             <label for="theater-name">Theater Name</label>
             <input type="text" id="theater-name" name="name" placeholder="Enter theater name" required>
+            <div class="field-error" id="theater-name-error"></div>
           </div>
           <div class="form-group">
             <label for="theater-location">Location</label>
             <input type="text" id="theater-location" name="location" placeholder="City / Address">
+            <div class="field-error" id="theater-location-error"></div>
           </div>
           <div class="form-group">
             <label for="screen-count">Screen Count</label>
             <input type="number" id="screen-count" name="screen_count" placeholder="5" value="1" min="1">
+            <div class="field-error" id="screen-count-error"></div>
           </div>
           <button type="submit" class="admin-btn">Add Theater</button>
         </form>
