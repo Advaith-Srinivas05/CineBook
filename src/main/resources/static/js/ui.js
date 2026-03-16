@@ -121,6 +121,52 @@ document.addEventListener('DOMContentLoaded', function() {
   // Admin Form Submissions
   const adminForms = document.querySelectorAll('.admin-card form');
   adminForms.forEach(form => {
+    // Special handler for Add Movie form - send poster binary via FormData
+    if (form.id === 'add-movie-form') {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.textContent = 'Uploading...';
+          submitBtn.style.opacity = '0.8';
+        }
+
+        const formData = new FormData(this);
+
+        try {
+          const res = await fetch('/admin/movies', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+          });
+
+          if (res.ok) {
+            if (submitBtn) submitBtn.textContent = 'Added Successfully!';
+            setTimeout(() => {
+              if (submitBtn) {
+                submitBtn.textContent = originalText;
+                submitBtn.style.opacity = '1';
+              }
+              this.reset();
+            }, 1500);
+          } else {
+            if (submitBtn) submitBtn.textContent = 'Error';
+            setTimeout(() => {
+              if (submitBtn) submitBtn.textContent = originalText;
+            }, 1500);
+          }
+        } catch (err) {
+          if (submitBtn) submitBtn.textContent = 'Error';
+          setTimeout(() => {
+            if (submitBtn) submitBtn.textContent = originalText;
+          }, 1500);
+        }
+      });
+      return; // skip generic handler for this form
+    }
+
+    // Generic admin form behaviour (visual only)
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       const submitBtn = this.querySelector('button[type="submit"]');

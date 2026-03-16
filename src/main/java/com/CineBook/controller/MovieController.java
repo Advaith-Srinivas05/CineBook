@@ -1,15 +1,26 @@
 package com.CineBook.controller;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.http.HttpSession;
 import com.CineBook.repository.CarouselRepository;
+import com.CineBook.repository.MovieRepository;
+import com.CineBook.model.Movie;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @Controller
 public class MovieController {
     @Autowired
     private CarouselRepository repository;
+
+    @Autowired
+    private MovieRepository movieRepository;
 
     @GetMapping("/")
     public String indexString(Model model, HttpSession session) {
@@ -80,5 +91,33 @@ public class MovieController {
             return "redirect:/"; // logged-in non-admin users -> index
         }
         return "redirect:/login"; // not logged in -> login
+    }
+
+    @PostMapping("/admin/movies")
+    public ResponseEntity<String> addMovie(@RequestParam("title") String title,
+                                           @RequestParam("duration") Integer duration,
+                                           @RequestParam("language") String language,
+                                           @RequestParam("poster") MultipartFile poster,
+                                           HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        try {
+            Movie m = new Movie();
+            m.setTitle(title);
+            m.setDurationMinutes(duration);
+            m.setLanguage(language);
+            if (poster != null && !poster.isEmpty()) {
+                m.setPoster(poster.getBytes());
+            }
+            movieRepository.save(m);
+            return ResponseEntity.ok("OK");
+        } catch (IOException ex) {
+            return ResponseEntity.status(500).body("Failed to read poster");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
     }
 }
