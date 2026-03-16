@@ -148,7 +148,7 @@ public class MovieController {
             map.put("language", m.getLanguage());
 
             java.util.List<com.CineBook.model.Show> shows = showRepository.findByMovieId(m.getId());
-            String status = "Upcoming";
+            String status;
             if (shows == null || shows.isEmpty()) {
                 status = "Upcoming";
             } else {
@@ -285,7 +285,6 @@ public class MovieController {
                                                @RequestParam("theater_id") Long theaterId,
                                                @RequestParam("screen") Integer screen,
                                                @RequestParam("start_time") String startTimeStr,
-                                               @RequestParam("end_time") String endTimeStr,
                                                HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
@@ -319,12 +318,13 @@ public class MovieController {
                     java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(startTimeStr);
                     start = ldt.atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime();
                 }
-                if (endTimeStr.endsWith("Z") || endTimeStr.contains("+")) {
-                    end = java.time.OffsetDateTime.parse(endTimeStr);
-                } else {
-                    java.time.LocalDateTime ldt2 = java.time.LocalDateTime.parse(endTimeStr);
-                    end = ldt2.atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime();
-                }
+                // compute end time from movie duration
+                java.util.Optional<Movie> mOptForDuration = movieRepository.findById(movieId);
+                if (mOptForDuration.isEmpty()) return ResponseEntity.badRequest().body("Invalid movie or theater");
+                Movie mForDuration = mOptForDuration.get();
+                Integer dur = mForDuration.getDurationMinutes();
+                if (dur == null) dur = 0;
+                end = start.plusMinutes(dur.longValue());
             } catch (Exception ex) {
                 return ResponseEntity.badRequest().body("Invalid date/time format");
             }
