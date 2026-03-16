@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface CarouselRepository extends JpaRepository<CarouselImage, Long> {
-
 	interface CarouselProjection {
 		Long getId();
 		String getImageName();

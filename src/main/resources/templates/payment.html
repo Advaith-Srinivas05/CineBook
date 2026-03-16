@@ -19,7 +19,10 @@
         <div class="location-selector">
           📍 Select Location
         </div>
-        <a href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
+        <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" style="display:inline">
+          <button type="submit" class="signin-btn">Logout</button>
+        </form>
+        <a th:if="${session.username == null}" href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
         <div class="menu-icon">☰</div>
       </div>
     </div>

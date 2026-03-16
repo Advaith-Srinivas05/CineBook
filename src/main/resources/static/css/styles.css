@@ -71,6 +71,7 @@ header {
   padding: 1rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
 }
 
 .logo {
@@ -139,6 +140,16 @@ header {
 .menu-icon {
   cursor: pointer;
   font-size: 1.5rem;
+}
+
+/* Center admin title inside header-top without affecting other pages */
+.admin-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
 }
 
 .theme-toggle {
@@ -890,13 +901,14 @@ footer {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  padding-top: 0;
 }
 
 .admin-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
   text-align: center;
 }
 

@@ -12,14 +12,18 @@
   <header>
     <div class="header-top">
       <a href="/" th:href="@{/}" class="logo">CineBook</a>
-      <div class="search-bar">
+      <!-- <div class="search-bar">
         <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
-      </div>
+      </div> -->
+      <h1 class="admin-title">Admin Dashboard</h1>
       <div class="header-right">
-        <div class="location-selector">
+        <!-- <div class="location-selector">
           📍 Select Location
-        </div>
-        <a th:href="@{/login}" href="/login" class="signin-btn">Sign In</a>
+        </div> -->
+        <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" style="display:inline">
+          <button type="submit" class="signin-btn">Logout</button>
+        </form>
+        <a th:if="${session.username == null}" th:href="@{/login}" href="/login" class="signin-btn">Sign In</a>
         <div class="menu-icon">☰</div>
       </div>
     </div>
@@ -39,7 +43,7 @@
   <!-- Main Content -->
   <main>
     <section id="admin-container">
-      <h1 class="admin-title">Admin Dashboard</h1>
+      <!-- <h1 class="admin-title">Admin Dashboard</h1> -->
 
       <!-- Add Movie Section -->
       <div class="admin-card">

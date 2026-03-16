@@ -5,11 +5,9 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "carousel_images")
 public class CarouselImage {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String imageName;
 
     @Column(name = "image_data", columnDefinition = "bytea")
