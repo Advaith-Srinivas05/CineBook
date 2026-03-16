@@ -131,7 +131,7 @@
       </div>
 
       <!-- Remove Movie Section -->
-      <div class="admin-card">
+      <!-- <div class="admin-card">
         <h2 class="admin-card-title">Remove Movie</h2>
         <div class="movie-list">
           <div class="movie-item">
@@ -145,6 +145,59 @@
           <div class="movie-item">
             <span class="movie-name">Movie 3</span>
             <button type="button" class="admin-remove-btn">Remove</button>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- Manage Movies Section -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">Manage Movies</h2>
+        <div class="movies-table-wrapper">
+          <table class="movies-table" id="admin-movies-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Movie Title</th>
+                <th>Duration</th>
+                <th>Language</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- rows populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="edit-movie-modal" class="modal" style="display:none">
+          <div class="modal-content">
+            <span class="close-modal" id="close-edit-modal">&times;</span>
+            <h3>Edit Movie</h3>
+            <form id="edit-movie-form" enctype="multipart/form-data">
+              <input type="hidden" id="edit-movie-id" name="id">
+              <div class="form-group">
+                <label for="edit-title">Movie Title</label>
+                <input type="text" id="edit-title" name="title" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-duration">Duration (minutes)</label>
+                <input type="number" id="edit-duration" name="duration" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-language">Language</label>
+                <input type="text" id="edit-language" name="language">
+              </div>
+              <div class="form-group">
+                <label for="edit-poster">Poster (leave empty to keep existing)</label>
+                <input type="file" id="edit-poster" name="poster" accept=".jpg,.jpeg,.png">
+              </div>
+              <div style="margin-top:12px">
+                <button type="submit" class="admin-btn">Save changes</button>
+                <button type="button" id="cancel-edit" class="admin-btn">Cancel</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -209,5 +262,86 @@
   <footer>
     <p>&copy; 2024 CineBook. All rights reserved.</p>
   </footer>
+  <script>
+    (function(){
+      async function fetchMovies(){
+        const res = await fetch('/api/admin/movies');
+        if (!res.ok) return;
+        const list = await res.json();
+        const tbody = document.querySelector('#admin-movies-table tbody');
+        tbody.innerHTML = '';
+        for (const m of list){
+          const tr = document.createElement('tr');
+          const status = (m.status||'').toString();
+          const statusClass = status.toLowerCase();
+          tr.innerHTML = `<td>${escapeHtml(m.id)}</td><td>${escapeHtml(m.title)}</td><td>${escapeHtml(formatDuration(m.duration))}</td><td>${escapeHtml(m.language||'')}</td><td><span class="status-badge ${statusClass}">${escapeHtml(status)}</span></td><td><button class="edit-btn" data-id="${m.id}">Edit</button> <button class="delete-btn" data-id="${m.id}">Delete</button></td>`;
+          tbody.appendChild(tr);
+        }
+        attachButtons();
+      }
+
+      function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>\"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+      function formatDuration(minutes){
+        if (minutes == null || minutes === '') return '';
+        const mins = Number(minutes);
+        if (Number.isNaN(mins) || mins < 0) return '';
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        if (h > 0 && m > 0) return `${h}h ${m}m`;
+        if (h > 0) return `${h}h`;
+        return `${m}m`;
+      }
+
+      function attachButtons(){
+        document.querySelectorAll('.edit-btn').forEach(b=>b.onclick = onEdit);
+        document.querySelectorAll('.delete-btn').forEach(b=>b.onclick = onDelete);
+      }
+
+      async function onEdit(e){
+        const id = e.target.dataset.id;
+        // fetch movie details from admin list endpoint (we already have data in table, but get fresh)
+        const res = await fetch('/api/admin/movies');
+        if (!res.ok) return; const list = await res.json();
+        const m = list.find(x=>String(x.id)===String(id));
+        if (!m) return alert('Movie not found');
+        document.getElementById('edit-movie-id').value = m.id;
+        document.getElementById('edit-title').value = m.title || '';
+        document.getElementById('edit-duration').value = m.duration || '';
+        document.getElementById('edit-language').value = m.language || '';
+        document.getElementById('edit-poster').value = '';
+        showModal();
+      }
+
+      async function onDelete(e){
+        if (!confirm('Delete this movie? This will remove it and related shows/ratings.')) return;
+        const id = e.target.dataset.id;
+        const res = await fetch(`/admin/movies/${id}/delete`, {method:'POST'});
+        if (res.ok){ fetchMovies(); } else { alert('Failed to delete'); }
+      }
+
+      function showModal(){ document.getElementById('edit-movie-modal').style.display='block'; }
+      function hideModal(){ document.getElementById('edit-movie-modal').style.display='none'; }
+
+      document.getElementById('close-edit-modal').onclick = hideModal;
+      document.getElementById('cancel-edit').onclick = hideModal;
+
+      document.getElementById('edit-movie-form').addEventListener('submit', async function(evt){
+        evt.preventDefault();
+        const id = document.getElementById('edit-movie-id').value;
+        const form = new FormData();
+        form.append('title', document.getElementById('edit-title').value);
+        form.append('duration', document.getElementById('edit-duration').value);
+        form.append('language', document.getElementById('edit-language').value);
+        const file = document.getElementById('edit-poster').files[0];
+        if (file) form.append('poster', file);
+        const res = await fetch(`/admin/movies/${id}/update`, {method:'POST', body: form});
+        if (res.ok){ hideModal(); fetchMovies(); } else { alert('Failed to save changes'); }
+      });
+
+      // initial load
+      fetchMovies();
+    })();
+  </script>
 </body>
 </html>

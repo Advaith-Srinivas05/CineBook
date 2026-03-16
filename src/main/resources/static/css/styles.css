@@ -1122,6 +1122,76 @@ footer {
   transform: translateY(-2px);
 }
 
+/* Movies Table - reuse shows table styles */
+.movies-table-wrapper {
+  overflow-x: auto;
+}
+
+.movies-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.movies-table thead {
+  background-color: #f9f9f9;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.movies-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.movies-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.movies-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Edit/Delete buttons used in Manage Movies */
+.edit-btn, .delete-btn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 0.5rem;
+}
+
+.edit-btn {
+  background-color: #3b82f6;
+  color: var(--light-bg);
+}
+.edit-btn:hover { background-color: #2563eb; transform: translateY(-2px); }
+
+.delete-btn {
+  background-color: #ef4444;
+  color: var(--light-bg);
+}
+.delete-btn:hover { background-color: #dc2626; transform: translateY(-2px); }
+
+/* Status badges for movies */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+.status-badge.ongoing { background-color: #10b981; }
+.status-badge.upcoming { background-color: #3b82f6; }
+.status-badge.archived { background-color: #6b7280; }
+
 .carousel-container {
   max-width: 100%;
   height: 300px;

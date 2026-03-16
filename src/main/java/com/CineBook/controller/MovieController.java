@@ -131,6 +131,100 @@ public class MovieController {
         }
     }
 
+    @GetMapping("/api/admin/movies")
+    public ResponseEntity<java.util.List<java.util.Map<String,Object>>> listAllMovies(HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).build();
+        }
+        java.util.List<Movie> list = movieRepository.findAll();
+        java.util.List<java.util.Map<String,Object>> out = new java.util.ArrayList<>();
+        java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
+        for (Movie m : list) {
+            java.util.Map<String,Object> map = new java.util.HashMap<>();
+            map.put("id", m.getId());
+            map.put("title", m.getTitle());
+            map.put("duration", m.getDurationMinutes());
+            map.put("language", m.getLanguage());
+
+            java.util.List<com.CineBook.model.Show> shows = showRepository.findByMovieId(m.getId());
+            String status = "Upcoming";
+            if (shows == null || shows.isEmpty()) {
+                status = "Upcoming";
+            } else {
+                boolean anyOngoing = false;
+                boolean anyFuture = false;
+                for (com.CineBook.model.Show s : shows) {
+                    if (s.getStartTime() != null && s.getEndTime() != null) {
+                        if (!s.getStartTime().isAfter(now) && s.getEndTime().isAfter(now)) {
+                            anyOngoing = true;
+                            break;
+                        }
+                        if (s.getStartTime().isAfter(now)) {
+                            anyFuture = true;
+                        }
+                    }
+                }
+                if (anyOngoing) status = "Ongoing";
+                else if (anyFuture) status = "Upcoming";
+                else status = "Archived";
+            }
+            map.put("status", status);
+            out.add(map);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    @PostMapping("/admin/movies/{id}/update")
+    public ResponseEntity<String> updateMovie(@org.springframework.web.bind.annotation.PathVariable("id") Long id,
+                                              @RequestParam("title") String title,
+                                              @RequestParam("duration") Integer duration,
+                                              @RequestParam("language") String language,
+                                              @RequestParam(value = "poster", required = false) MultipartFile poster,
+                                              HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        try {
+            java.util.Optional<Movie> mOpt = movieRepository.findById(id);
+            if (mOpt.isEmpty()) return ResponseEntity.status(404).body("Not found");
+            Movie m = mOpt.get();
+            m.setTitle(title);
+            m.setDurationMinutes(duration);
+            m.setLanguage(language);
+            if (poster != null && !poster.isEmpty()) {
+                try {
+                    m.setPoster(poster.getBytes());
+                } catch (IOException ex) {
+                    return ResponseEntity.status(500).body("Failed to read poster");
+                }
+            }
+            movieRepository.save(m);
+            return ResponseEntity.ok("OK");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
+    @PostMapping("/admin/movies/{id}/delete")
+    public ResponseEntity<String> deleteMovie(@org.springframework.web.bind.annotation.PathVariable("id") Long id,
+                                             HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        try {
+            if (!movieRepository.existsById(id)) return ResponseEntity.status(404).body("Not found");
+            movieRepository.deleteById(id);
+            return ResponseEntity.ok("OK");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
     @PostMapping("/admin/theaters")
     public ResponseEntity<String> addTheater(@RequestParam("name") String name,
                                              @RequestParam(value = "location", required = false) String location,
