@@ -166,6 +166,51 @@ document.addEventListener('DOMContentLoaded', function() {
       return; // skip generic handler for this form
     }
 
+    // Special handler for Add Theater form - send via FormData
+    if (form.id === 'add-theater-form') {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.textContent = 'Adding...';
+          submitBtn.style.opacity = '0.8';
+        }
+
+        const formData = new FormData(this);
+
+        try {
+          const res = await fetch('/admin/theaters', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+          });
+
+          if (res.ok) {
+            if (submitBtn) submitBtn.textContent = 'Added Successfully!';
+            setTimeout(() => {
+              if (submitBtn) {
+                submitBtn.textContent = originalText;
+                submitBtn.style.opacity = '1';
+              }
+              this.reset();
+            }, 1500);
+          } else {
+            if (submitBtn) submitBtn.textContent = 'Error';
+            setTimeout(() => {
+              if (submitBtn) submitBtn.textContent = originalText;
+            }, 1500);
+          }
+        } catch (err) {
+          if (submitBtn) submitBtn.textContent = 'Error';
+          setTimeout(() => {
+            if (submitBtn) submitBtn.textContent = originalText;
+          }, 1500);
+        }
+      });
+      return; // skip generic handler
+    }
+
     // Generic admin form behaviour (visual only)
     form.addEventListener('submit', function(e) {
       e.preventDefault();

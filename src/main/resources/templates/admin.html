@@ -91,18 +91,18 @@
       <!-- Add Theater Section -->
       <div class="admin-card">
         <h2 class="admin-card-title">Add Theater</h2>
-        <form>
+        <form id="add-theater-form" action="/admin/theaters" method="post">
           <div class="form-group">
             <label for="theater-name">Theater Name</label>
-            <input type="text" id="theater-name" placeholder="Enter theater name" required>
+            <input type="text" id="theater-name" name="name" placeholder="Enter theater name" required>
           </div>
           <div class="form-group">
             <label for="theater-location">Location</label>
-            <input type="text" id="theater-location" placeholder="City / Address" required>
+            <input type="text" id="theater-location" name="location" placeholder="City / Address">
           </div>
           <div class="form-group">
             <label for="screen-count">Screen Count</label>
-            <input type="number" id="screen-count" placeholder="5" required>
+            <input type="number" id="screen-count" name="screen_count" placeholder="5" value="1" min="1">
           </div>
           <button type="submit" class="admin-btn">Add Theater</button>
         </form>

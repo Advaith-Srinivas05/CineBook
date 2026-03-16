@@ -21,6 +21,9 @@ public class MovieController {
 
     @Autowired
     private MovieRepository movieRepository;
+    
+    @Autowired
+    private com.CineBook.repository.TheaterRepository theaterRepository;
 
     @GetMapping("/")
     public String indexString(Model model, HttpSession session) {
@@ -116,6 +119,28 @@ public class MovieController {
             return ResponseEntity.ok("OK");
         } catch (IOException ex) {
             return ResponseEntity.status(500).body("Failed to read poster");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
+    @PostMapping("/admin/theaters")
+    public ResponseEntity<String> addTheater(@RequestParam("name") String name,
+                                             @RequestParam(value = "location", required = false) String location,
+                                             @RequestParam(value = "screen_count", required = false) Integer screenCount,
+                                             HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        try {
+            com.CineBook.model.Theater t = new com.CineBook.model.Theater();
+            t.setName(name);
+            t.setLocation(location);
+            t.setScreenCount(screenCount == null ? 1 : screenCount);
+            theaterRepository.save(t);
+            return ResponseEntity.ok("OK");
         } catch (Exception ex) {
             return ResponseEntity.status(500).body("Server error");
         }
