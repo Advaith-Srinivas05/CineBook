@@ -202,6 +202,18 @@
       <!-- Manage Shows Section -->
       <div class="admin-card">
         <h2 class="admin-card-title">Manage Shows</h2>
+        <form id="manage-shows-filter" class="inline-form" onsubmit="return false;">
+          <div class="form-group">
+            <label for="manage-show-theater-input">Theater</label>
+            <input type="text" id="manage-show-theater-input" placeholder="Type to search theaters" autocomplete="off">
+            <input type="hidden" id="manage-show-theater-id" name="theater_id">
+            <div class="autocomplete-suggestions" id="manage-show-theater-suggestions" style="display:none"></div>
+          </div>
+          <div class="form-group">
+            <label for="manage-show-date">Date</label>
+            <input type="date" id="manage-show-date" name="date">
+          </div>
+        </form>
         <div class="shows-table-wrapper">
           <table class="shows-table">
             <thead>
@@ -338,6 +350,83 @@
 
       // initial load
       fetchMovies();
+
+      // Manage shows: theater autocomplete + filtering (uses /api/theaters/search)
+      function showSuggestions(container, items){
+        container.innerHTML = '';
+        if (!items || items.length === 0){ container.style.display = 'none'; return; }
+        for (const t of items){
+          const div = document.createElement('div');
+          div.className = 'autocomplete-item';
+          div.textContent = t.name || t.theaterName || t.title || '';
+          div.dataset.id = t.id;
+          div.dataset.name = div.textContent;
+          div.onclick = () => { selectManageTheater(div.dataset.id, div.dataset.name); };
+          container.appendChild(div);
+        }
+        container.style.display = 'block';
+      }
+
+      function selectManageTheater(id, name){
+        document.getElementById('manage-show-theater-id').value = id;
+        document.getElementById('manage-show-theater-input').value = name;
+        document.getElementById('manage-show-theater-suggestions').style.display = 'none';
+        // automatically load shows when a theater is selected and a date is chosen
+        const date = document.getElementById('manage-show-date').value;
+        if (date) loadShowsForFilter();
+      }
+
+      document.getElementById('manage-show-theater-input').addEventListener('input', async function(){
+        const q = this.value.trim();
+        const container = document.getElementById('manage-show-theater-suggestions');
+        if (!q){ container.style.display = 'none'; document.getElementById('manage-show-theater-id').value = ''; return; }
+        try {
+          const res = await fetch('/api/theaters/search?q=' + encodeURIComponent(q));
+          if (!res.ok) { container.style.display = 'none'; return; }
+          const list = await res.json();
+          showSuggestions(container, list.slice(0,20));
+        } catch(e){ container.style.display = 'none'; }
+      });
+
+      document.getElementById('manage-show-theater-input').addEventListener('blur', function(){
+        setTimeout(()=>{ document.getElementById('manage-show-theater-suggestions').style.display='none'; }, 200);
+      });
+
+      // when date changes, load shows if a theater is already selected
+      document.getElementById('manage-show-date').addEventListener('change', function(){
+        const theaterId = document.getElementById('manage-show-theater-id').value;
+        if (theaterId && this.value) loadShowsForFilter();
+      });
+
+      async function loadShowsForFilter(){
+        const theaterId = document.getElementById('manage-show-theater-id').value;
+        const date = document.getElementById('manage-show-date').value;
+        const tbody = document.querySelector('.shows-table tbody');
+        tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+        if (!theaterId){ tbody.innerHTML = '<tr><td colspan="6">Please select a theater.</td></tr>'; return; }
+        try {
+          const url = `/api/admin/shows?theater_id=${encodeURIComponent(theaterId)}${date?('&date='+encodeURIComponent(date)):''}`;
+          const res = await fetch(url);
+          if (!res.ok){ tbody.innerHTML = '<tr><td colspan="6">Failed to load shows.</td></tr>'; return; }
+          const list = await res.json();
+          if (!Array.isArray(list) || list.length===0){ tbody.innerHTML = '<tr><td colspan="6">No shows found for selected theater/date.</td></tr>'; return; }
+          tbody.innerHTML = '';
+          for (const s of list){
+            const tr = document.createElement('tr');
+            const movie = escapeHtml(s.movieTitle || (s.movie && s.movie.title) || '');
+            const theater = escapeHtml(s.theaterName || (s.theater && s.theater.name) || '');
+            const screen = escapeHtml(s.screen || s.screen_number || '');
+            const start = escapeHtml(s.startTime || s.start_time || s.start || '');
+            const end = escapeHtml(s.endTime || s.end_time || s.end || '');
+            const id = s.id || s.showId || '';
+            tr.innerHTML = `<td>${movie}</td><td>${theater}</td><td>${screen}</td><td>${start}</td><td>${end}</td><td><button class="admin-action-btn edit" data-id="${id}">Edit</button> <button class="admin-action-btn delete" data-id="${id}">Delete</button></td>`;
+            tbody.appendChild(tr);
+          }
+          document.querySelectorAll('.shows-table .admin-action-btn.edit').forEach(b=>b.onclick = function(){ alert('Implement edit for show '+this.dataset.id); });
+          document.querySelectorAll('.shows-table .admin-action-btn.delete').forEach(b=>b.onclick = async function(){ if(!confirm('Delete this show?')) return; const id=this.dataset.id; const res=await fetch(`/admin/shows/${id}/delete`,{method:'POST'}); if(res.ok) loadShowsForFilter(); else alert('Failed to delete'); });
+        } catch(e){ tbody.innerHTML = '<tr><td colspan="6">Error loading shows.</td></tr>'; }
+      }
+
     })();
   </script>
 </body>
