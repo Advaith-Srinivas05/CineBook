@@ -352,7 +352,7 @@
       fetchMovies();
 
       // Manage shows: theater autocomplete + filtering (uses /api/theaters/search)
-      function showSuggestions(container, items){
+      function showSuggestions(container, items, onItemClick){
         container.innerHTML = '';
         if (!items || items.length === 0){ container.style.display = 'none'; return; }
         for (const t of items){
@@ -361,7 +361,9 @@
           div.textContent = t.name || t.theaterName || t.title || '';
           div.dataset.id = t.id;
           div.dataset.name = div.textContent;
-          div.onclick = () => { selectManageTheater(div.dataset.id, div.dataset.name); };
+          div.onclick = () => {
+            selectManageTheater(div.dataset.id, div.dataset.name);
+          };
           container.appendChild(div);
         }
         container.style.display = 'block';
@@ -384,12 +386,63 @@
           const res = await fetch('/api/theaters/search?q=' + encodeURIComponent(q));
           if (!res.ok) { container.style.display = 'none'; return; }
           const list = await res.json();
-          showSuggestions(container, list.slice(0,20));
+          showSuggestions(container, list.slice(0,20), (div)=> selectManageTheater(div.dataset.id, div.dataset.name));
         } catch(e){ container.style.display = 'none'; }
       });
 
       document.getElementById('manage-show-theater-input').addEventListener('blur', function(){
         setTimeout(()=>{ document.getElementById('manage-show-theater-suggestions').style.display='none'; }, 200);
+      });
+
+      // Schedule Show: Movie autocomplete
+      document.getElementById('show-movie-input').addEventListener('input', async function(){
+        const q = this.value.trim();
+        const container = document.getElementById('show-movie-suggestions');
+        if (!q){ container.style.display = 'none'; document.getElementById('show-movie-id').value = ''; return; }
+        try {
+          const res = await fetch('/api/movies/search?q=' + encodeURIComponent(q));
+          if (!res.ok) { container.style.display = 'none'; return; }
+          const list = await res.json();
+          showSuggestions(container, list.slice(0,20), (div)=>{
+            document.getElementById('show-movie-id').value = div.dataset.id;
+            document.getElementById('show-movie-input').value = div.dataset.name;
+            container.style.display = 'none';
+          });
+        } catch(e){ container.style.display = 'none'; }
+      });
+
+      document.getElementById('show-movie-input').addEventListener('blur', function(){
+        setTimeout(()=>{ document.getElementById('show-movie-suggestions').style.display='none'; }, 200);
+      });
+
+      // Schedule Show: Theater autocomplete
+      document.getElementById('show-theater-input').addEventListener('input', async function(){
+        const q = this.value.trim();
+        const container = document.getElementById('show-theater-suggestions');
+        if (!q){ container.style.display = 'none'; document.getElementById('show-theater-id').value = ''; return; }
+        try {
+          const res = await fetch('/api/theaters/search?q=' + encodeURIComponent(q));
+          if (!res.ok) { container.style.display = 'none'; return; }
+          const list = await res.json();
+          showSuggestions(container, list.slice(0,20), (div)=>{
+            document.getElementById('show-theater-id').value = div.dataset.id;
+            document.getElementById('show-theater-input').value = div.dataset.name;
+            container.style.display = 'none';
+          });
+        } catch(e){ container.style.display = 'none'; }
+      });
+
+      document.getElementById('show-theater-input').addEventListener('blur', function(){
+        setTimeout(()=>{ document.getElementById('show-theater-suggestions').style.display='none'; }, 200);
+      });
+
+      // Schedule Show: validate before submit
+      document.getElementById('schedule-show-form').addEventListener('submit', function(evt){
+        const movieId = document.getElementById('show-movie-id').value;
+        const theaterId = document.getElementById('show-theater-id').value;
+        if (!movieId){ evt.preventDefault(); alert('Please select a movie from the suggestions.'); return false; }
+        if (!theaterId){ evt.preventDefault(); alert('Please select a theater from the suggestions.'); return false; }
+        return true;
       });
 
       // when date changes, load shows if a theater is already selected

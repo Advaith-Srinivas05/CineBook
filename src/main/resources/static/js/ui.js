@@ -436,7 +436,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const theaterInput = document.getElementById('show-theater-input');
         const screenEl = document.getElementById('show-screen');
         const startEl = document.getElementById('show-start');
-        const endEl = document.getElementById('show-end');
 
         let hasError = false;
         if (!movieIdEl || !movieIdEl.value) {
@@ -453,14 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
           hasError = true;
         }
         const startVal = startEl.value;
-        const endVal = endEl.value;
         if (!startVal) { showError(startEl, 'Start time required'); hasError = true; }
-        if (!endVal) { showError(endEl, 'End time required'); hasError = true; }
-        if (startVal && endVal) {
-          const s = new Date(startVal);
-          const e = new Date(endVal);
-          if (!(e > s)) { showError(endEl, 'End must be after start'); hasError = true; }
-        }
         if (hasError) return;
 
         const submitBtn = this.querySelector('button[type="submit"]');
