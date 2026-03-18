@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Controller
 public class MovieController {
@@ -278,6 +282,26 @@ public class MovieController {
             out.add(map);
         }
         return ResponseEntity.ok(out);
+    }
+
+    @GetMapping("/api/admin/shows")
+    public ResponseEntity<List<Map<String, Object>>> getShows(@RequestParam("theater_id") Long theaterId,
+                                                              @RequestParam("date") String date) {
+        List<Object[]> results = showRepository.findShowsByTheaterAndDate(theaterId, date);
+
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", row[0]);
+            map.put("movieTitle", row[1]);
+            map.put("theaterName", row[2]);
+            map.put("screen", row[3]);
+            map.put("startTime", row[4]);
+            map.put("endTime", row[5]);
+            response.add(map);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/admin/shows")
