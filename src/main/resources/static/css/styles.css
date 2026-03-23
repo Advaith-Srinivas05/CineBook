@@ -199,9 +199,10 @@ nav {
 
 /* Main Container */
 main {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 4rem;
+  overflow: hidden;
 }
 
 section {
