@@ -996,6 +996,34 @@ footer {
   margin-bottom: 1.5rem;
 }
 
+.admin-card .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-card .section-header:focus-visible {
+  outline: 2px solid var(--primary-red);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.admin-card .section-content.hidden {
+  display: none;
+}
+
+.admin-card .toggle-icon {
+  display: inline-block;
+  margin-left: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.admin-card .toggle-icon.rotate {
+  transform: rotate(180deg);
+}
+
 .admin-card form {
   display: grid;
   grid-template-columns: 1fr 1fr;

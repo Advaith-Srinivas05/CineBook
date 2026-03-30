@@ -48,95 +48,110 @@
       <div class="admin-row">
         <!-- Add Movie Section -->
         <div class="admin-card">
-          <h2 class="admin-card-title">Add Movie</h2>
-          <form id="add-movie-form" action="/admin/movies" method="post" enctype="multipart/form-data">
-            <div class="form-group span-2">
-              <label for="movie-title">Movie Title</label>
-              <input type="text" id="movie-title" name="title" placeholder="Enter movie title" required>
-              <div class="field-error" id="movie-title-error"></div>
-            </div>
-            <div class="form-group span-2">
-              <label for="movie-language">Language</label>
-              <input type="text" id="movie-language" name="language" placeholder="English, Hindi, etc." required>
-              <div class="field-error" id="movie-language-error"></div>
-            </div>
-            <div class="form-group">
-              <label for="movie-duration">Duration (minutes)</label>
-              <input type="number" id="movie-duration" name="duration" placeholder="120" required>
-              <div class="field-error" id="movie-duration-error"></div>
-            </div>
-            <div class="form-group">
-              <label for="movie-poster">Movie Poster (jpg, jpeg, png)</label>
-              <input type="file" id="movie-poster" name="poster" accept=".jpg,.jpeg,.png" required>
-              <div class="field-error" id="movie-poster-error"></div>
-            </div>
-            <button type="submit" class="admin-btn">Add Movie</button>
-          </form>
+          <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
+            <span>Add Movie</span>
+            <span class="toggle-icon" aria-hidden="true">^</span>
+          </div>
+          <div class="section-content">
+            <form id="add-movie-form" action="/admin/movies" method="post" enctype="multipart/form-data">
+              <div class="form-group span-2">
+                <label for="movie-title">Movie Title</label>
+                <input type="text" id="movie-title" name="title" placeholder="Enter movie title" required>
+                <div class="field-error" id="movie-title-error"></div>
+              </div>
+              <div class="form-group span-2">
+                <label for="movie-language">Language</label>
+                <input type="text" id="movie-language" name="language" placeholder="English, Hindi, etc." required>
+                <div class="field-error" id="movie-language-error"></div>
+              </div>
+              <div class="form-group">
+                <label for="movie-duration">Duration (minutes)</label>
+                <input type="number" id="movie-duration" name="duration" placeholder="120" required>
+                <div class="field-error" id="movie-duration-error"></div>
+              </div>
+              <div class="form-group">
+                <label for="movie-poster">Movie Poster (jpg, jpeg, png)</label>
+                <input type="file" id="movie-poster" name="poster" accept=".jpg,.jpeg,.png" required>
+                <div class="field-error" id="movie-poster-error"></div>
+              </div>
+              <button type="submit" class="admin-btn">Add Movie</button>
+            </form>
+          </div>
         </div>
 
         <!-- Add Theater Section -->
         <div class="admin-card">
-          <h2 class="admin-card-title">Add Theater</h2>
-          <form id="add-theater-form" action="/admin/theaters" method="post">
-            <div class="form-group span-2">
-              <label for="theater-name">Theater Name</label>
-              <input type="text" id="theater-name" name="name" placeholder="Enter theater name" required>
-              <div class="field-error" id="theater-name-error"></div>
-            </div>
-            <div class="form-group span-2">
-              <label for="theater-location">Location</label>
-              <input type="text" id="theater-location" name="location" placeholder="City / Address">
-              <div class="field-error" id="theater-location-error"></div>
-            </div>
-            <div class="form-group span-2">
-              <label for="screen-count">Screen Count</label>
-              <input type="number" id="screen-count" name="screen_count" placeholder="5" value="1" min="1">
-              <div class="field-error" id="screen-count-error"></div>
-            </div>
-            <button type="submit" class="admin-btn">Add Theater</button>
-          </form>
+          <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
+            <span>Add Theater</span>
+            <span class="toggle-icon" aria-hidden="true">^</span>
+          </div>
+          <div class="section-content">
+            <form id="add-theater-form" action="/admin/theaters" method="post">
+              <div class="form-group span-2">
+                <label for="theater-name">Theater Name</label>
+                <input type="text" id="theater-name" name="name" placeholder="Enter theater name" required>
+                <div class="field-error" id="theater-name-error"></div>
+              </div>
+              <div class="form-group span-2">
+                <label for="theater-location">Location</label>
+                <input type="text" id="theater-location" name="location" placeholder="City / Address">
+                <div class="field-error" id="theater-location-error"></div>
+              </div>
+              <div class="form-group span-2">
+                <label for="screen-count">Screen Count</label>
+                <input type="number" id="screen-count" name="screen_count" placeholder="5" value="1" min="1">
+                <div class="field-error" id="screen-count-error"></div>
+              </div>
+              <button type="submit" class="admin-btn">Add Theater</button>
+            </form>
+          </div>
         </div>
       </div>
 
       <!-- Schedule Show Section -->
       <div class="admin-card">
-        <h2 class="admin-card-title">Schedule Show</h2>
-        <form id="schedule-show-form" action="/admin/shows" method="post">
-          <div class="admin-row">
-            <div class="form-group">
-              <label for="show-movie-input">Select Movie</label>
-              <input type="text" id="show-movie-input" placeholder="Type to search movies" autocomplete="off">
-              <input type="hidden" id="show-movie-id" name="movie_id">
-              <div class="autocomplete-suggestions" id="show-movie-suggestions" style="display:none"></div>
+        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
+          <span>Schedule Show</span>
+          <span class="toggle-icon" aria-hidden="true">^</span>
+        </div>
+        <div class="section-content">
+          <form id="schedule-show-form" action="/admin/shows" method="post">
+            <div class="admin-row">
+              <div class="form-group">
+                <label for="show-movie-input">Select Movie</label>
+                <input type="text" id="show-movie-input" placeholder="Type to search movies" autocomplete="off">
+                <input type="hidden" id="show-movie-id" name="movie_id">
+                <div class="autocomplete-suggestions" id="show-movie-suggestions" style="display:none"></div>
+              </div>
+              <div class="form-group">
+                <label for="show-theater-input">Select Theatre</label>
+                <input type="text" id="show-theater-input" placeholder="Type to search theatres" autocomplete="off">
+                <input type="hidden" id="show-theater-id" name="theater_id">
+                <div class="autocomplete-suggestions" id="show-theater-suggestions" style="display:none"></div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="show-theater-input">Select Theatre</label>
-              <input type="text" id="show-theater-input" placeholder="Type to search theatres" autocomplete="off">
-              <input type="hidden" id="show-theater-id" name="theater_id">
-              <div class="autocomplete-suggestions" id="show-theater-suggestions" style="display:none"></div>
-            </div>
-          </div>
 
-          <div class="admin-row">
-            <div class="form-group">
-              <label for="show-start-date">Start Date</label>
-              <input type="date" id="show-start-date" name="start_date" required>
+            <div class="admin-row">
+              <div class="form-group">
+                <label for="show-start-date">Start Date</label>
+                <input type="date" id="show-start-date" name="start_date" required>
+              </div>
+              <div class="form-group">
+                <label for="show-end-date">End Date</label>
+                <input type="date" id="show-end-date" name="end_date" required>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="show-end-date">End Date</label>
-              <input type="date" id="show-end-date" name="end_date" required>
-            </div>
-          </div>
 
-          <div id="timeslot-rows"></div>
-          
-          <div id="schedule-button">
-            <div class="schedule-show-button">
-              <button type="button" class="admin-btn" id="add-timeslot-btn">+ Add Timeslot</button>
-              <button type="submit" class="admin-btn">Schedule Show</button>
+            <div id="timeslot-rows"></div>
+            
+            <div id="schedule-button">
+              <div class="schedule-show-button">
+                <button type="button" class="admin-btn" id="add-timeslot-btn">+ Add Timeslot</button>
+                <button type="submit" class="admin-btn">Schedule Show</button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
 
       <!-- Remove Movie Section -->
@@ -160,115 +175,125 @@
 
       <!-- Manage Movies Section -->
       <div class="admin-card">
-        <h2 class="admin-card-title">Manage Movies</h2>
-        <div class="movies-table-wrapper">
-          <table class="movies-table" id="admin-movies-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Movie Title</th>
-                <th>Duration</th>
-                <th>Language</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- rows populated by JS -->
-            </tbody>
-          </table>
+        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
+          <span>Manage Movies</span>
+          <span class="toggle-icon" aria-hidden="true">^</span>
         </div>
+        <div class="section-content">
+          <div class="movies-table-wrapper">
+            <table class="movies-table" id="admin-movies-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Movie Title</th>
+                  <th>Duration</th>
+                  <th>Language</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- rows populated by JS -->
+              </tbody>
+            </table>
+          </div>
 
-        <!-- Edit Modal -->
-        <div id="edit-movie-modal" class="modal" style="display:none">
-          <div class="modal-content">
-            <span class="close-modal" id="close-edit-modal">&times;</span>
-            <h3>Edit Movie</h3>
-            <form id="edit-movie-form" enctype="multipart/form-data">
-              <input type="hidden" id="edit-movie-id" name="id">
-              <div class="form-group">
-                <label for="edit-title">Movie Title</label>
-                <input type="text" id="edit-title" name="title" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-duration">Duration (minutes)</label>
-                <input type="number" id="edit-duration" name="duration" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-language">Language</label>
-                <input type="text" id="edit-language" name="language">
-              </div>
-              <div class="form-group">
-                <label for="edit-poster">Poster (leave empty to keep existing)</label>
-                <input type="file" id="edit-poster" name="poster" accept=".jpg,.jpeg,.png">
-              </div>
-              <div style="margin-top:12px">
-                <button type="submit" class="admin-btn">Save changes</button>
-                <button type="button" id="cancel-edit" class="admin-btn">Cancel</button>
-              </div>
-            </form>
+          <!-- Edit Modal -->
+          <div id="edit-movie-modal" class="modal" style="display:none">
+            <div class="modal-content">
+              <span class="close-modal" id="close-edit-modal">&times;</span>
+              <h3>Edit Movie</h3>
+              <form id="edit-movie-form" enctype="multipart/form-data">
+                <input type="hidden" id="edit-movie-id" name="id">
+                <div class="form-group">
+                  <label for="edit-title">Movie Title</label>
+                  <input type="text" id="edit-title" name="title" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-duration">Duration (minutes)</label>
+                  <input type="number" id="edit-duration" name="duration" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-language">Language</label>
+                  <input type="text" id="edit-language" name="language">
+                </div>
+                <div class="form-group">
+                  <label for="edit-poster">Poster (leave empty to keep existing)</label>
+                  <input type="file" id="edit-poster" name="poster" accept=".jpg,.jpeg,.png">
+                </div>
+                <div style="margin-top:12px">
+                  <button type="submit" class="admin-btn">Save changes</button>
+                  <button type="button" id="cancel-edit" class="admin-btn">Cancel</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Manage Shows Section -->
       <div class="admin-card">
-        <h2 class="admin-card-title">Manage Shows</h2>
-        <form id="manage-shows-filter" class="inline-form" onsubmit="return false;">
-          <div class="form-group">
-            <label for="manage-show-theater-input">Theater</label>
-            <input type="text" id="manage-show-theater-input" placeholder="Type to search theaters" autocomplete="off">
-            <input type="hidden" id="manage-show-theater-id" name="theater_id">
-            <input type="hidden" id="manage-show-theater-screen-count" value="">
-            <div class="autocomplete-suggestions" id="manage-show-theater-suggestions" style="display:none"></div>
-          </div>
-          <div class="form-group">
-            <label for="manage-show-movie-input">Movie</label>
-            <input type="text" id="manage-show-movie-input" placeholder="Type to search movies" autocomplete="off">
-            <input type="hidden" id="manage-show-movie-id" name="movie_id">
-            <div class="autocomplete-suggestions" id="manage-show-movie-suggestions" style="display:none"></div>
-          </div>
-        </form>
-        <div class="shows-table-wrapper">
-          <table class="shows-table">
-            <thead>
-              <tr>
-                <th>Movie</th>
-                <th>Start Time</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Screen</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>
+        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
+          <span>Manage Shows</span>
+          <span class="toggle-icon" aria-hidden="true">^</span>
         </div>
+        <div class="section-content">
+          <form id="manage-shows-filter" class="inline-form" onsubmit="return false;">
+            <div class="form-group">
+              <label for="manage-show-theater-input">Theater</label>
+              <input type="text" id="manage-show-theater-input" placeholder="Type to search theaters" autocomplete="off">
+              <input type="hidden" id="manage-show-theater-id" name="theater_id">
+              <input type="hidden" id="manage-show-theater-screen-count" value="">
+              <div class="autocomplete-suggestions" id="manage-show-theater-suggestions" style="display:none"></div>
+            </div>
+            <div class="form-group">
+              <label for="manage-show-movie-input">Movie</label>
+              <input type="text" id="manage-show-movie-input" placeholder="Type to search movies" autocomplete="off">
+              <input type="hidden" id="manage-show-movie-id" name="movie_id">
+              <div class="autocomplete-suggestions" id="manage-show-movie-suggestions" style="display:none"></div>
+            </div>
+          </form>
+          <div class="shows-table-wrapper">
+            <table class="shows-table">
+              <thead>
+                <tr>
+                  <th>Movie</th>
+                  <th>Start Time</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Screen</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
 
-        <div id="edit-show-modal" class="modal" style="display:none">
-          <div class="modal-content">
-            <span class="close-modal" id="close-edit-show-modal">&times;</span>
-            <h3>Edit Show</h3>
-            <form id="edit-show-form">
-              <input type="hidden" id="edit-show-id" name="id">
-              <div class="form-group">
-                <label for="edit-show-start-date">Start Date</label>
-                <input type="date" id="edit-show-start-date" name="start_date" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-show-end-date">End Date</label>
-                <input type="date" id="edit-show-end-date" name="end_date" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-show-screen">Screen</label>
-                <input type="number" id="edit-show-screen" name="screen" min="1" required>
-              </div>
-              <div style="margin-top:12px">
-                <button type="submit" class="admin-btn">Save changes</button>
-                <button type="button" id="cancel-edit-show" class="admin-btn">Cancel</button>
-              </div>
-            </form>
+          <div id="edit-show-modal" class="modal" style="display:none">
+            <div class="modal-content">
+              <span class="close-modal" id="close-edit-show-modal">&times;</span>
+              <h3>Edit Show</h3>
+              <form id="edit-show-form">
+                <input type="hidden" id="edit-show-id" name="id">
+                <div class="form-group">
+                  <label for="edit-show-start-date">Start Date</label>
+                  <input type="date" id="edit-show-start-date" name="start_date" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-show-end-date">End Date</label>
+                  <input type="date" id="edit-show-end-date" name="end_date" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-show-screen">Screen</label>
+                  <input type="number" id="edit-show-screen" name="screen" min="1" required>
+                </div>
+                <div style="margin-top:12px">
+                  <button type="submit" class="admin-btn">Save changes</button>
+                  <button type="button" id="cancel-edit-show" class="admin-btn">Cancel</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -648,6 +673,39 @@
         const message = await res.text();
         alert(message || 'Failed to update show');
       });
+
+      function initializeSectionToggles() {
+        const headers = document.querySelectorAll('.section-header');
+
+        headers.forEach((header) => {
+          const content = header.nextElementSibling;
+          if (!content || !content.classList.contains('section-content')) return;
+
+          const icon = header.querySelector('.toggle-icon');
+          const syncState = () => {
+            const expanded = !content.classList.contains('hidden');
+            header.setAttribute('aria-expanded', String(expanded));
+            if (icon) icon.classList.toggle('rotate', expanded);
+          };
+
+          const onToggle = () => {
+            content.classList.toggle('hidden');
+            syncState();
+          };
+
+          header.addEventListener('click', onToggle);
+          header.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onToggle();
+            }
+          });
+
+          syncState();
+        });
+      }
+
+      initializeSectionToggles();
 
       fetchMovies();
       document.querySelector('.shows-table tbody').innerHTML = '<tr><td colspan="6">Select theatre and movie to view shows.</td></tr>';
