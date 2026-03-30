@@ -40,15 +40,23 @@ CREATE TABLE theaters (
   screen_count INTEGER NOT NULL DEFAULT 1
 );
 
-CREATE TABLE shows (
+CREATE TABLE show_schedules (
   id SERIAL PRIMARY KEY,
   movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
   theater_id INTEGER NOT NULL REFERENCES theaters(id) ON DELETE CASCADE,
-  screen INTEGER NOT NULL,
-  start_time TIMESTAMPTZ NOT NULL,
-  end_time TIMESTAMPTZ NOT NULL,
-  CHECK (end_time > start_time)
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  screen INTEGER NOT NULL CHECK (screen >= 1),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (end_date >= start_date)
 );
+
+CREATE INDEX idx_show_schedules_theater_screen_date_time
+  ON show_schedules(theater_id, screen, start_date, end_date, start_time);
+
+CREATE INDEX idx_show_schedules_movie
+  ON show_schedules(movie_id);
 
 CREATE TABLE movie_ratings (
   id SERIAL PRIMARY KEY,

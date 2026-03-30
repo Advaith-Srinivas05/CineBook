@@ -1,32 +1,43 @@
--- PostgreSQL triggers to auto-calculate show end_time from movie duration
+-- Validate that schedules do not overlap on the same theater and screen
 
--- Function to set NEW.end_time before insert or update on shows
-CREATE OR REPLACE FUNCTION set_show_end_time()
+CREATE OR REPLACE FUNCTION check_schedule_overlap()
 RETURNS trigger AS $$
+DECLARE
+  v_new_duration INTEGER;
 BEGIN
-  NEW.end_time := NEW.start_time + ((SELECT COALESCE(duration_minutes,0) FROM movies WHERE id = NEW.movie_id) * interval '1 minute');
+  SELECT COALESCE(m.duration_minutes, 0)
+  INTO v_new_duration
+  FROM movies m
+  WHERE m.id = NEW.movie_id;
+
+  IF v_new_duration IS NULL THEN
+    RAISE EXCEPTION 'Invalid movie_id %', NEW.movie_id;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM show_schedules es
+    JOIN movies em ON em.id = es.movie_id
+    WHERE es.theater_id = NEW.theater_id
+      AND es.screen = NEW.screen
+      AND es.end_date >= NEW.start_date
+      AND es.start_date <= NEW.end_date
+      AND (timestamp '2000-01-01' + NEW.start_time)
+            < (timestamp '2000-01-01' + es.start_time + (COALESCE(em.duration_minutes, 0) * interval '1 minute'))
+      AND (timestamp '2000-01-01' + es.start_time)
+            < (timestamp '2000-01-01' + NEW.start_time + (v_new_duration * interval '1 minute'))
+      AND (TG_OP <> 'UPDATE' OR es.id <> NEW.id)
+  ) THEN
+    RAISE EXCEPTION 'Schedule overlaps with an existing schedule on the same theater and screen';
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_set_show_end_time
-BEFORE INSERT OR UPDATE ON shows
-FOR EACH ROW
-EXECUTE FUNCTION set_show_end_time();
+DROP TRIGGER IF EXISTS trg_check_schedule_overlap ON show_schedules;
 
--- Function to update existing shows when a movie's duration changes
-CREATE OR REPLACE FUNCTION update_shows_on_movie_duration_change()
-RETURNS trigger AS $$
-BEGIN
-  -- update end_time for all shows of this movie
-  UPDATE shows
-  SET end_time = start_time + (NEW.duration_minutes * interval '1 minute')
-  WHERE movie_id = NEW.id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_update_shows_on_movie_update
-AFTER UPDATE OF duration_minutes ON movies
+CREATE TRIGGER trg_check_schedule_overlap
+BEFORE INSERT OR UPDATE ON show_schedules
 FOR EACH ROW
-EXECUTE FUNCTION update_shows_on_movie_duration_change();
+EXECUTE FUNCTION check_schedule_overlap();

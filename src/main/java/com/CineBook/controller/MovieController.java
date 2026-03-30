@@ -8,15 +8,22 @@ import jakarta.servlet.http.HttpSession;
 import com.CineBook.repository.CarouselRepository;
 import com.CineBook.repository.MovieRepository;
 import com.CineBook.model.Movie;
+import com.CineBook.model.ShowSchedule;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.dao.DataIntegrityViolationException;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
+import jakarta.transaction.Transactional;
 
 @Controller
 public class MovieController {
@@ -30,7 +37,7 @@ public class MovieController {
     private com.CineBook.repository.TheaterRepository theaterRepository;
     
     @Autowired
-    private com.CineBook.repository.ShowRepository showRepository;
+    private com.CineBook.repository.ShowScheduleRepository showScheduleRepository;
 
     @GetMapping("/")
     public String indexString(Model model, HttpSession session) {
@@ -143,7 +150,8 @@ public class MovieController {
         }
         java.util.List<Movie> list = movieRepository.findAll();
         java.util.List<java.util.Map<String,Object>> out = new java.util.ArrayList<>();
-        java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
+        LocalDate nowDate = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
         for (Movie m : list) {
             java.util.Map<String,Object> map = new java.util.HashMap<>();
             map.put("id", m.getId());
@@ -151,27 +159,47 @@ public class MovieController {
             map.put("duration", m.getDurationMinutes());
             map.put("language", m.getLanguage());
 
-            java.util.List<com.CineBook.model.Show> shows = showRepository.findByMovieId(m.getId());
-            String status;
-            if (shows == null || shows.isEmpty()) {
-                status = "Upcoming";
-            } else {
-                boolean anyOngoing = false;
-                boolean anyFuture = false;
-                for (com.CineBook.model.Show s : shows) {
-                    if (s.getStartTime() != null && s.getEndTime() != null) {
-                        if (!s.getStartTime().isAfter(now) && s.getEndTime().isAfter(now)) {
-                            anyOngoing = true;
-                            break;
+            String status = "Upcoming";
+            try {
+                List<ShowSchedule> schedules = showScheduleRepository.findByMovieId(m.getId());
+                if (schedules != null && !schedules.isEmpty()) {
+                    boolean anyOngoing = false;
+                    boolean anyFuture = false;
+                    Integer movieDuration = m.getDurationMinutes();
+                    int duration = movieDuration == null ? 0 : movieDuration;
+                    for (ShowSchedule s : schedules) {
+                        if (s.getStartDate() == null || s.getEndDate() == null || s.getStartTime() == null) {
+                            continue;
                         }
-                        if (s.getStartTime().isAfter(now)) {
+                        if (nowDate.isBefore(s.getStartDate())) {
                             anyFuture = true;
                         }
+                        if (!nowDate.isBefore(s.getStartDate()) && !nowDate.isAfter(s.getEndDate())) {
+                            LocalDateTime start = LocalDateTime.of(nowDate, s.getStartTime());
+                            LocalDateTime end = start.plusMinutes(duration);
+                            LocalDateTime nowDateTime = LocalDateTime.of(nowDate, nowTime);
+                            if (!nowDateTime.isBefore(start) && nowDateTime.isBefore(end)) {
+                                anyOngoing = true;
+                                break;
+                            }
+                            if (nowDateTime.isBefore(start)) {
+                                anyFuture = true;
+                            }
+                            if (anyOngoing) {
+                                anyOngoing = true;
+                                break;
+                            }
+                            if (nowDate.isBefore(s.getEndDate())) {
+                                anyFuture = true;
+                            }
+                        }
                     }
+                    if (anyOngoing) status = "Ongoing";
+                    else if (anyFuture) status = "Upcoming";
+                    else status = "Archived";
                 }
-                if (anyOngoing) status = "Ongoing";
-                else if (anyFuture) status = "Upcoming";
-                else status = "Archived";
+            } catch (Exception ignored) {
+                status = "Upcoming";
             }
             map.put("status", status);
             out.add(map);
@@ -279,6 +307,7 @@ public class MovieController {
             map.put("id", t.getId());
             map.put("name", t.getName());
             map.put("location", t.getLocation());
+            map.put("screenCount", t.getScreenCount());
             out.add(map);
         }
         return ResponseEntity.ok(out);
@@ -286,29 +315,99 @@ public class MovieController {
 
     @GetMapping("/api/admin/shows")
     public ResponseEntity<List<Map<String, Object>>> getShows(@RequestParam("theater_id") Long theaterId,
-                                                              @RequestParam("date") String date) {
-        List<Object[]> results = showRepository.findShowsByTheaterAndDate(theaterId, date);
+                                                              @RequestParam("movie_id") Long movieId) {
+        List<Object[]> results = showScheduleRepository.findScheduledShowsByTheaterAndMovie(theaterId, movieId);
 
         List<Map<String, Object>> response = new ArrayList<>();
         for (Object[] row : results) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", row[0]);
             map.put("movieTitle", row[1]);
-            map.put("theaterName", row[2]);
-            map.put("screen", row[3]);
-            map.put("startTime", row[4]);
-            map.put("endTime", row[5]);
+            map.put("startTime", row[2]);
+            map.put("startDate", row[3]);
+            map.put("endDate", row[4]);
+            map.put("screen", row[5]);
             response.add(map);
         }
 
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/admin/shows")
+    @PostMapping(value = "/admin/shows/{id}/update", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @Transactional
+    public ResponseEntity<String> updateScheduledSlot(@org.springframework.web.bind.annotation.PathVariable("id") Long scheduleId,
+                                                      @RequestParam("start_date") String startDateStr,
+                                                      @RequestParam("end_date") String endDateStr,
+                                                      @RequestParam("screen") Integer screen,
+                                                      HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        java.util.Optional<ShowSchedule> scheduleOpt = showScheduleRepository.findById(scheduleId);
+        if (scheduleOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Show schedule not found");
+        }
+
+        ShowSchedule schedule = scheduleOpt.get();
+        Movie movie = schedule.getMovie();
+        com.CineBook.model.Theater theater = schedule.getTheater();
+
+        LocalDate startDate;
+        LocalDate endDate;
+        try {
+            startDate = LocalDate.parse(startDateStr);
+            endDate = LocalDate.parse(endDateStr);
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("Invalid start or end date");
+        }
+
+        if (endDate.isBefore(startDate)) {
+            return ResponseEntity.badRequest().body("End date must be on or after start date");
+        }
+
+        if (screen == null || screen < 1) {
+            return ResponseEntity.badRequest().body("Invalid screen number");
+        }
+        if (theater.getScreenCount() != null && screen > theater.getScreenCount()) {
+            return ResponseEntity.badRequest().body("Screen number exceeds theater screen count");
+        }
+
+        Integer durationMinutes = movie.getDurationMinutes();
+        if (durationMinutes == null || durationMinutes <= 0) {
+            return ResponseEntity.badRequest().body("Movie duration must be greater than zero");
+        }
+
+        boolean overlaps = showScheduleRepository.existsOverlappingSlotExcludingSlot(
+                theater.getId(),
+                startDate,
+                endDate,
+                screen,
+                schedule.getStartTime(),
+                durationMinutes,
+                schedule.getId()
+        );
+        if (overlaps) {
+            return ResponseEntity.status(409).body("Timeslot overlaps with an existing schedule on the same screen");
+        }
+
+        schedule.setScreen(screen);
+        schedule.setStartDate(startDate);
+        schedule.setEndDate(endDate);
+        showScheduleRepository.save(schedule);
+
+        return ResponseEntity.ok("OK");
+    }
+
+    @PostMapping(value = "/admin/shows", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @Transactional
     public ResponseEntity<String> scheduleShow(@RequestParam("movie_id") Long movieId,
                                                @RequestParam("theater_id") Long theaterId,
-                                               @RequestParam("screen") Integer screen,
-                                               @RequestParam("start_time") String startTimeStr,
+                                               @RequestParam("start_date") String startDateStr,
+                                               @RequestParam("end_date") String endDateStr,
+                                               @RequestParam("timeslot_time") List<String> timeslotTimes,
+                                               @RequestParam("timeslot_screen") List<Integer> timeslotScreens,
                                                HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
@@ -325,49 +424,139 @@ public class MovieController {
             Movie movie = mOpt.get();
             com.CineBook.model.Theater theater = tOpt.get();
 
-            if (screen == null || screen < 1) {
-                return ResponseEntity.badRequest().body("Invalid screen number");
-            }
-            if (theater.getScreenCount() != null && screen > theater.getScreenCount()) {
-                return ResponseEntity.badRequest().body("Screen number exceeds theater screen count");
-            }
-
-            // parse start/end times. Accept either OffsetDateTime string or local datetime (from datetime-local input)
-            java.time.OffsetDateTime start;
-            java.time.OffsetDateTime end;
+            LocalDate startDate;
+            LocalDate endDate;
             try {
-                if (startTimeStr.endsWith("Z") || startTimeStr.contains("+")) {
-                    start = java.time.OffsetDateTime.parse(startTimeStr);
-                } else {
-                    java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(startTimeStr);
-                    start = ldt.atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime();
-                }
-                // compute end time from movie duration
-                java.util.Optional<Movie> mOptForDuration = movieRepository.findById(movieId);
-                if (mOptForDuration.isEmpty()) return ResponseEntity.badRequest().body("Invalid movie or theater");
-                Movie mForDuration = mOptForDuration.get();
-                Integer dur = mForDuration.getDurationMinutes();
-                if (dur == null) dur = 0;
-                end = start.plusMinutes(dur.longValue());
+                startDate = LocalDate.parse(startDateStr);
+                endDate = LocalDate.parse(endDateStr);
             } catch (Exception ex) {
-                return ResponseEntity.badRequest().body("Invalid date/time format");
+                return ResponseEntity.badRequest().body("Invalid start or end date");
             }
 
-            if (!end.isAfter(start)) {
-                return ResponseEntity.badRequest().body("End time must be after start time");
+            if (endDate.isBefore(startDate)) {
+                return ResponseEntity.badRequest().body("End date must be on or after start date");
             }
 
-            com.CineBook.model.Show s = new com.CineBook.model.Show();
-            s.setMovie(movie);
-            s.setTheater(theater);
-            s.setScreen(screen);
-            s.setStartTime(start);
-            s.setEndTime(end);
+            if (timeslotTimes == null || timeslotScreens == null || timeslotTimes.isEmpty()) {
+                return ResponseEntity.badRequest().body("At least one timeslot is required");
+            }
 
-            showRepository.save(s);
+            if (timeslotTimes.size() != timeslotScreens.size()) {
+                return ResponseEntity.badRequest().body("Timeslot inputs are invalid");
+            }
+
+            Integer durationMinutes = movie.getDurationMinutes();
+            if (durationMinutes == null || durationMinutes <= 0) {
+                return ResponseEntity.badRequest().body("Movie duration must be greater than zero");
+            }
+
+            List<LocalTime> parsedTimes = new ArrayList<>();
+            List<Integer> parsedScreens = new ArrayList<>();
+
+            for (int i = 0; i < timeslotTimes.size(); i++) {
+                String timeStr = timeslotTimes.get(i);
+                Integer screen = timeslotScreens.get(i);
+
+                if (timeStr == null || timeStr.isBlank()) {
+                    return ResponseEntity.badRequest().body("Each timeslot must have a start time");
+                }
+                LocalTime slotStart;
+                try {
+                    slotStart = LocalTime.parse(timeStr);
+                } catch (Exception ex) {
+                    return ResponseEntity.badRequest().body("Invalid timeslot time format");
+                }
+
+                if (screen == null || screen < 1) {
+                    return ResponseEntity.badRequest().body("Invalid screen number in timeslots");
+                }
+                if (theater.getScreenCount() != null && screen > theater.getScreenCount()) {
+                    return ResponseEntity.badRequest().body("Screen number exceeds theater screen count");
+                }
+
+                parsedTimes.add(slotStart);
+                parsedScreens.add(screen);
+            }
+
+            for (int i = 0; i < parsedTimes.size(); i++) {
+                for (int j = i + 1; j < parsedTimes.size(); j++) {
+                    if (!parsedScreens.get(i).equals(parsedScreens.get(j))) {
+                        continue;
+                    }
+                    if (timesOverlap(parsedTimes.get(i), durationMinutes, parsedTimes.get(j), durationMinutes)) {
+                        return ResponseEntity.status(409).body("Timeslots overlap on the same screen");
+                    }
+                }
+            }
+
+            for (int i = 0; i < parsedTimes.size(); i++) {
+                boolean overlap = showScheduleRepository.existsOverlappingSlot(
+                        theaterId,
+                        startDate,
+                        endDate,
+                        parsedScreens.get(i),
+                        parsedTimes.get(i),
+                        durationMinutes
+                );
+                if (overlap) {
+                    return ResponseEntity.status(409).body("Timeslot overlaps with an existing schedule on the same screen");
+                }
+            }
+
+            List<ShowSchedule> schedulesToSave = new ArrayList<>();
+            for (int i = 0; i < parsedTimes.size(); i++) {
+                ShowSchedule schedule = new ShowSchedule();
+                schedule.setMovie(movie);
+                schedule.setTheater(theater);
+                schedule.setStartDate(startDate);
+                schedule.setEndDate(endDate);
+                schedule.setStartTime(parsedTimes.get(i));
+                schedule.setScreen(parsedScreens.get(i));
+                schedulesToSave.add(schedule);
+            }
+
+            showScheduleRepository.saveAll(schedulesToSave);
             return ResponseEntity.ok("OK");
+        } catch (DataIntegrityViolationException ex) {
+            return ResponseEntity.status(409).body("Timeslot overlaps with an existing schedule on the same screen");
         } catch (Exception ex) {
-            return ResponseEntity.status(500).body("Server error");
+            String message = ex.getMessage();
+            if (message == null || message.isBlank()) {
+                message = "Unexpected server error";
+            }
+            return ResponseEntity.status(500).body("Failed to schedule shows: " + message);
         }
+    }
+
+    @PostMapping("/admin/shows/{id}/delete")
+    @Transactional
+    public ResponseEntity<String> deleteScheduledSlot(@org.springframework.web.bind.annotation.PathVariable("id") Long scheduleId,
+                                                      HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        java.util.Optional<ShowSchedule> scheduleOpt = showScheduleRepository.findById(scheduleId);
+        if (scheduleOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Not found");
+        }
+
+        showScheduleRepository.delete(scheduleOpt.get());
+        return ResponseEntity.ok("OK");
+    }
+
+    private boolean timesOverlap(LocalTime firstStart,
+                                 int firstDurationMinutes,
+                                 LocalTime secondStart,
+                                 int secondDurationMinutes) {
+        LocalDate baseDate = LocalDate.of(2000, 1, 1);
+        LocalDateTime firstStartDateTime = LocalDateTime.of(baseDate, firstStart);
+        LocalDateTime firstEndDateTime = firstStartDateTime.plusMinutes(firstDurationMinutes);
+        LocalDateTime secondStartDateTime = LocalDateTime.of(baseDate, secondStart);
+        LocalDateTime secondEndDateTime = secondStartDateTime.plusMinutes(secondDurationMinutes);
+
+        return firstStartDateTime.isBefore(secondEndDateTime)
+                && secondStartDateTime.isBefore(firstEndDateTime);
     }
 }

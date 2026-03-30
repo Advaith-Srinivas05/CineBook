@@ -417,76 +417,8 @@ document.addEventListener('DOMContentLoaded', function() {
       return; // skip generic handler
     }
 
-    // Generic admin form behaviour (visual only)
-    // Special handler for schedule show form
+    // Schedule show behavior is implemented directly in admin.html.
     if (form.id === 'schedule-show-form') {
-      form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        // clear previous errors
-        clearError(document.getElementById('show-movie-input'));
-        clearError(document.getElementById('show-theater-input'));
-        clearError(document.getElementById('show-screen'));
-        clearError(document.getElementById('show-start'));
-        clearError(document.getElementById('show-end'));
-
-        const movieIdEl = document.getElementById('show-movie-id');
-        const theaterIdEl = document.getElementById('show-theater-id');
-        const movieInput = document.getElementById('show-movie-input');
-        const theaterInput = document.getElementById('show-theater-input');
-        const screenEl = document.getElementById('show-screen');
-        const startEl = document.getElementById('show-start');
-
-        let hasError = false;
-        if (!movieIdEl || !movieIdEl.value) {
-          showError(movieInput, 'Please choose a movie from suggestions');
-          hasError = true;
-        }
-        if (!theaterIdEl || !theaterIdEl.value) {
-          showError(theaterInput, 'Please choose a theater from suggestions');
-          hasError = true;
-        }
-        const screen = parseInt(screenEl.value, 10);
-        if (!screen || isNaN(screen) || screen < 1) {
-          showError(screenEl, 'Enter a valid screen number');
-          hasError = true;
-        }
-        const startVal = startEl.value;
-        if (!startVal) { showError(startEl, 'Start time required'); hasError = true; }
-        if (hasError) return;
-
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn ? submitBtn.textContent : '';
-        if (submitBtn) {
-          submitBtn.textContent = 'Scheduling...';
-          submitBtn.style.opacity = '0.8';
-        }
-
-        const formData = new FormData(this);
-        try {
-          const res = await fetch('/admin/shows', { method: 'POST', body: formData, credentials: 'same-origin' });
-          if (res.ok) {
-            if (submitBtn) submitBtn.textContent = 'Scheduled!';
-            setTimeout(() => {
-              if (submitBtn) { submitBtn.textContent = originalText; submitBtn.style.opacity = '1'; }
-              this.reset();
-              // clear hidden ids
-              if (movieIdEl) movieIdEl.value = '';
-              if (theaterIdEl) theaterIdEl.value = '';
-            }, 1200);
-          } else {
-            const msg = await res.text();
-            // try to place message near relevant field
-            if (res.status === 400 && msg) {
-              // generic handling: show under end field if date issue, else top
-              showError(endEl, msg);
-            }
-            if (submitBtn) { submitBtn.textContent = originalText; submitBtn.style.opacity = '1'; }
-          }
-        } catch (err) {
-          if (submitBtn) { submitBtn.textContent = 'Error'; setTimeout(() => { submitBtn.textContent = originalText; submitBtn.style.opacity = '1'; }, 1200); }
-        }
-      });
       return;
     }
 

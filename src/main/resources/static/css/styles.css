@@ -913,6 +913,41 @@ footer {
   margin-bottom: 1rem;
 }
 
+#timeslot-rows{
+  grid-column: 1 / -1;
+  width: 100%;
+  display: block;
+}
+
+.timeslot-row{
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+#schedule-button {
+  grid-column: 1 / -1;
+  width: 100%;
+  display: block;
+}
+
+.schedule-show-button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.schedule-show-button .admin-btn {
+  grid-column: auto;
+  width: 100%;
+}
+
 @media (max-width: 900px) {
   .admin-row {
     grid-template-columns: 1fr;

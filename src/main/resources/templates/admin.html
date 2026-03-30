@@ -102,28 +102,40 @@
       <div class="admin-card">
         <h2 class="admin-card-title">Schedule Show</h2>
         <form id="schedule-show-form" action="/admin/shows" method="post">
-          <div class="form-group">
-            <label for="show-movie-input">Movie</label>
-            <input type="text" id="show-movie-input" placeholder="Type to search movies" autocomplete="off">
-            <input type="hidden" id="show-movie-id" name="movie_id">
-            <div class="autocomplete-suggestions" id="show-movie-suggestions" style="display:none"></div>
+          <div class="admin-row">
+            <div class="form-group">
+              <label for="show-movie-input">Select Movie</label>
+              <input type="text" id="show-movie-input" placeholder="Type to search movies" autocomplete="off">
+              <input type="hidden" id="show-movie-id" name="movie_id">
+              <div class="autocomplete-suggestions" id="show-movie-suggestions" style="display:none"></div>
+            </div>
+            <div class="form-group">
+              <label for="show-theater-input">Select Theatre</label>
+              <input type="text" id="show-theater-input" placeholder="Type to search theatres" autocomplete="off">
+              <input type="hidden" id="show-theater-id" name="theater_id">
+              <div class="autocomplete-suggestions" id="show-theater-suggestions" style="display:none"></div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="show-theater-input">Theater</label>
-            <input type="text" id="show-theater-input" placeholder="Type to search theaters" autocomplete="off">
-            <input type="hidden" id="show-theater-id" name="theater_id">
-            <div class="autocomplete-suggestions" id="show-theater-suggestions" style="display:none"></div>
+
+          <div class="admin-row">
+            <div class="form-group">
+              <label for="show-start-date">Start Date</label>
+              <input type="date" id="show-start-date" name="start_date" required>
+            </div>
+            <div class="form-group">
+              <label for="show-end-date">End Date</label>
+              <input type="date" id="show-end-date" name="end_date" required>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="show-screen">Screen</label>
-            <input type="number" id="show-screen" name="screen" placeholder="1" required>
+
+          <div id="timeslot-rows"></div>
+          
+          <div id="schedule-button">
+            <div class="schedule-show-button">
+              <button type="button" class="admin-btn" id="add-timeslot-btn">+ Add Timeslot</button>
+              <button type="submit" class="admin-btn">Schedule Show</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="show-start">Start Time</label>
-            <input type="datetime-local" id="show-start" name="start_time" required>
-          </div>
-          <!-- End time is calculated automatically from movie duration -->
-          <button type="submit" class="admin-btn">Schedule Show</button>
         </form>
       </div>
 
@@ -207,11 +219,14 @@
             <label for="manage-show-theater-input">Theater</label>
             <input type="text" id="manage-show-theater-input" placeholder="Type to search theaters" autocomplete="off">
             <input type="hidden" id="manage-show-theater-id" name="theater_id">
+            <input type="hidden" id="manage-show-theater-screen-count" value="">
             <div class="autocomplete-suggestions" id="manage-show-theater-suggestions" style="display:none"></div>
           </div>
           <div class="form-group">
-            <label for="manage-show-date">Date</label>
-            <input type="date" id="manage-show-date" name="date">
+            <label for="manage-show-movie-input">Movie</label>
+            <input type="text" id="manage-show-movie-input" placeholder="Type to search movies" autocomplete="off">
+            <input type="hidden" id="manage-show-movie-id" name="movie_id">
+            <div class="autocomplete-suggestions" id="manage-show-movie-suggestions" style="display:none"></div>
           </div>
         </form>
         <div class="shows-table-wrapper">
@@ -219,16 +234,42 @@
             <thead>
               <tr>
                 <th>Movie</th>
-                <th>Theater</th>
-                <th>Screen</th>
                 <th>Start Time</th>
-                <th>End Time</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Screen</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
             </tbody>
           </table>
+        </div>
+
+        <div id="edit-show-modal" class="modal" style="display:none">
+          <div class="modal-content">
+            <span class="close-modal" id="close-edit-show-modal">&times;</span>
+            <h3>Edit Show</h3>
+            <form id="edit-show-form">
+              <input type="hidden" id="edit-show-id" name="id">
+              <div class="form-group">
+                <label for="edit-show-start-date">Start Date</label>
+                <input type="date" id="edit-show-start-date" name="start_date" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-show-end-date">End Date</label>
+                <input type="date" id="edit-show-end-date" name="end_date" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-show-screen">Screen</label>
+                <input type="number" id="edit-show-screen" name="screen" min="1" required>
+              </div>
+              <div style="margin-top:12px">
+                <button type="submit" class="admin-btn">Save changes</button>
+                <button type="button" id="cancel-edit-show" class="admin-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </section>
@@ -240,23 +281,12 @@
   </footer>
   <script>
     (function(){
-      async function fetchMovies(){
-        const res = await fetch('/api/admin/movies');
-        if (!res.ok) return;
-        const list = await res.json();
-        const tbody = document.querySelector('#admin-movies-table tbody');
-        tbody.innerHTML = '';
-        for (const m of list){
-          const tr = document.createElement('tr');
-          const status = (m.status||'').toString();
-          const statusClass = status.toLowerCase();
-          tr.innerHTML = `<td>${escapeHtml(m.id)}</td><td>${escapeHtml(m.title)}</td><td>${escapeHtml(formatDuration(m.duration))}</td><td>${escapeHtml(m.language||'')}</td><td><span class="status-badge ${statusClass}">${escapeHtml(status)}</span></td><td><button class="edit-btn" data-id="${m.id}">Edit</button> <button class="delete-btn" data-id="${m.id}">Delete</button></td>`;
-          tbody.appendChild(tr);
-        }
-        attachButtons();
+      function escapeHtml(s){
+        if (!s && s !== 0) return '';
+        return String(s).replace(/[&<>\"']/g, function(c){
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+        });
       }
-
-      function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>\"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 
       function formatDuration(minutes){
         if (minutes == null || minutes === '') return '';
@@ -269,38 +299,104 @@
         return `${m}m`;
       }
 
-      function attachButtons(){
-        document.querySelectorAll('.edit-btn').forEach(b=>b.onclick = onEdit);
-        document.querySelectorAll('.delete-btn').forEach(b=>b.onclick = onDelete);
+      function formatDateTime(v){
+        if (!v) return '';
+        try {
+          const d = new Date(String(v));
+          if (Number.isNaN(d.getTime())) {
+            const raw = String(v).trim();
+            const m = raw.match(/(\d{2}):(\d{2})/);
+            return m ? `${m[1]}:${m[2]}` : raw;
+          }
+          const pad = (n) => String(n).padStart(2, '0');
+          return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        } catch (e) {
+          const raw = String(v).trim();
+          const m = raw.match(/(\d{2}):(\d{2})/);
+          return m ? `${m[1]}:${m[2]}` : raw;
+        }
       }
 
-      async function onEdit(e){
+      function showSuggestions(container, items, labelSelector, onSelect){
+        container.innerHTML = '';
+        if (!items || items.length === 0) {
+          container.style.display = 'none';
+          return;
+        }
+        for (const item of items) {
+          const div = document.createElement('div');
+          div.className = 'autocomplete-item';
+          const label = labelSelector(item) || '';
+          div.textContent = label;
+          div.dataset.id = item.id;
+          div.dataset.label = label;
+          div.onclick = () => onSelect(item, div);
+          container.appendChild(div);
+        }
+        container.style.display = 'block';
+      }
+
+      async function fetchMovies(){
+        const tbody = document.querySelector('#admin-movies-table tbody');
+        tbody.innerHTML = '<tr><td colspan="6">Loading movies...</td></tr>';
+        try {
+          const res = await fetch('/api/admin/movies');
+          if (!res.ok) {
+            tbody.innerHTML = '<tr><td colspan="6">Failed to load movies.</td></tr>';
+            return;
+          }
+
+          const list = await res.json();
+          if (!Array.isArray(list) || list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No movies found.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          for (const m of list){
+            const tr = document.createElement('tr');
+            const status = (m.status || '').toString();
+            tr.innerHTML = `<td>${escapeHtml(m.id)}</td><td>${escapeHtml(m.title)}</td><td>${escapeHtml(formatDuration(m.duration))}</td><td>${escapeHtml(m.language || '')}</td><td><span class="status-badge ${escapeHtml(status.toLowerCase())}">${escapeHtml(status)}</span></td><td><button class="edit-btn" data-id="${m.id}">Edit</button> <button class="delete-btn" data-id="${m.id}">Delete</button></td>`;
+            tbody.appendChild(tr);
+          }
+        } catch (e) {
+          tbody.innerHTML = '<tr><td colspan="6">Error loading movies.</td></tr>';
+        }
+
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.onclick = onEditMovie);
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = onDeleteMovie);
+      }
+
+      async function onEditMovie(e){
         const id = e.target.dataset.id;
-        // fetch movie details from admin list endpoint (we already have data in table, but get fresh)
         const res = await fetch('/api/admin/movies');
-        if (!res.ok) return; const list = await res.json();
-        const m = list.find(x=>String(x.id)===String(id));
+        if (!res.ok) return alert('Failed to load movie details');
+        const list = await res.json();
+        const m = list.find(x => String(x.id) === String(id));
         if (!m) return alert('Movie not found');
         document.getElementById('edit-movie-id').value = m.id;
         document.getElementById('edit-title').value = m.title || '';
         document.getElementById('edit-duration').value = m.duration || '';
         document.getElementById('edit-language').value = m.language || '';
         document.getElementById('edit-poster').value = '';
-        showModal();
+        document.getElementById('edit-movie-modal').style.display = 'block';
       }
 
-      async function onDelete(e){
-        if (!confirm('Delete this movie? This will remove it and related shows/ratings.')) return;
+      async function onDeleteMovie(e){
+        if (!confirm('Delete this movie? This will remove related schedules and ratings.')) return;
         const id = e.target.dataset.id;
-        const res = await fetch(`/admin/movies/${id}/delete`, {method:'POST'});
-        if (res.ok){ fetchMovies(); } else { alert('Failed to delete'); }
+        const res = await fetch(`/admin/movies/${id}/delete`, { method: 'POST' });
+        if (res.ok) fetchMovies();
+        else alert('Failed to delete movie');
       }
 
-      function showModal(){ document.getElementById('edit-movie-modal').style.display='block'; }
-      function hideModal(){ document.getElementById('edit-movie-modal').style.display='none'; }
+      const editModal = document.getElementById('edit-movie-modal');
+      document.getElementById('close-edit-modal').onclick = () => { editModal.style.display = 'none'; };
+      document.getElementById('cancel-edit').onclick = () => { editModal.style.display = 'none'; };
 
-      document.getElementById('close-edit-modal').onclick = hideModal;
-      document.getElementById('cancel-edit').onclick = hideModal;
+      const editShowModal = document.getElementById('edit-show-modal');
+      document.getElementById('close-edit-show-modal').onclick = () => { editShowModal.style.display = 'none'; };
+      document.getElementById('cancel-edit-show').onclick = () => { editShowModal.style.display = 'none'; };
 
       document.getElementById('edit-movie-form').addEventListener('submit', async function(evt){
         evt.preventDefault();
@@ -311,158 +407,250 @@
         form.append('language', document.getElementById('edit-language').value);
         const file = document.getElementById('edit-poster').files[0];
         if (file) form.append('poster', file);
-        const res = await fetch(`/admin/movies/${id}/update`, {method:'POST', body: form});
-        if (res.ok){ hideModal(); fetchMovies(); } else { alert('Failed to save changes'); }
-      });
-
-      // initial load
-      fetchMovies();
-
-      // Manage shows: theater autocomplete + filtering (uses /api/theaters/search)
-      function showSuggestions(container, items, onItemClick){
-        container.innerHTML = '';
-        if (!items || items.length === 0){ container.style.display = 'none'; return; }
-        for (const t of items){
-          const div = document.createElement('div');
-          div.className = 'autocomplete-item';
-          div.textContent = t.name || t.theaterName || t.title || '';
-          div.dataset.id = t.id;
-          div.dataset.name = div.textContent;
-          div.onclick = () => {
-            selectManageTheater(div.dataset.id, div.dataset.name);
-          };
-          container.appendChild(div);
+        const res = await fetch(`/admin/movies/${id}/update`, { method: 'POST', body: form });
+        if (res.ok) {
+          editModal.style.display = 'none';
+          fetchMovies();
+        } else {
+          alert('Failed to save changes');
         }
-        container.style.display = 'block';
+      });
+
+      const timeslotRows = document.getElementById('timeslot-rows');
+      const addTimeslotBtn = document.getElementById('add-timeslot-btn');
+      function addTimeslotRow(defaultTime, defaultScreen){
+        const row = document.createElement('div');
+        row.className = 'timeslot-row';
+       row.innerHTML =
+        `<div class="admin-row">
+            <div class="form-group">
+              <label>Timeslot</label>
+              <input type="time" name="timeslot_time" value="${escapeHtml(defaultTime || '')}" required>
+            </div>
+
+            <div class="form-group">
+              <label>Select Screen for timeslot</label>
+              <input type="number" name="timeslot_screen" value="${escapeHtml(defaultScreen || '1')}" min="1" required>
+            </div>
+        </div>` +
+
+        `<div class="admin-row">
+            <div class="form-group">
+              <label style="visibility:hidden;" aria-hidden="true">Remove Timeslot</label>
+              <button type="button" class="admin-btn remove-timeslot-btn">
+                Remove
+              </button>
+            </div>
+        </div>`;
+        row.querySelector('.remove-timeslot-btn').onclick = function(){
+          row.remove();
+          if (timeslotRows.children.length === 0) addTimeslotRow('', '1');
+        };
+        timeslotRows.appendChild(row);
       }
 
-      function selectManageTheater(id, name){
-        document.getElementById('manage-show-theater-id').value = id;
-        document.getElementById('manage-show-theater-input').value = name;
-        document.getElementById('manage-show-theater-suggestions').style.display = 'none';
-        // automatically load shows when a theater is selected and a date is chosen
-        const date = document.getElementById('manage-show-date').value;
-        if (date) loadShowsForFilter();
+      addTimeslotBtn.addEventListener('click', function(){ addTimeslotRow('', '1'); });
+      addTimeslotRow('', '1');
+
+      async function bindAutocomplete(inputId, hiddenId, suggestionsId, endpoint, labelSelector, afterSelect){
+        const input = document.getElementById(inputId);
+        const hidden = document.getElementById(hiddenId);
+        const container = document.getElementById(suggestionsId);
+
+        input.addEventListener('input', async function(){
+          const q = this.value.trim();
+          hidden.value = '';
+          if (!q) {
+            container.style.display = 'none';
+            return;
+          }
+          try {
+            const res = await fetch(endpoint + encodeURIComponent(q));
+            if (!res.ok) {
+              container.style.display = 'none';
+              return;
+            }
+            const list = await res.json();
+            showSuggestions(container, list.slice(0, 20), labelSelector, (item) => {
+              hidden.value = item.id;
+              input.value = labelSelector(item);
+              container.style.display = 'none';
+              if (afterSelect) afterSelect(item);
+            });
+          } catch (e) {
+            container.style.display = 'none';
+          }
+        });
+
+        input.addEventListener('blur', function(){
+          setTimeout(() => { container.style.display = 'none'; }, 200);
+        });
       }
 
-      document.getElementById('manage-show-theater-input').addEventListener('input', async function(){
-        const q = this.value.trim();
-        const container = document.getElementById('manage-show-theater-suggestions');
-        if (!q){ container.style.display = 'none'; document.getElementById('manage-show-theater-id').value = ''; return; }
-        try {
-          const res = await fetch('/api/theaters/search?q=' + encodeURIComponent(q));
-          if (!res.ok) { container.style.display = 'none'; return; }
-          const list = await res.json();
-          showSuggestions(container, list.slice(0,20), (div)=> selectManageTheater(div.dataset.id, div.dataset.name));
-        } catch(e){ container.style.display = 'none'; }
-      });
-
-      document.getElementById('manage-show-theater-input').addEventListener('blur', function(){
-        setTimeout(()=>{ document.getElementById('manage-show-theater-suggestions').style.display='none'; }, 200);
-      });
-
-      // Schedule Show: Movie autocomplete
-      document.getElementById('show-movie-input').addEventListener('input', async function(){
-        const q = this.value.trim();
-        const container = document.getElementById('show-movie-suggestions');
-        if (!q){ container.style.display = 'none'; document.getElementById('show-movie-id').value = ''; return; }
-        try {
-          const res = await fetch('/api/movies/search?q=' + encodeURIComponent(q));
-          if (!res.ok) { container.style.display = 'none'; return; }
-          const list = await res.json();
-          showSuggestions(container, list.slice(0,20), (div)=>{
-            document.getElementById('show-movie-id').value = div.dataset.id;
-            document.getElementById('show-movie-input').value = div.dataset.name;
-            container.style.display = 'none';
+      bindAutocomplete('show-movie-input', 'show-movie-id', 'show-movie-suggestions', '/api/movies/search?q=', (x) => x.title || '');
+      bindAutocomplete('show-theater-input', 'show-theater-id', 'show-theater-suggestions', '/api/theaters/search?q=', (x) => x.name || '', (selected) => {
+        const count = Number(selected.screenCount || 0);
+        if (count > 0) {
+          document.querySelectorAll('input[name="timeslot_screen"]').forEach(inp => {
+            inp.max = String(count);
           });
-        } catch(e){ container.style.display = 'none'; }
+        }
+      });
+      bindAutocomplete('manage-show-theater-input', 'manage-show-theater-id', 'manage-show-theater-suggestions', '/api/theaters/search?q=', (x) => x.name || '', (selected) => {
+        document.getElementById('manage-show-theater-screen-count').value = selected && selected.screenCount ? String(selected.screenCount) : '';
+        maybeLoadShowsForFilter();
+      });
+      bindAutocomplete('manage-show-movie-input', 'manage-show-movie-id', 'manage-show-movie-suggestions', '/api/movies/search?q=', (x) => x.title || '', () => {
+        maybeLoadShowsForFilter();
       });
 
-      document.getElementById('show-movie-input').addEventListener('blur', function(){
-        setTimeout(()=>{ document.getElementById('show-movie-suggestions').style.display='none'; }, 200);
+      function maybeLoadShowsForFilter(){
+        const theaterId = document.getElementById('manage-show-theater-id').value;
+        const movieId = document.getElementById('manage-show-movie-id').value;
+        if (theaterId && movieId) {
+          loadShowsForFilter();
+        }
+      }
+
+      document.getElementById('manage-show-theater-input').addEventListener('input', function(){
+        if (this.value.trim()) return;
+        document.getElementById('manage-show-theater-id').value = '';
+        document.getElementById('manage-show-theater-screen-count').value = '';
+        document.querySelector('.shows-table tbody').innerHTML = '<tr><td colspan="6">Select theatre and movie to view shows.</td></tr>';
       });
 
-      // Schedule Show: Theater autocomplete
-      document.getElementById('show-theater-input').addEventListener('input', async function(){
-        const q = this.value.trim();
-        const container = document.getElementById('show-theater-suggestions');
-        if (!q){ container.style.display = 'none'; document.getElementById('show-theater-id').value = ''; return; }
-        try {
-          const res = await fetch('/api/theaters/search?q=' + encodeURIComponent(q));
-          if (!res.ok) { container.style.display = 'none'; return; }
-          const list = await res.json();
-          showSuggestions(container, list.slice(0,20), (div)=>{
-            document.getElementById('show-theater-id').value = div.dataset.id;
-            document.getElementById('show-theater-input').value = div.dataset.name;
-            container.style.display = 'none';
-          });
-        } catch(e){ container.style.display = 'none'; }
+      document.getElementById('manage-show-movie-input').addEventListener('input', function(){
+        if (this.value.trim()) return;
+        document.getElementById('manage-show-movie-id').value = '';
+        document.querySelector('.shows-table tbody').innerHTML = '<tr><td colspan="6">Select theatre and movie to view shows.</td></tr>';
       });
 
-      document.getElementById('show-theater-input').addEventListener('blur', function(){
-        setTimeout(()=>{ document.getElementById('show-theater-suggestions').style.display='none'; }, 200);
-      });
+      document.getElementById('schedule-show-form').addEventListener('submit', async function(evt){
+        evt.preventDefault();
 
-      // Schedule Show: validate before submit
-      document.getElementById('schedule-show-form').addEventListener('submit', function(evt){
         const movieId = document.getElementById('show-movie-id').value;
         const theaterId = document.getElementById('show-theater-id').value;
-        if (!movieId){ evt.preventDefault(); alert('Please select a movie from the suggestions.'); return false; }
-        if (!theaterId){ evt.preventDefault(); alert('Please select a theater from the suggestions.'); return false; }
-        return true;
-      });
+        const startDate = document.getElementById('show-start-date').value;
+        const endDate = document.getElementById('show-end-date').value;
+        if (!movieId) return alert('Please select a movie from suggestions.');
+        if (!theaterId) return alert('Please select a theatre from suggestions.');
+        if (!startDate || !endDate) return alert('Please choose both start and end dates.');
 
-      // when date changes, load shows if a theater is already selected
-      document.getElementById('manage-show-date').addEventListener('change', function(){
-        const theaterId = document.getElementById('manage-show-theater-id').value;
-        if (theaterId && this.value) loadShowsForFilter();
+        const rows = Array.from(document.querySelectorAll('#timeslot-rows .timeslot-row'));
+        if (rows.length === 0) return alert('Add at least one timeslot.');
+
+        for (const row of rows) {
+          const timeEl = row.querySelector('input[name="timeslot_time"]');
+          const screenEl = row.querySelector('input[name="timeslot_screen"]');
+          if (!timeEl.value) return alert('Each timeslot needs a start time.');
+          const screen = Number(screenEl.value);
+          if (!screen || screen < 1) return alert('Each timeslot needs a valid screen.');
+        }
+
+        const encodedBody = new URLSearchParams(new FormData(this));
+        const res = await fetch('/admin/shows', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: encodedBody
+        });
+        if (res.ok) {
+          alert('Schedule saved successfully.');
+          this.reset();
+          timeslotRows.innerHTML = '';
+          addTimeslotRow('', '1');
+          const selectedTheater = document.getElementById('manage-show-theater-id').value;
+          const selectedMovie = document.getElementById('manage-show-movie-id').value;
+          if (selectedTheater === theaterId && selectedMovie === movieId) loadShowsForFilter();
+          return;
+        }
+
+        const message = await res.text();
+        alert(message || 'Failed to schedule shows.');
       });
 
       async function loadShowsForFilter(){
         const theaterId = document.getElementById('manage-show-theater-id').value;
-        const date = document.getElementById('manage-show-date').value;
+        const movieId = document.getElementById('manage-show-movie-id').value;
         const tbody = document.querySelector('.shows-table tbody');
+        if (!theaterId || !movieId) {
+          tbody.innerHTML = '<tr><td colspan="6">Select theatre and movie to view shows.</td></tr>';
+          return;
+        }
+
         tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
-        if (!theaterId){ tbody.innerHTML = '<tr><td colspan="6">Please select a theater.</td></tr>'; return; }
         try {
-          const url = `/api/admin/shows?theater_id=${encodeURIComponent(theaterId)}${date?('&date='+encodeURIComponent(date)):''}`;
+          const url = `/api/admin/shows?theater_id=${encodeURIComponent(theaterId)}&movie_id=${encodeURIComponent(movieId)}`;
           const res = await fetch(url);
-          if (!res.ok){ tbody.innerHTML = '<tr><td colspan="6">Failed to load shows.</td></tr>'; return; }
+          if (!res.ok) {
+            tbody.innerHTML = '<tr><td colspan="6">Failed to load shows.</td></tr>';
+            return;
+          }
           const list = await res.json();
-          if (!Array.isArray(list) || list.length===0){ tbody.innerHTML = '<tr><td colspan="6">No shows found for selected theater/date.</td></tr>'; return; }
-          tbody.innerHTML = '';
-          function formatDateTime(v){
-            if (!v) return '';
-            try {
-              const d = new Date(String(v));
-              if (Number.isNaN(d.getTime())) return String(v);
-              const pad = (n) => String(n).padStart(2, '0');
-              const dd = pad(d.getDate());
-              const mm = pad(d.getMonth() + 1);
-              const yy = pad(d.getFullYear() % 100);
-              const hh = pad(d.getHours());
-              const min = pad(d.getMinutes());
-              return `${dd}/${mm}/${yy} ${hh}:${min}`;
-            } catch(e){ return String(v); }
+          if (!Array.isArray(list) || list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No shows found for selected theatre/movie.</td></tr>';
+            return;
           }
 
-          for (const s of list){
+          tbody.innerHTML = '';
+          for (const s of list) {
             const tr = document.createElement('tr');
-            const movie = escapeHtml(s.movieTitle || (s.movie && s.movie.title) || '');
-            const theater = escapeHtml(s.theaterName || (s.theater && s.theater.name) || '');
-            const screen = escapeHtml(s.screen || s.screen_number || '');
-            const rawStart = s.startTime || s.start_time || s.start || '';
-            const rawEnd = s.endTime || s.end_time || s.end || '';
-            const start = escapeHtml(formatDateTime(rawStart));
-            const end = escapeHtml(formatDateTime(rawEnd));
-            const id = s.id || s.showId || '';
-            tr.innerHTML = `<td>${movie}</td><td>${theater}</td><td>${screen}</td><td>${start}</td><td>${end}</td><td><button class="admin-action-btn edit" data-id="${id}">Edit</button> <button class="admin-action-btn delete" data-id="${id}">Delete</button></td>`;
+            tr.innerHTML = `<td>${escapeHtml(s.movieTitle || '')}</td><td>${escapeHtml(formatDateTime(s.startTime))}</td><td>${escapeHtml(s.startDate || '')}</td><td>${escapeHtml(s.endDate || '')}</td><td>${escapeHtml(s.screen || '')}</td><td><button class="admin-action-btn edit" data-id="${escapeHtml(s.id || '')}" data-start-date="${escapeHtml(s.startDate || '')}" data-end-date="${escapeHtml(s.endDate || '')}" data-screen="${escapeHtml(s.screen || '')}">Edit</button> <button class="admin-action-btn delete" data-id="${escapeHtml(s.id || '')}">Delete</button></td>`;
             tbody.appendChild(tr);
           }
-          document.querySelectorAll('.shows-table .admin-action-btn.edit').forEach(b=>b.onclick = function(){ alert('Implement edit for show '+this.dataset.id); });
-          document.querySelectorAll('.shows-table .admin-action-btn.delete').forEach(b=>b.onclick = async function(){ if(!confirm('Delete this show?')) return; const id=this.dataset.id; const res=await fetch(`/admin/shows/${id}/delete`,{method:'POST'}); if(res.ok) loadShowsForFilter(); else alert('Failed to delete'); });
-        } catch(e){ tbody.innerHTML = '<tr><td colspan="6">Error loading shows.</td></tr>'; }
+
+          document.querySelectorAll('.shows-table .admin-action-btn.edit').forEach(btn => {
+            btn.onclick = function(){
+              document.getElementById('edit-show-id').value = this.dataset.id || '';
+              document.getElementById('edit-show-start-date').value = this.dataset.startDate || '';
+              document.getElementById('edit-show-end-date').value = this.dataset.endDate || '';
+              document.getElementById('edit-show-screen').value = this.dataset.screen || '1';
+              const screenCount = Number(document.getElementById('manage-show-theater-screen-count').value || 0);
+              const screenInput = document.getElementById('edit-show-screen');
+              if (screenCount > 0) {
+                screenInput.max = String(screenCount);
+              } else {
+                screenInput.removeAttribute('max');
+              }
+              editShowModal.style.display = 'block';
+            };
+          });
+
+          document.querySelectorAll('.shows-table .admin-action-btn.delete').forEach(btn => {
+            btn.onclick = async function(){
+              if (!confirm('Delete this scheduled slot?')) return;
+              const id = this.dataset.id;
+              const res = await fetch(`/admin/shows/${id}/delete`, { method: 'POST' });
+              if (res.ok) loadShowsForFilter();
+              else alert('Failed to delete slot');
+            };
+          });
+        } catch (e) {
+          tbody.innerHTML = '<tr><td colspan="6">Error loading shows.</td></tr>';
+        }
       }
+
+      document.getElementById('edit-show-form').addEventListener('submit', async function(evt){
+        evt.preventDefault();
+        const id = document.getElementById('edit-show-id').value;
+        const formBody = new URLSearchParams(new FormData(this));
+        const res = await fetch(`/admin/shows/${id}/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: formBody
+        });
+
+        if (res.ok) {
+          editShowModal.style.display = 'none';
+          loadShowsForFilter();
+          return;
+        }
+
+        const message = await res.text();
+        alert(message || 'Failed to update show');
+      });
+
+      fetchMovies();
+      document.querySelector('.shows-table tbody').innerHTML = '<tr><td colspan="6">Select theatre and movie to view shows.</td></tr>';
 
     })();
   </script>
