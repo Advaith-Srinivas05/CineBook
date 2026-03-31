@@ -36,6 +36,7 @@ CREATE TABLE movies (
 CREATE TABLE theaters (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
+  city TEXT NOT NULL,
   location TEXT,
   screen_count INTEGER NOT NULL DEFAULT 1
 );

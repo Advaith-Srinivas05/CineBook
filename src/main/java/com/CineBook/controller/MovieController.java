@@ -40,19 +40,61 @@ public class MovieController {
     private com.CineBook.repository.ShowScheduleRepository showScheduleRepository;
 
     @GetMapping("/")
-    public String indexString(Model model, HttpSession session) {
+    public String indexString(@RequestParam(value = "city", required = false) String city,
+                              Model model,
+                              HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) {
             return "redirect:/admin";
         }
         try {
             model.addAttribute("carouselImages", repository.findAllProjectedBy());
+
+            java.util.List<String> cities = theaterRepository.findDistinctCities();
+            model.addAttribute("cities", cities);
+
+            String selectedCity = (city == null || city.isBlank()) ? null : city.trim();
+            if ((selectedCity == null || selectedCity.isBlank()) && !cities.isEmpty()) {
+                selectedCity = cities.get(0);
+            }
+            if (selectedCity != null) {
+                for (String knownCity : cities) {
+                    if (knownCity.equalsIgnoreCase(selectedCity)) {
+                        selectedCity = knownCity;
+                        break;
+                    }
+                }
+            }
+
+            model.addAttribute("selectedCity", selectedCity);
+            if (selectedCity == null || selectedCity.isBlank()) {
+                model.addAttribute("movies", java.util.Collections.emptyList());
+            } else {
+                model.addAttribute("movies", movieRepository.findDistinctMoviesByCity(selectedCity));
+            }
         } catch (org.springframework.dao.DataAccessException ex) {
             // ex.printStackTrace();
             model.addAttribute("carouselImages", java.util.Collections.emptyList());
+            model.addAttribute("cities", java.util.Collections.emptyList());
+            model.addAttribute("selectedCity", null);
+            model.addAttribute("movies", java.util.Collections.emptyList());
         }
         return "index";
     }
+
+    @GetMapping("/movie/poster/{id}")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<byte[]> getMoviePoster(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        java.util.Optional<Movie> movieOpt = movieRepository.findById(id);
+        if (movieOpt.isEmpty() || movieOpt.get().getPoster() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(movieOpt.get().getPoster());
+    }
+
     @GetMapping("/movie")
     public String movie(HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
@@ -259,6 +301,7 @@ public class MovieController {
 
     @PostMapping("/admin/theaters")
     public ResponseEntity<String> addTheater(@RequestParam("name") String name,
+                                             @RequestParam("city") String city,
                                              @RequestParam(value = "location", required = false) String location,
                                              @RequestParam(value = "screen_count", required = false) Integer screenCount,
                                              HttpSession session) {
@@ -268,12 +311,24 @@ public class MovieController {
         }
 
         try {
+            name = name == null ? "" : name.trim();
+            city = city == null ? "" : city.trim();
+            location = location == null ? null : location.trim();
+
+            if (name.isEmpty()) {
+                return ResponseEntity.badRequest().body("Theater name is required");
+            }
+            if (city.isEmpty()) {
+                return ResponseEntity.badRequest().body("City is required");
+            }
+
             // prevent duplicate theater names
             if (theaterRepository.findByName(name).isPresent()) {
                 return ResponseEntity.status(409).body("Theater with this name already exists");
             }
             com.CineBook.model.Theater t = new com.CineBook.model.Theater();
             t.setName(name);
+            t.setCity(city);
             t.setLocation(location);
             t.setScreenCount(screenCount == null ? 1 : screenCount);
             theaterRepository.save(t);
@@ -300,12 +355,13 @@ public class MovieController {
     @GetMapping("/api/theaters/search")
     public ResponseEntity<java.util.List<java.util.Map<String,Object>>> searchTheaters(@RequestParam(value = "q", required = false) String q) {
         if (q == null) q = "";
-        java.util.List<com.CineBook.model.Theater> list = theaterRepository.findTop10ByNameContainingIgnoreCaseOrLocationContainingIgnoreCase(q, q);
+        java.util.List<com.CineBook.model.Theater> list = theaterRepository.findTop10ByNameContainingIgnoreCaseOrCityContainingIgnoreCaseOrLocationContainingIgnoreCase(q, q, q);
         java.util.List<java.util.Map<String,Object>> out = new java.util.ArrayList<>();
         for (com.CineBook.model.Theater t : list) {
             java.util.Map<String,Object> map = new java.util.HashMap<>();
             map.put("id", t.getId());
             map.put("name", t.getName());
+            map.put("city", t.getCity());
             map.put("location", t.getLocation());
             map.put("screenCount", t.getScreenCount());
             out.add(map);

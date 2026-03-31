@@ -18,6 +18,9 @@ public class Theater {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String city;
+
     private String location;
 
     @Column(name = "screen_count", nullable = false)
@@ -28,6 +31,9 @@ public class Theater {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }

@@ -94,15 +94,20 @@
                 <input type="text" id="theater-name" name="name" placeholder="Enter theater name" required>
                 <div class="field-error" id="theater-name-error"></div>
               </div>
-              <div class="form-group span-2">
-                <label for="theater-location">Location</label>
-                <input type="text" id="theater-location" name="location" placeholder="City / Address">
-                <div class="field-error" id="theater-location-error"></div>
+              <div class="form-group">
+                <label for="theater-city">City</label>
+                <input type="text" id="theater-city" name="city" placeholder="Enter city" required>
+                <div class="field-error" id="theater-city-error"></div>
               </div>
-              <div class="form-group span-2">
+              <div class="form-group">
                 <label for="screen-count">Screen Count</label>
                 <input type="number" id="screen-count" name="screen_count" placeholder="5" value="1" min="1">
                 <div class="field-error" id="screen-count-error"></div>
+              </div>
+              <div class="form-group span-2">
+                <label for="theater-location">Location</label>
+                <input type="text" id="theater-location" name="location" placeholder="Area / Address" required>
+                <div class="field-error" id="theater-location-error"></div>
               </div>
               <button type="submit" class="admin-btn">Add Theater</button>
             </form>

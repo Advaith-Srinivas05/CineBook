@@ -568,20 +568,27 @@ function clearError(inputEl) {
         e.preventDefault();
 
         clearError(document.getElementById('theater-name'));
+        clearError(document.getElementById('theater-city'));
         clearError(document.getElementById('theater-location'));
         clearError(document.getElementById('screen-count'));
 
         let hasError = false;
         const nameEl = document.getElementById('theater-name');
+        const cityEl = document.getElementById('theater-city');
         const locationEl = document.getElementById('theater-location');
         const screenEl = document.getElementById('screen-count');
 
         const name = nameEl.value && nameEl.value.trim();
+        const city = cityEl.value && cityEl.value.trim();
         const location = locationEl.value && locationEl.value.trim();
         const screenCount = parseInt(screenEl.value, 10);
 
         if (!name) {
           showError(nameEl, 'Theater name is required');
+          hasError = true;
+        }
+        if (!city) {
+          showError(cityEl, 'City is required');
           hasError = true;
         }
         if (!location) {

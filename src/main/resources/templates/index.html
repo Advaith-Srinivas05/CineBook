@@ -17,9 +17,18 @@
         <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
       </div>
       <div class="header-right">
-        <div class="location-selector">
-          📍 Select Location
-        </div>
+        <form class="location-selector" th:action="@{/}" action="/" method="get">
+          <label for="city-select">📍</label>
+          <select id="city-select" name="city" onchange="this.form.submit()">
+            <option th:if="${#lists.isEmpty(cities)}" value="">No locations</option>
+            <option th:each="cityName : ${cities}"
+                    th:value="${cityName}"
+                    th:text="${cityName}"
+                    th:selected="${cityName == selectedCity}">
+              Select Location
+            </option>
+          </select>
+        </form>
         <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" style="display:inline">
           <button type="submit" class="signin-btn">Logout</button>
         </form>
@@ -59,67 +68,19 @@
 
     <!-- Recommended Movies -->
     <section>
-      <h1 class="section-title">Recommended Movies</h1>
-      <div id="movies-grid">
-        <!-- Movie 1 -->
-        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="1">
-          <div class="movie-poster">Movie Poster</div>
+      <h1 class="section-title" th:text="${selectedCity != null ? 'Recommended Movies - ' + selectedCity : 'Recommended Movies'}">Recommended Movies</h1>
+      <div id="movies-grid" th:if="${!#lists.isEmpty(movies)}">
+        <a th:each="movie : ${movies}" th:href="@{/movie(movieId=${movie.id})}" class="movie-card" th:attr="data-movie-id=${movie.id}">
+          <img class="movie-poster" th:src="@{/movie/poster/{id}(id=${movie.id})}" th:alt="${movie.title + ' poster'}" />
           <div class="movie-info">
-            <h2 class="movie-title">Action Adventure Placeholder</h2>
-            <p class="movie-genre">Action, Adventure, Drama</p>
-            <p class="movie-rating">⭐ 8.5/10</p>
+            <h2 class="movie-title" th:text="${movie.title}">Movie Title</h2>
+            <p class="movie-genre" th:text="${movie.language != null ? movie.language : 'Language not available'}">Language</p>
+            <p class="movie-rating">⭐ Rating coming soon</p>
           </div>
         </a>
-
-        <!-- Movie 2 -->
-        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="2">
-          <div class="movie-poster">Movie Poster</div>
-          <div class="movie-info">
-            <h2 class="movie-title">Comedy Romance Placeholder</h2>
-            <p class="movie-genre">Comedy, Romance</p>
-            <p class="movie-rating">⭐ 7.8/10</p>
-          </div>
-        </a>
-
-        <!-- Movie 3 -->
-        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="3">
-          <div class="movie-poster">Movie Poster</div>
-          <div class="movie-info">
-            <h2 class="movie-title">Thriller Mystery Placeholder</h2>
-            <p class="movie-genre">Thriller, Mystery</p>
-            <p class="movie-rating">⭐ 8.2/10</p>
-          </div>
-        </a>
-
-        <!-- Movie 4 -->
-        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="4">
-          <div class="movie-poster">Movie Poster</div>
-          <div class="movie-info">
-            <h2 class="movie-title">Sci-Fi Fantasy Placeholder</h2>
-            <p class="movie-genre">Sci-Fi, Fantasy</p>
-            <p class="movie-rating">⭐ 9.1/10</p>
-          </div>
-        </a>
-
-        <!-- Movie 5 -->
-        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="5">
-          <div class="movie-poster">Movie Poster</div>
-          <div class="movie-info">
-            <h2 class="movie-title">Drama History Placeholder</h2>
-            <p class="movie-genre">Drama, History</p>
-            <p class="movie-rating">⭐ 8.7/10</p>
-          </div>
-        </a>
-
-        <!-- Movie 6 -->
-        <a href="/movie" th:href="@{/movie}" class="movie-card" data-movie-id="6">
-          <div class="movie-poster">Movie Poster</div>
-          <div class="movie-info">
-            <h2 class="movie-title">Horror Suspense Placeholder</h2>
-            <p class="movie-genre">Horror, Suspense</p>
-            <p class="movie-rating">⭐ 7.4/10</p>
-          </div>
-        </a>
+      </div>
+      <div th:if="${#lists.isEmpty(movies)}">
+        <p>No movies available for the selected location.</p>
       </div>
     </section>
   </main>
