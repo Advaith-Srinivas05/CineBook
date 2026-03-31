@@ -64,7 +64,10 @@ CREATE INDEX idx_show_schedules_movie
 CREATE TABLE movie_ratings (
   id SERIAL PRIMARY KEY,
   movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
-  user_id INTEGER NOT NULL,
-  rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 10),
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE UNIQUE INDEX uq_movie_ratings_movie_user ON movie_ratings(movie_id, user_id);
+CREATE INDEX idx_movie_ratings_movie ON movie_ratings(movie_id);

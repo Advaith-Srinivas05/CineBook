@@ -8,24 +8,187 @@
 }
 
 .movie-details {
-  display: block;
+  width: 100%;
 }
 
-.movie-main-row {
+.content-row {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
-  gap: 2rem;
+  gap: 24px;
+  flex-wrap: nowrap;
 }
 
-.movie-content-column {
+.left-section {
+  flex: 0 0 220px;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.right-section {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+.top-row {
+  display: flex;
+  align-items: flex-end;
   gap: 1rem;
 }
 
+.movie-poster {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  border-radius: 8px;
+}
+
+.poster-section,
+.description-section {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease;
+}
+
+.poster-section {
+  max-height: 360px;
+  overflow: hidden;
+}
+
+.description-section {
+  margin-top: 0.5rem;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.rating-section {
+  margin-top: 0;
+  transition: margin-top 0.25s ease;
+}
+
+.movie-details.collapsed .poster-section,
+.movie-details.collapsed .description-section {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+  pointer-events: none;
+}
+
+.movie-details-toggle {
+  margin-left: auto;
+  border: 1px solid var(--border-color);
+  background: var(--light-bg);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.toggle-chevron {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.movie-details.collapsed .toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.movie-details.collapsed .content-row {
+  align-items: center;
+}
+
+.movie-details.collapsed .left-section {
+  flex-basis: auto;
+  width: auto;
+  height: auto;
+  gap: 0;
+}
+
+#movie-info:has(.movie-details.collapsed) {
+  padding: 1rem 2rem 1rem 2rem;
+}
+
+.movie-rating-widget {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0.75rem;
+  max-width: 220px;
+}
+
+[data-theme="dark"] .movie-rating-widget {
+  background: #1f1f1f;
+  border-color: #3a3a3a;
+}
+
+.rating-heading {
+  font-size: 0.88rem;
+  margin-bottom: 0.4rem;
+  color: #f4f4f4;
+}
+
+[data-theme="dark"] .rating-heading {
+  color: #f2f2f2;
+}
+
+.star-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+}
+
+.rating-star {
+  border: 0;
+  background: transparent;
+  color: transparent;
+  -webkit-text-stroke: 1.2px #f4f4f4;
+  font-size: 1.45rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+[data-theme="dark"] .rating-star {
+  color: transparent !important;
+  -webkit-text-stroke: 1.2px #d1d1d1;
+}
+
+.rating-star:hover {
+  transform: scale(1.08);
+}
+
+.rating-star.filled {
+  color: #ffcc4d;
+  -webkit-text-stroke: 1.2px #ffcc4d;
+}
+
+[data-theme="dark"] .rating-star.filled {
+  color: #ffcc4d !important;
+  -webkit-text-stroke: 1.2px #ffcc4d;
+}
+
+.rating-meta {
+  font-size: 0.78rem;
+  color: #ececec;
+  margin: 0.15rem 0;
+}
+
+[data-theme="dark"] .rating-meta {
+  color: #d8d8d8;
+}
+
 .movie-meta-grid {
+  flex: 1;
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -49,9 +212,18 @@
   margin-bottom: 0.5rem;
 }
 
+[data-theme="dark"] .detail-label {
+  color: #4b5563;
+}
+
 .detail-value {
   font-size: 1.2rem;
   font-weight: 700;
+}
+
+.detail-desc {
+  font-size: 1.2rem;
+  font-weight: 550;
 }
 
 .description-item {
@@ -195,17 +367,32 @@
 }
 
 @media (max-width: 768px) {
-  .movie-details {
-    display: block;
+  .top-row {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
-  .movie-main-row {
-    flex-direction: column;
+  .movie-details-toggle {
+    margin-left: auto;
+  }
+
+  .content-row {
     gap: 1rem;
   }
 
-  .movie-content-column {
-    width: 100%;
+  .left-section {
+    flex-basis: 200px;
+    width: 200px;
+  }
+
+  .rating-section {
+    margin-top: 0;
+  }
+
+  .movie-rating-widget {
+    max-width: 220px;
+    width: auto;
   }
 
   .movie-meta-grid {

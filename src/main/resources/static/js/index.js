@@ -1,5 +1,41 @@
 // Index page specific behavior: movie search redirect and carousel animation.
 document.addEventListener('DOMContentLoaded', function() {
+  (function initMovieCardRatings() {
+    const movieCards = Array.from(document.querySelectorAll('.movie-card[data-movie-id]'));
+    if (movieCards.length === 0) {
+      return;
+    }
+
+    movieCards.forEach(async function(card) {
+      const movieId = card.getAttribute('data-movie-id');
+      const ratingEl = card.querySelector('[data-rating-label="true"]');
+      if (!movieId || !ratingEl) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/ratings/' + encodeURIComponent(movieId));
+        if (!response.ok) {
+          ratingEl.textContent = '⭐ New';
+          return;
+        }
+
+        const payload = await response.json();
+        const totalRatings = Number(payload.totalRatings || 0);
+        const averageRating = Number(payload.averageRating || 0);
+
+        if (totalRatings <= 0) {
+          ratingEl.textContent = '⭐ New';
+          return;
+        }
+
+        ratingEl.textContent = '⭐ ' + averageRating.toFixed(1) + ' (' + totalRatings + ')';
+      } catch (_err) {
+        ratingEl.textContent = '⭐ New';
+      }
+    });
+  }());
+
   const homeSearchInput = document.getElementById('home-movie-search');
   const homeSuggestions = document.getElementById('home-movie-suggestions');
 

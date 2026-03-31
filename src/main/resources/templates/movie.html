@@ -55,38 +55,76 @@
   <main>
     <section id="movie-info" th:attr="data-movie-id=${movie.id}">
       <div class="movie-details">
-        <div class="movie-main-row">
-          <img class="movie-poster"
-               th:src="@{/movie/poster/{id}(id=${movie.id})}"
-               th:alt="${movie.title + ' poster'}"
-               style="max-width: 220px; border-radius: 8px; margin-right: 16px;">
-          <div class="movie-content-column">
-            <div class="movie-meta-grid">
-              <div class="detail-item">
-                <span class="detail-label">Movie</span>
-                <span class="detail-value" th:text="${movie.title + ' (' + (movie.certification != null && !movie.certification.isBlank() ? movie.certification : 'N/A') + ')'}">Movie Title (N/A)</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Runtime</span>
-                <span class="detail-value"
-                      th:text="${movie.durationMinutes != null ? (movie.durationMinutes / 60) + 'h ' + (movie.durationMinutes % 60) + 'm' : 'Runtime unavailable'}">
-                  Runtime
-                </span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Rating</span>
-                <span class="detail-value" th:text="${movie.rating != null ? movie.rating : 'N/A'}">N/A</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Language</span>
-                <span class="detail-value" th:text="${movie.language != null ? movie.language : 'N/A'}">Language</span>
-              </div>
+        <div id="movie-details-content" class="content-row">
+          <div class="left-section">
+            <div class="poster-section">
+              <img class="movie-poster"
+                   th:src="@{/movie/poster/{id}(id=${movie.id})}"
+                   th:alt="${movie.title + ' poster'}"
+                   style="max-width: 220px; border-radius: 8px;">
             </div>
 
-            <div class="detail-item description-item">
-              <span class="detail-label">Description</span>
-              <br>
-              <span class="detail-value" th:text="${movie.description != null && !movie.description.isBlank() ? movie.description : 'Description unavailable'}">Description unavailable</span>
+            <div class="rating-section">
+              <div id="movie-rating-widget"
+                   class="movie-rating-widget"
+                   th:attr="data-movie-id=${movie.id},data-is-logged-in=${session.username != null}">
+                <p class="rating-heading">Rate This Movie</p>
+                <div class="star-row" aria-label="Rate this movie out of five stars">
+                  <button type="button" class="rating-star" data-rating="1" aria-label="1 star">&#9733;</button>
+                  <button type="button" class="rating-star" data-rating="2" aria-label="2 stars">&#9733;</button>
+                  <button type="button" class="rating-star" data-rating="3" aria-label="3 stars">&#9733;</button>
+                  <button type="button" class="rating-star" data-rating="4" aria-label="4 stars">&#9733;</button>
+                  <button type="button" class="rating-star" data-rating="5" aria-label="5 stars">&#9733;</button>
+                </div>
+                <p id="movie-user-rating" class="rating-meta">Your rating: Not rated</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="right-section">
+            <div class="top-row">
+              <div class="movie-meta-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Movie</span>
+                  <span class="detail-value" th:text="${movie.title + ' (' + (movie.certification != null && !movie.certification.isBlank() ? movie.certification : 'N/A') + ')'}">Movie Title (N/A)</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Runtime</span>
+                  <span class="detail-value"
+                        th:text="${movie.durationMinutes != null ? (movie.durationMinutes / 60) + 'h ' + (movie.durationMinutes % 60) + 'm' : 'Runtime unavailable'}">
+                    Runtime
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Rating</span>
+                  <span id="movie-detail-rating"
+                        class="detail-value"
+                        th:text="${movie.rating != null ? movie.rating : 'N/A'}">
+                    N/A
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Language</span>
+                  <span class="detail-value" th:text="${movie.language != null ? movie.language : 'N/A'}">Language</span>
+                </div>
+              </div>
+              <button id="movie-details-toggle"
+                      type="button"
+                      class="movie-details-toggle"
+                      aria-expanded="true"
+                      aria-controls="movie-details-content"
+                      aria-label="Collapse details">
+                <span class="toggle-text">Collapse</span>
+                <span class="toggle-chevron" aria-hidden="true">⌃</span>
+              </button>
+            </div>
+
+            <div class="description-section">
+              <div class="detail-item description-item">
+                <span class="detail-label">Description</span>
+                <br>
+                <span class="detail-desc" th:text="${movie.description != null && !movie.description.isBlank() ? movie.description : 'Description unavailable'}">Description unavailable</span>
+              </div>
             </div>
           </div>
         </div>

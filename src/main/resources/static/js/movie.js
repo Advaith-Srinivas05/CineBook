@@ -1,4 +1,30 @@
 document.addEventListener("DOMContentLoaded", function() {
+  (function initMovieDetailsToggle() {
+    const details = document.querySelector(".movie-details");
+    const toggleBtn = document.getElementById("movie-details-toggle");
+    const toggleText = toggleBtn ? toggleBtn.querySelector(".toggle-text") : null;
+
+    if (!details || !toggleBtn) {
+      return;
+    }
+
+    const syncToggleState = function(isCollapsed) {
+      details.classList.toggle("collapsed", isCollapsed);
+      toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+      toggleBtn.setAttribute("aria-label", isCollapsed ? "Expand details" : "Collapse details");
+      if (toggleText) {
+        toggleText.textContent = isCollapsed ? "Expand" : "Collapse";
+      }
+    };
+
+    syncToggleState(false);
+
+    toggleBtn.addEventListener("click", function() {
+      const collapsed = details.classList.contains("collapsed");
+      syncToggleState(!collapsed);
+    });
+  }());
+
   (function initSevenDayDateSelector() {
     const dateSelector = document.getElementById("date-selector");
     if (!dateSelector) {
@@ -93,4 +119,151 @@ document.addEventListener("DOMContentLoaded", function() {
       this.classList.add("selected");
     });
   });
+
+  (function initMovieRating() {
+    const widget = document.getElementById("movie-rating-widget");
+    if (!widget) {
+      return;
+    }
+
+    const movieId = Number(widget.dataset.movieId);
+    if (!movieId) {
+      return;
+    }
+
+    let isLoggedIn = widget.dataset.isLoggedIn === "true";
+    const stars = Array.from(widget.querySelectorAll(".rating-star"));
+    const userRatingEl = document.getElementById("movie-user-rating");
+    const detailRatingEl = document.getElementById("movie-detail-rating");
+    let selectedRating = 0;
+
+    const renderStars = function(activeValue) {
+      stars.forEach(function(star) {
+        const starValue = Number(star.getAttribute("data-rating"));
+        star.classList.toggle("filled", starValue <= activeValue);
+      });
+    };
+
+    const updateUserRatingText = function(value, isSaving) {
+      if (!userRatingEl) {
+        return;
+      }
+      if (isSaving) {
+        userRatingEl.textContent = "Your rating: Saving...";
+        return;
+      }
+      userRatingEl.textContent = value > 0 ? "Your rating: " + value + "/5" : "Your rating: Not rated";
+    };
+
+    const setSelectedRating = function(value) {
+      selectedRating = value;
+      renderStars(value);
+      updateUserRatingText(value, false);
+    };
+
+    const updateDetailRating = function(value, totalRatings) {
+      if (!detailRatingEl) {
+        return;
+      }
+
+      const avg = Number(value);
+      const count = Number(totalRatings || 0);
+      if (!Number.isFinite(avg) || count <= 0) {
+        detailRatingEl.textContent = "N/A";
+        return;
+      }
+
+      detailRatingEl.textContent = avg.toFixed(1) + " / 5";
+    };
+
+    const openLoginModal = function() {
+      if (window.CineBookAuthModal && typeof window.CineBookAuthModal.open === "function") {
+        window.CineBookAuthModal.open("login");
+        return;
+      }
+      document.dispatchEvent(new CustomEvent("cinebook:open-auth-modal", { detail: { tab: "login" } }));
+    };
+
+    const fetchJson = async function(url) {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error("Request failed");
+      }
+      return res.json();
+    };
+
+    const loadInitialRatings = async function() {
+      try {
+        const movieRatings = await fetchJson("/ratings/" + movieId);
+        updateDetailRating(movieRatings.averageRating, movieRatings.totalRatings);
+      } catch (_err) {
+        updateDetailRating(null, 0);
+      }
+
+      if (!isLoggedIn) {
+        setSelectedRating(0);
+        return;
+      }
+
+      try {
+        const currentUser = await fetchJson("/ratings/user/" + movieId);
+        const currentRating = Number(currentUser.rating || 0);
+        setSelectedRating(currentRating);
+      } catch (_err) {
+        setSelectedRating(0);
+      }
+    };
+
+    stars.forEach(function(star) {
+      const starValue = Number(star.getAttribute("data-rating"));
+
+      star.addEventListener("mouseenter", function() {
+        renderStars(starValue);
+      });
+
+      star.addEventListener("mouseleave", function() {
+        renderStars(selectedRating);
+      });
+
+      star.addEventListener("click", async function() {
+        if (!isLoggedIn) {
+          openLoginModal();
+          return;
+        }
+
+        const previousRating = selectedRating;
+        setSelectedRating(starValue);
+        updateUserRatingText(starValue, true);
+
+        try {
+          const res = await fetch("/ratings", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ movieId: movieId, rating: starValue })
+          });
+
+          if (res.status === 401) {
+            isLoggedIn = false;
+            setSelectedRating(previousRating);
+            openLoginModal();
+            return;
+          }
+
+          if (!res.ok) {
+            throw new Error("Failed to save rating");
+          }
+
+          const payload = await res.json();
+          setSelectedRating(Number(payload.rating || starValue));
+          updateDetailRating(payload.averageRating, payload.totalRatings);
+        } catch (_err) {
+          setSelectedRating(previousRating);
+        }
+      });
+    });
+
+    loadInitialRatings();
+  }());
 });

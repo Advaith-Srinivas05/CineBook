@@ -14,6 +14,7 @@
         <div id="login-form" class="auth-form active">
           <h2 id="auth-modal-title">Welcome Back</h2>
           <form method="post" th:action="@{/login}" action="/login">
+            <input type="hidden" name="returnTo" class="auth-return-to" value="/">
             <div class="form-group">
               <label for="login-username">Username</label>
               <input type="text" id="login-username" name="username" placeholder="Username" required>
@@ -31,6 +32,7 @@
         <div id="signup-form" class="auth-form">
           <h2>Create Account</h2>
           <form method="post" th:action="@{/signup}" action="/signup">
+            <input type="hidden" name="returnTo" class="auth-return-to" value="/">
             <div class="form-group">
               <label for="signup-username">Username</label>
               <input type="text" id="signup-username" name="username" placeholder="Choose a username" required>

@@ -19,7 +19,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function getCurrentReturnTo() {
+    return window.location.pathname + window.location.search;
+  }
+
+  function populateReturnToFields() {
+    const returnToInputs = authModal.querySelectorAll('input.auth-return-to');
+    const returnTo = getCurrentReturnTo();
+    returnToInputs.forEach(function(input) {
+      input.value = returnTo;
+    });
+  }
+
   function openAuthModal(tabName) {
+    populateReturnToFields();
     setAuthTab(tabName || 'login');
     authModal.classList.add('active');
     document.body.classList.add('auth-modal-open');
@@ -77,6 +90,16 @@ document.addEventListener('DOMContentLoaded', function() {
   if (hasAuthError || shouldForceOpen || shouldOpenFromQuery) {
     openAuthModal(hasAuthError ? startTab : queryTab);
   }
+
+  window.CineBookAuthModal = {
+    open: openAuthModal,
+    close: closeAuthModal
+  };
+
+  document.addEventListener('cinebook:open-auth-modal', function(event) {
+    const tabName = event && event.detail && event.detail.tab ? event.detail.tab : 'login';
+    openAuthModal(tabName);
+  });
 
   document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape' && authModal.classList.contains('active')) {

@@ -83,7 +83,7 @@
           <div class="movie-info">
             <h2 class="movie-title" th:text="${movie.title}">Movie Title</h2>
             <p class="movie-genre" th:text="${movie.language != null ? movie.language : 'Language not available'}">Language</p>
-            <p class="movie-rating">⭐ Rating coming soon</p>
+            <p class="movie-rating" data-rating-label="true">⭐ --</p>
           </div>
         </a>
       </div>

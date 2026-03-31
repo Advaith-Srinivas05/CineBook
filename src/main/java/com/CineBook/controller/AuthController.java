@@ -10,9 +10,11 @@ import com.CineBook.model.LoginAttempt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 public class AuthController {
@@ -24,7 +26,11 @@ public class AuthController {
     private LoginAttemptRepository loginAttemptRepository;
 
     @PostMapping("/login")
-    public String doLogin(@RequestParam String username, @RequestParam String password, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String doLogin(@RequestParam String username,
+                          @RequestParam String password,
+                          @RequestParam(value = "returnTo", required = false) String returnTo,
+                          HttpServletRequest request,
+                          RedirectAttributes redirectAttributes) {
         Optional<User> maybeUser = userRepository.findByUsername(username);
         boolean success = false;
         if (maybeUser.isPresent()) {
@@ -42,21 +48,33 @@ public class AuthController {
             }
         }
         loginAttemptRepository.save(new LoginAttempt(username, success));
-        if (success) return "redirect:/";
+        String redirectTarget = resolveRedirectTarget(returnTo, request.getHeader("Referer"));
+        if (success) {
+            return "redirect:" + redirectTarget;
+        }
         redirectAttributes.addFlashAttribute("error", "Invalid credentials");
-        return "redirect:/?auth=login";
+        return "redirect:" + withAuthParam(redirectTarget, "login");
     }
 
     @PostMapping("/signup")
-    public String doSignup(@RequestParam String username, @RequestParam String email, @RequestParam String password, RedirectAttributes redirectAttributes) {
+    public String doSignup(@RequestParam String username,
+                           @RequestParam String email,
+                           @RequestParam String password,
+                           @RequestParam(value = "returnTo", required = false) String returnTo,
+                           HttpServletRequest request,
+                           RedirectAttributes redirectAttributes) {
+        String redirectTarget = resolveRedirectTarget(returnTo, request.getHeader("Referer"));
         if (userRepository.findByUsername(username).isPresent()) {
             redirectAttributes.addFlashAttribute("signupError", "Username already exists");
-            return "redirect:/?auth=signup";
+            return "redirect:" + withAuthParam(redirectTarget, "signup");
         }
         String hash = hash(password);
         User u = new User(username, email, hash);
-        userRepository.save(u);
-        return "redirect:/?auth=login";
+        User saved = userRepository.save(u);
+        HttpSession session = request.getSession(true);
+        session.setAttribute("username", saved.getUsername());
+        session.removeAttribute("isAdmin");
+        return "redirect:" + redirectTarget;
     }
 
     private String hash(String input) {
@@ -78,5 +96,55 @@ public class AuthController {
             session.invalidate();
         }
         return "redirect:/";
+    }
+
+    private String resolveRedirectTarget(String returnTo, String referer) {
+        String candidate = normalizeReturnTo(returnTo);
+        if (candidate != null) {
+            return candidate;
+        }
+        candidate = normalizeReturnTo(referer);
+        if (candidate != null) {
+            return candidate;
+        }
+        return "/";
+    }
+
+    private String normalizeReturnTo(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String candidate = value.trim();
+        if (candidate.startsWith("http://") || candidate.startsWith("https://")) {
+            java.net.URI uri = java.net.URI.create(candidate);
+            candidate = uri.getPath();
+            if (uri.getQuery() != null && !uri.getQuery().isBlank()) {
+                candidate = candidate + "?" + uri.getQuery();
+            }
+        }
+
+        if (!candidate.startsWith("/")) {
+            return null;
+        }
+
+        if (candidate.startsWith("/login") || candidate.startsWith("/signup") || candidate.startsWith("/logout")) {
+            return "/";
+        }
+
+        return candidate;
+    }
+
+    private String withAuthParam(String path, String authTab) {
+        String safePath = normalizeReturnTo(path);
+        if (safePath == null) {
+            safePath = "/";
+        }
+
+        String encodedTab = UriUtils.encodeQueryParam(authTab, StandardCharsets.UTF_8);
+        if (safePath.contains("auth=")) {
+            return safePath;
+        }
+        return safePath + (safePath.contains("?") ? "&" : "?") + "auth=" + encodedTab;
     }
 }
