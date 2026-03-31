@@ -1,17 +1,17 @@
-INSERT INTO movies (title, duration_minutes, language, rating, poster)
-SELECT v.title, v.duration_minutes, v.language, 0, pg_read_binary_file(v.file_path)
+INSERT INTO movies (title, duration_minutes, language, certification, description, rating, poster)
+SELECT v.title, v.duration_minutes, v.language, v.certification, v.description, 0, pg_read_binary_file(v.file_path)
 FROM (
   VALUES
-    ('Theerppu', 128, 'Malayalam', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster1.jpg'),
-    ('Thallumaala', 146, 'Malayalam', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster2.jpg'),
-    ('Nna Thaan Case Kodu', 139, 'Malayalam', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster3.jpg'),
-    ('Liger', 140, 'Telugu', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster4.jpg'),
-    ('Thiruchitrambalam', 133, 'Tamil', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster5.jpg'),
-    ('Sita Ramam', 158, 'Telugu', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster6.jpg'),
-    ('Kudukku', 124, 'Malayalam', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster7.jpg'),
-    ('Peace', 117, 'Malayalam', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster8.jpg'),
-    ('Beyond The 7 Seas', 131, 'Malayalam', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster9.jpg')
-) AS v(title, duration_minutes, language, file_path);
+    ('Theerppu', 128, 'Malayalam', 'U/A 16+', 'An engaging Malayalam thriller.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster1.jpg'),
+    ('Thallumaala', 146, 'Malayalam', 'U/A 13+', 'A fun-filled action entertainer.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster2.jpg'),
+    ('Nna Thaan Case Kodu', 139, 'Malayalam', 'U', 'A comedy drama centered around a court case.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster3.jpg'),
+    ('Liger', 140, 'Telugu', 'U/A 16+', 'An action-packed sports drama.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster4.jpg'),
+    ('Thiruchitrambalam', 133, 'Tamil', 'U', 'A beautiful slice-of-life musical drama.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster5.jpg'),
+    ('Sita Ramam', 158, 'Telugu', 'U', 'A classic love story back in time.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster6.jpg'),
+    ('Kudukku', 124, 'Malayalam', 'U/A 13+', 'A thrilling mystery.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster7.jpg'),
+    ('Peace', 117, 'Malayalam', 'U', 'A heartwarming story about finding peace.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster8.jpg'),
+    ('Beyond The 7 Seas', 131, 'Malayalam', 'U/A 13+', 'An adventurous journey beyond the oceans.', 'D:/Advaith/clg_stuff/3rd year/sem 6/OOAD/proj/CineBook/src/main/resources/static/images/poster/poster9.jpg')
+) AS v(title, duration_minutes, language, certification, description, file_path);
 
 
 INSERT INTO theaters (name, city, location, screen_count) VALUES

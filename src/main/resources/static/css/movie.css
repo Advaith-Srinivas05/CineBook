@@ -1,0 +1,230 @@
+/* Movie page specific styles */
+#movie-info {
+  background-color: var(--dark-bg);
+  color: var(--light-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.movie-details {
+  display: block;
+}
+
+.movie-main-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.movie-content-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.movie-meta-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.movie-section-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.detail-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.description-item {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.description-item .detail-value {
+  display: block;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+#date-selector {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+  flex-wrap: nowrap;
+}
+
+.date-button {
+  min-width: 88px;
+  flex: 1 0 calc((100% - (6 * 0.75rem)) / 7);
+  max-width: calc((100% - (6 * 0.75rem)) / 7);
+  padding: 0.6rem 0.5rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--light-bg);
+  color: var(--text-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  text-decoration: none;
+}
+
+.date-button:hover {
+  border-color: var(--primary-red);
+  text-decoration: none;
+}
+
+.date-button.selected {
+  background-color: var(--primary-red);
+  color: var(--light-bg);
+  border-color: var(--primary-red);
+}
+
+.date-button .day {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.date-button .date {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.date-button .month {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+#theatre-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.theatre-card {
+  background-color: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.theatre-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.theatre-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.showtime-list {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.showtime-button {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--light-bg);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.showtime-button.available {
+  border-color: var(--available-green);
+  color: var(--available-green);
+}
+
+.showtime-button.available:hover {
+  background-color: var(--available-green);
+  color: var(--light-bg);
+}
+
+.showtime-button.filling {
+  border-color: var(--filling-orange);
+  color: var(--filling-orange);
+}
+
+.showtime-button.filling:hover {
+  background-color: var(--filling-orange);
+  color: var(--light-bg);
+}
+
+.showtime-button.sold-out {
+  border-color: var(--sold-grey);
+  color: var(--sold-grey);
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .movie-details {
+    display: block;
+  }
+
+  .movie-main-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .movie-content-column {
+    width: 100%;
+  }
+
+  .movie-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .description-item {
+    margin-top: 0;
+  }
+
+  .date-button {
+    flex: 0 0 88px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}

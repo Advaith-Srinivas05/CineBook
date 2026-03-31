@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Movie Details - CineBook</title>
   <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" href="/css/movie.css" th:href="@{/css/movie.css}">
   <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
   <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
   <link rel="icon" type="image/png" href="/images/favicon.png">
@@ -34,7 +35,7 @@
         <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" style="display:inline">
           <button type="submit" class="signin-btn">Logout</button>
         </form>
-        <a th:if="${session.username == null}" href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
+        <a th:if="${session.username == null}" href="#" class="signin-btn" data-auth-open="login">Sign In</a>
         <div class="menu-icon">☰</div>
       </div>
     </div>
@@ -54,47 +55,53 @@
   <main>
     <section id="movie-info" th:attr="data-movie-id=${movie.id}">
       <div class="movie-details">
-        <img class="movie-poster"
-             th:src="@{/movie/poster/{id}(id=${movie.id})}"
-             th:alt="${movie.title + ' poster'}"
-             style="max-width: 220px; border-radius: 8px; margin-right: 16px;">
-        <div class="detail-item">
-          <span class="detail-label">Movie</span>
-          <span class="detail-value" th:text="${movie.title}">Movie Title</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Runtime</span>
-          <span class="detail-value"
-                th:text="${movie.durationMinutes != null ? (movie.durationMinutes / 60) + 'h ' + (movie.durationMinutes % 60) + 'm' : 'Runtime unavailable'}">
-            Runtime
-          </span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Rating</span>
-          <span class="detail-value" th:text="${movie.rating != null ? movie.rating : 'N/A'}">N/A</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Language</span>
-          <span class="detail-value" th:text="${movie.language != null ? movie.language : 'N/A'}">Language</span>
+        <div class="movie-main-row">
+          <img class="movie-poster"
+               th:src="@{/movie/poster/{id}(id=${movie.id})}"
+               th:alt="${movie.title + ' poster'}"
+               style="max-width: 220px; border-radius: 8px; margin-right: 16px;">
+          <div class="movie-content-column">
+            <div class="movie-meta-grid">
+              <div class="detail-item">
+                <span class="detail-label">Movie</span>
+                <span class="detail-value" th:text="${movie.title + ' (' + (movie.certification != null && !movie.certification.isBlank() ? movie.certification : 'N/A') + ')'}">Movie Title (N/A)</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Runtime</span>
+                <span class="detail-value"
+                      th:text="${movie.durationMinutes != null ? (movie.durationMinutes / 60) + 'h ' + (movie.durationMinutes % 60) + 'm' : 'Runtime unavailable'}">
+                  Runtime
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Rating</span>
+                <span class="detail-value" th:text="${movie.rating != null ? movie.rating : 'N/A'}">N/A</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Language</span>
+                <span class="detail-value" th:text="${movie.language != null ? movie.language : 'N/A'}">Language</span>
+              </div>
+            </div>
+
+            <div class="detail-item description-item">
+              <span class="detail-label">Description</span>
+              <br>
+              <span class="detail-value" th:text="${movie.description != null && !movie.description.isBlank() ? movie.description : 'Description unavailable'}">Description unavailable</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <section>
-      <h2 class="section-title">Select Date</h2>
-      <div id="date-selector">
-        <a th:each="d, iter : ${dateOptions}"
-           th:href="@{/movie(movieId=${movie.id}, city=${selectedCity}, date=${d})}"
-           class="date-button"
-           th:classappend="${d.equals(selectedDate)} ? ' selected' : ''"
-           th:text="${iter.index == 0 ? 'Today' : (iter.index == 1 ? 'Tomorrow' : #temporals.format(d, 'EEE, dd MMM'))}">
-          Date
-        </a>
+      <h2 class="movie-section-title">Select Date</h2>
+      <div id="date-selector"
+           th:attr="data-movie-id=${movie.id},data-selected-city=${selectedCity},data-selected-date=${selectedDate}">
       </div>
     </section>
 
     <section>
-      <h2 class="section-title">Select Theatre & Showtime</h2>
+      <h2 class="movie-section-title" style="margin-bottom: 0.5rem;">Select Theatre & Showtime</h2>
       <div id="theatre-list">
         <article class="theatre-card" th:each="entry : ${theaterShows}" th:attr="data-theatre-id=${entry.theaterId}">
           <div class="theatre-name" th:text="${entry.theaterName + ' - ' + entry.city}">Theater</div>
@@ -114,8 +121,11 @@
     </section>
   </main>
 
+  <th:block th:replace="~{fragments/auth-modal :: authModal}"></th:block>
+
   <footer>
-    <p>&copy; 2024 CineBook. All rights reserved.</p>
+    <p>&copy; 2026 CineBook. All rights reserved.</p>
   </footer>
+  <script src="/js/movie.js" th:src="@{/js/movie.js}"></script>
 </body>
 </html>

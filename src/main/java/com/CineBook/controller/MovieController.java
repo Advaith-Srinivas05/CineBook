@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.util.UriUtils;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -210,7 +212,7 @@ public class MovieController {
         Object username = session.getAttribute("username");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
         if (username != null) return "redirect:/";
-        return "login";
+        return "redirect:/?auth=login";
     }
 
     @GetMapping("/admin")
@@ -223,13 +225,16 @@ public class MovieController {
         if (username != null) {
             return "redirect:/"; // logged-in non-admin users -> index
         }
-        return "redirect:/login"; // not logged in -> login
+        String returnTo = UriUtils.encode("/admin", StandardCharsets.UTF_8);
+        return "redirect:/?auth=login&returnTo=" + returnTo; // not logged in -> auth modal
     }
 
     @PostMapping("/admin/movies")
     public ResponseEntity<String> addMovie(@RequestParam("title") String title,
                                            @RequestParam("duration") Integer duration,
                                            @RequestParam("language") String language,
+                                           @RequestParam(value = "certification", required = false) String certification,
+                                           @RequestParam(value = "description", required = false) String description,
                                            @RequestParam("poster") MultipartFile poster,
                                            HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
@@ -246,6 +251,8 @@ public class MovieController {
             m.setTitle(title);
             m.setDurationMinutes(duration);
             m.setLanguage(language);
+            m.setCertification(certification);
+            m.setDescription(description);
             if (poster != null && !poster.isEmpty()) {
                 m.setPoster(poster.getBytes());
             }
@@ -274,6 +281,8 @@ public class MovieController {
             map.put("title", m.getTitle());
             map.put("duration", m.getDurationMinutes());
             map.put("language", m.getLanguage());
+            map.put("certification", m.getCertification());
+            map.put("description", m.getDescription());
 
             String status = "Upcoming";
             try {
@@ -328,6 +337,8 @@ public class MovieController {
                                               @RequestParam("title") String title,
                                               @RequestParam("duration") Integer duration,
                                               @RequestParam("language") String language,
+                                              @RequestParam(value = "certification", required = false) String certification,
+                                              @RequestParam(value = "description", required = false) String description,
                                               @RequestParam(value = "poster", required = false) MultipartFile poster,
                                               HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
@@ -342,6 +353,8 @@ public class MovieController {
             m.setTitle(title);
             m.setDurationMinutes(duration);
             m.setLanguage(language);
+            m.setCertification(certification);
+            m.setDescription(description);
             if (poster != null && !poster.isEmpty()) {
                 try {
                     m.setPoster(poster.getBytes());

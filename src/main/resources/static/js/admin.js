@@ -82,31 +82,60 @@ function clearError(inputEl) {
     container.style.display = 'block';
   }
 
+  function closeAllModals() {
+    document.querySelectorAll('.modal.active').forEach(function(modal) {
+      modal.classList.remove('active');
+    });
+    document.body.classList.remove('modal-open');
+  }
+
+  function openModal(modal) {
+    if (!modal) return;
+    closeAllModals();
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeModal(modal) {
+    if (!modal) return;
+    modal.classList.remove('active');
+    if (!document.querySelector('.modal.active')) {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
   async function fetchMovies() {
     const tbody = document.querySelector('#admin-movies-table tbody');
-    tbody.innerHTML = '<tr><td colspan="6">Loading movies...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7">Loading movies...</td></tr>';
     try {
       const res = await fetch('/api/admin/movies');
       if (!res.ok) {
-        tbody.innerHTML = '<tr><td colspan="6">Failed to load movies.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7">Failed to load movies.</td></tr>';
         return;
       }
 
       const list = await res.json();
       if (!Array.isArray(list) || list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">No movies found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7">No movies found.</td></tr>';
         return;
       }
 
+      const sortedList = list.slice().sort(function(a, b) {
+        const aId = Number(a && a.id);
+        const bId = Number(b && b.id);
+        if (!Number.isNaN(aId) && !Number.isNaN(bId)) return aId - bId;
+        return String(a && a.id || '').localeCompare(String(b && b.id || ''));
+      });
+
       tbody.innerHTML = '';
-      for (const m of list) {
+      for (const m of sortedList) {
         const tr = document.createElement('tr');
         const status = (m.status || '').toString();
-        tr.innerHTML = '<td>' + escapeHtml(m.id) + '</td><td>' + escapeHtml(m.title) + '</td><td>' + escapeHtml(formatDuration(m.duration)) + '</td><td>' + escapeHtml(m.language || '') + '</td><td><span class="status-badge ' + escapeHtml(status.toLowerCase()) + '">' + escapeHtml(status) + '</span></td><td><button class="edit-btn" data-id="' + m.id + '">Edit</button> <button class="delete-btn" data-id="' + m.id + '">Delete</button></td>';
+        tr.innerHTML = '<td>' + escapeHtml(m.id) + '</td><td>' + escapeHtml(m.title) + '</td><td>' + escapeHtml(formatDuration(m.duration)) + '</td><td>' + escapeHtml(m.language || '') + '</td><td>' + escapeHtml(m.certification || '') + '</td><td><span class="status-badge ' + escapeHtml(status.toLowerCase()) + '">' + escapeHtml(status) + '</span></td><td><button class="edit-btn" data-id="' + m.id + '">Edit</button> <button class="delete-btn" data-id="' + m.id + '">Delete</button></td>';
         tbody.appendChild(tr);
       }
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="6">Error loading movies.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">Error loading movies.</td></tr>';
     }
 
     document.querySelectorAll('.edit-btn').forEach(function(btn) {
@@ -130,8 +159,10 @@ function clearError(inputEl) {
     document.getElementById('edit-title').value = m.title || '';
     document.getElementById('edit-duration').value = m.duration || '';
     document.getElementById('edit-language').value = m.language || '';
+    document.getElementById('edit-certification').value = m.certification || '';
+    document.getElementById('edit-description').value = m.description || '';
     document.getElementById('edit-poster').value = '';
-    document.getElementById('edit-movie-modal').style.display = 'block';
+    openModal(document.getElementById('edit-movie-modal'));
   }
 
   async function onDeleteMovie(e) {
@@ -147,19 +178,22 @@ function clearError(inputEl) {
 
   const editModal = document.getElementById('edit-movie-modal');
   document.getElementById('close-edit-modal').onclick = function() {
-    editModal.style.display = 'none';
-  };
-  document.getElementById('cancel-edit').onclick = function() {
-    editModal.style.display = 'none';
+    closeModal(editModal);
   };
 
   const editShowModal = document.getElementById('edit-show-modal');
   document.getElementById('close-edit-show-modal').onclick = function() {
-    editShowModal.style.display = 'none';
+    closeModal(editShowModal);
   };
-  document.getElementById('cancel-edit-show').onclick = function() {
-    editShowModal.style.display = 'none';
-  };
+
+  [editModal, editShowModal].forEach(function(modal) {
+    if (!modal) return;
+    modal.addEventListener('click', function(evt) {
+      if (evt.target === modal) {
+        closeModal(modal);
+      }
+    });
+  });
 
   document.getElementById('edit-movie-form').addEventListener('submit', async function(evt) {
     evt.preventDefault();
@@ -168,11 +202,13 @@ function clearError(inputEl) {
     form.append('title', document.getElementById('edit-title').value);
     form.append('duration', document.getElementById('edit-duration').value);
     form.append('language', document.getElementById('edit-language').value);
+    form.append('certification', document.getElementById('edit-certification').value);
+    form.append('description', document.getElementById('edit-description').value);
     const file = document.getElementById('edit-poster').files[0];
     if (file) form.append('poster', file);
     const res = await fetch('/admin/movies/' + id + '/update', { method: 'POST', body: form });
     if (res.ok) {
-      editModal.style.display = 'none';
+      closeModal(editModal);
       fetchMovies();
     } else {
       alert('Failed to save changes');
@@ -390,7 +426,7 @@ function clearError(inputEl) {
           } else {
             screenInput.removeAttribute('max');
           }
-          editShowModal.style.display = 'block';
+          openModal(editShowModal);
         };
       });
 
@@ -422,7 +458,7 @@ function clearError(inputEl) {
     });
 
     if (res.ok) {
-      editShowModal.style.display = 'none';
+      closeModal(editShowModal);
       loadShowsForFilter();
       return;
     }
@@ -472,17 +508,23 @@ function clearError(inputEl) {
         clearError(document.getElementById('movie-title'));
         clearError(document.getElementById('movie-duration'));
         clearError(document.getElementById('movie-language'));
+        clearError(document.getElementById('movie-certification'));
+        clearError(document.getElementById('movie-description'));
         clearError(document.getElementById('movie-poster'));
 
         let hasError = false;
         const titleEl = document.getElementById('movie-title');
         const durationEl = document.getElementById('movie-duration');
         const languageEl = document.getElementById('movie-language');
+        const certificationEl = document.getElementById('movie-certification');
+        const descriptionEl = document.getElementById('movie-description');
         const posterEl = document.getElementById('movie-poster');
 
         const title = titleEl.value && titleEl.value.trim();
         const duration = parseInt(durationEl.value, 10);
         const language = languageEl.value && languageEl.value.trim();
+        const certification = certificationEl.value && certificationEl.value.trim();
+        const description = descriptionEl.value && descriptionEl.value.trim();
         const posterFile = posterEl.files && posterEl.files[0];
 
         if (!title) {
@@ -498,6 +540,14 @@ function clearError(inputEl) {
         }
         if (!language) {
           showError(languageEl, 'Language is required');
+          hasError = true;
+        }
+        if (!certification) {
+          showError(certificationEl, 'Certification is required');
+          hasError = true;
+        }
+        if (!description) {
+          showError(descriptionEl, 'Description is required');
           hasError = true;
         }
         if (!posterFile) {

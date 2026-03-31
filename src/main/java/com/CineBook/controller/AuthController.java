@@ -2,7 +2,6 @@ package com.CineBook.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.CineBook.repository.UserRepository;
 import com.CineBook.repository.LoginAttemptRepository;
@@ -10,6 +9,7 @@ import com.CineBook.model.User;
 import com.CineBook.model.LoginAttempt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -24,7 +24,7 @@ public class AuthController {
     private LoginAttemptRepository loginAttemptRepository;
 
     @PostMapping("/login")
-    public String doLogin(@RequestParam String username, @RequestParam String password, HttpServletRequest request, Model model) {
+    public String doLogin(@RequestParam String username, @RequestParam String password, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         Optional<User> maybeUser = userRepository.findByUsername(username);
         boolean success = false;
         if (maybeUser.isPresent()) {
@@ -43,20 +43,20 @@ public class AuthController {
         }
         loginAttemptRepository.save(new LoginAttempt(username, success));
         if (success) return "redirect:/";
-        model.addAttribute("error", "Invalid credentials");
-        return "login";
+        redirectAttributes.addFlashAttribute("error", "Invalid credentials");
+        return "redirect:/?auth=login";
     }
 
     @PostMapping("/signup")
-    public String doSignup(@RequestParam String username, @RequestParam String email, @RequestParam String password, Model model) {
+    public String doSignup(@RequestParam String username, @RequestParam String email, @RequestParam String password, RedirectAttributes redirectAttributes) {
         if (userRepository.findByUsername(username).isPresent()) {
-            model.addAttribute("signupError", "Username already exists");
-            return "login";
+            redirectAttributes.addFlashAttribute("signupError", "Username already exists");
+            return "redirect:/?auth=signup";
         }
         String hash = hash(password);
         User u = new User(username, email, hash);
         userRepository.save(u);
-        return "redirect:/login";
+        return "redirect:/?auth=login";
     }
 
     private String hash(String input) {

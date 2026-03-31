@@ -28,6 +28,8 @@ CREATE TABLE movies (
   title TEXT NOT NULL,
   duration_minutes INTEGER NOT NULL,
   language VARCHAR(100),
+  certification VARCHAR(20),
+  description TEXT,
   rating NUMERIC(3,2) NOT NULL DEFAULT 0 CHECK (rating >= 0 AND rating <= 10),
   poster BYTEA,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

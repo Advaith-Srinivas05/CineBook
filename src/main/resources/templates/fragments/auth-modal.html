@@ -1,0 +1,55 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="authModal">
+  <link rel="stylesheet" th:href="@{/css/auth-model.css}" href="/css/auth-model.css">
+  <div id="auth-modal"
+       class="auth-modal-overlay"
+       th:attr="data-has-error=${error != null || signupError != null},data-start-tab=${signupError != null ? 'signup' : 'login'}">
+    <div class="auth-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <div class="auth-card">
+        <button type="button" id="auth-modal-close" class="auth-modal-close" aria-label="Close authentication modal">&times;</button>
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login" type="button">Login</button>
+          <button class="auth-tab" data-tab="signup" type="button">Sign Up</button>
+        </div>
+
+        <div id="login-form" class="auth-form active">
+          <h2 id="auth-modal-title">Welcome Back</h2>
+          <form method="post" th:action="@{/login}" action="/login">
+            <div class="form-group">
+              <label for="login-username">Username</label>
+              <input type="text" id="login-username" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="auth-submit-btn">Login</button>
+          </form>
+          <p class="auth-switch">Don't have an account? <a href="#" class="auth-switch-link" data-switch="signup">Create Account</a></p>
+          <div th:if="${error}" class="error">[[${error}]]</div>
+        </div>
+
+        <div id="signup-form" class="auth-form">
+          <h2>Create Account</h2>
+          <form method="post" th:action="@{/signup}" action="/signup">
+            <div class="form-group">
+              <label for="signup-username">Username</label>
+              <input type="text" id="signup-username" name="username" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input type="email" id="signup-email" name="email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-password">Password</label>
+              <input type="password" id="signup-password" name="password" placeholder="Create a password" required>
+            </div>
+            <button type="submit" class="auth-submit-btn">Create Account</button>
+          </form>
+          <div th:if="${signupError}" class="error">[[${signupError}]]</div>
+          <p class="auth-switch">Already have an account? <a href="#" class="auth-switch-link" data-switch="login">Login</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script th:src="@{/js/auth-model.js}" src="/js/auth-model.js"></script>
+</th:block>

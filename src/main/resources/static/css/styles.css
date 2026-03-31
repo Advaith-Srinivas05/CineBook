@@ -39,12 +39,6 @@
   color: #ffffff !important;
 }
 
-[data-theme="dark"] .auth-form .form-group input {
-  background-color: #2a2a2a;
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: var(--light-bg);
@@ -280,68 +274,6 @@ section {
   font-weight: 600;
 }
 
-/* Movie Info Section */
-#movie-info {
-  background-color: var(--dark-bg);
-  color: var(--light-bg);
-  padding: 2rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-}
-
-.movie-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 2rem;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.detail-value {
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-/* Date Selector */
-#date-selector {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding: 1rem 0;
-  margin-bottom: 2rem;
-}
-
-.date-button {
-  padding: 0.75rem 1.5rem;
-  border: 2px solid var(--border-color);
-  background-color: var(--light-bg);
-  color: var(--text-primary);
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-}
-
-.date-button:hover {
-  border-color: var(--primary-red);
-}
-
-.date-button.selected {
-  background-color: var(--primary-red);
-  color: var(--light-bg);
-  border-color: var(--primary-red);
-}
-
 /* Filter Bar */
 .filter-bar {
   display: flex;
@@ -361,77 +293,6 @@ section {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
-}
-
-/* Theatre List */
-#theatre-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.theatre-card {
-  background-color: var(--light-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.theatre-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.theatre-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-}
-
-.showtime-list {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.showtime-button {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  background-color: var(--light-bg);
-  color: var(--text-primary);
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.showtime-button.available {
-  border-color: var(--available-green);
-  color: var(--available-green);
-}
-
-.showtime-button.available:hover {
-  background-color: var(--available-green);
-  color: var(--light-bg);
-}
-
-.showtime-button.filling {
-  border-color: var(--filling-orange);
-  color: var(--filling-orange);
-}
-
-.showtime-button.filling:hover {
-  background-color: var(--filling-orange);
-  color: var(--light-bg);
-}
-
-.showtime-button.sold-out {
-  border-color: var(--sold-grey);
-  color: var(--sold-grey);
-  cursor: not-allowed;
 }
 
 /* Ticket Selector */
@@ -760,133 +621,7 @@ footer {
   color: var(--light-bg);
   text-align: center;
   padding: 2rem;
-  margin-top: 3rem;
-}
-
-/* Authentication Page */
-#auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 70vh;
-  padding: 2rem;
-}
-
-.auth-card {
-  background-color: var(--light-bg);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 450px;
-  padding: 2.5rem;
-}
-
-.auth-tabs {
-  display: flex;
-  gap: 0;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.auth-tab {
-  flex: 1;
-  padding: 1rem;
-  background: none;
-  border: none;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-secondary);
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
-}
-
-.auth-tab.active {
-  color: var(--primary-red);
-  border-bottom-color: var(--primary-red);
-}
-
-.auth-tab:hover {
-  color: var(--text-primary);
-}
-
-.auth-form {
-  display: none;
-}
-
-.auth-form.active {
-  display: block;
-}
-
-.auth-form h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
-  color: var(--text-primary);
-}
-
-.auth-form form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.auth-form .form-group label {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-}
-
-.auth-form .form-group input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.auth-form .form-group input:focus {
-  outline: none;
-  border-color: var(--primary-red);
-  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
-}
-
-.auth-submit-btn {
-  width: 100%;
-  padding: 1rem;
-  background-color: var(--primary-red);
-  color: var(--light-bg);
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.auth-submit-btn:hover {
-  background-color: #cc0810;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
-}
-
-.auth-switch {
-  text-align: center;
   margin-top: 1rem;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
-.auth-switch-link {
-  color: var(--primary-red);
-  text-decoration: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.auth-switch-link:hover {
-  text-decoration: underline;
 }
 
 /* Responsive */
@@ -923,10 +658,6 @@ footer {
 
   .section-title {
     font-size: 1.5rem;
-  }
-
-  .movie-details {
-    grid-template-columns: 1fr;
   }
 
   .filter-bar {

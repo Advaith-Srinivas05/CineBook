@@ -26,7 +26,7 @@
         <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" class="inline-logout-form">
           <button type="submit" class="signin-btn">Logout</button>
         </form>
-        <a th:if="${session.username == null}" th:href="@{/login}" href="/login" class="signin-btn">Sign In</a>
+        <a th:if="${session.username == null}" href="#" class="signin-btn" data-auth-open="login">Sign In</a>
         <div class="menu-icon">☰</div>
       </div>
     </div>
@@ -62,10 +62,22 @@
                 <input type="text" id="movie-title" name="title" placeholder="Enter movie title" required>
                 <div class="field-error" id="movie-title-error"></div>
               </div>
-              <div class="form-group span-2">
+              <div class="form-group">
                 <label for="movie-language">Language</label>
                 <input type="text" id="movie-language" name="language" placeholder="English, Hindi, etc." required>
                 <div class="field-error" id="movie-language-error"></div>
+              </div>
+              <div class="form-group">
+                <label for="movie-certification">Certification</label>
+                <select id="movie-certification" name="certification" required>
+                  <option value="" disabled selected>Select Certification</option>
+                  <option value="U">U</option>
+                  <option value="U/A 7+">U/A 7+</option>
+                  <option value="U/A 13+">U/A 13+</option>
+                  <option value="U/A 16+">U/A 16+</option>
+                  <option value="A">A</option>
+                </select>
+                <div class="field-error" id="movie-certification-error"></div>
               </div>
               <div class="form-group">
                 <label for="movie-duration">Duration (minutes)</label>
@@ -76,6 +88,11 @@
                 <label for="movie-poster">Movie Poster (jpg, jpeg, png)</label>
                 <input type="file" id="movie-poster" name="poster" accept=".jpg,.jpeg,.png" required>
                 <div class="field-error" id="movie-poster-error"></div>
+              </div>
+              <div class="form-group span-2">
+                <label for="movie-description">Description</label>
+                <textarea id="movie-description" name="description" rows="3" placeholder="Enter movie description"></textarea>
+                <div class="field-error" id="movie-description-error"></div>
               </div>
               <button type="submit" class="admin-btn">Add Movie</button>
             </form>
@@ -196,6 +213,7 @@
                   <th>Movie Title</th>
                   <th>Duration</th>
                   <th>Language</th>
+                  <th>Certification</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -226,12 +244,27 @@
                   <input type="text" id="edit-language" name="language">
                 </div>
                 <div class="form-group">
+                  <label for="edit-certification">Certification</label>
+                  <select id="edit-certification" name="certification" required>
+                    <option value="" disabled>Select Certification</option>
+                    <option value="U">U</option>
+                    <option value="U/A 7+">U/A 7+</option>
+                    <option value="U/A 13+">U/A 13+</option>
+                    <option value="U/A 16+">U/A 16+</option>
+                    <option value="A">A</option>
+                  </select>
+                </div>
+                <div class="form-group span-2">
+                  <label for="edit-description">Description</label>
+                  <textarea id="edit-description" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
                   <label for="edit-poster">Poster (leave empty to keep existing)</label>
                   <input type="file" id="edit-poster" name="poster" accept=".jpg,.jpeg,.png">
                 </div>
-                <div class="modal-actions">
-                  <button type="submit" class="admin-btn">Save changes</button>
-                  <button type="button" id="cancel-edit" class="admin-btn">Cancel</button>
+                <div class="form-group">
+                  <label style="visibility:hidden;" aria-hidden="true">Save changes</label>
+                  <button type="submit" class="admin-btn" style="height: 50px;">Save changes</button>
                 </div>
               </form>
             </div>
@@ -296,9 +329,9 @@
                   <label for="edit-show-screen">Screen</label>
                   <input type="number" id="edit-show-screen" name="screen" min="1" required>
                 </div>
-                <div class="modal-actions">
+                <div class="form-group">
+                  <label style="visibility:hidden;" aria-hidden="true">Save changes</label>
                   <button type="submit" class="admin-btn">Save changes</button>
-                  <button type="button" id="cancel-edit-show" class="admin-btn">Cancel</button>
                 </div>
               </form>
             </div>
@@ -308,9 +341,11 @@
     </section>
   </main>
 
+  <th:block th:replace="~{fragments/auth-modal :: authModal}"></th:block>
+
   <!-- Footer -->
   <footer>
-    <p>&copy; 2024 CineBook. All rights reserved.</p>
+    <p>&copy; 2026 CineBook. All rights reserved.</p>
   </footer>
   <script th:src="@{/js/admin.js}" src="/js/admin.js"></script>
 </body>

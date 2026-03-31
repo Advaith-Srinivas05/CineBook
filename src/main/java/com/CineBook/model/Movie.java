@@ -25,6 +25,11 @@ public class Movie {
 
 	private String language;
 
+	private String certification;
+
+	@Column(columnDefinition = "TEXT")
+	private String description;
+
 	private Double rating = 0.0;
 
 	@Column(name = "poster", columnDefinition = "bytea")
@@ -50,6 +55,12 @@ public class Movie {
 
 	public String getLanguage() { return language; }
 	public void setLanguage(String language) { this.language = language; }
+
+	public String getCertification() { return certification; }
+	public void setCertification(String certification) { this.certification = certification; }
+
+	public String getDescription() { return description; }
+	public void setDescription(String description) { this.description = description; }
 
 	public Double getRating() { return rating; }
 	public void setRating(Double rating) { this.rating = rating; }

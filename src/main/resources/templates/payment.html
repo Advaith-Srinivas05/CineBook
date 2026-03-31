@@ -24,7 +24,7 @@
         <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" style="display:inline">
           <button type="submit" class="signin-btn">Logout</button>
         </form>
-        <a th:if="${session.username == null}" href="/login" th:href="@{/login}" class="signin-btn">Sign In</a>
+        <a th:if="${session.username == null}" href="#" class="signin-btn" data-auth-open="login">Sign In</a>
         <div class="menu-icon">☰</div>
       </div>
     </div>
@@ -104,9 +104,11 @@
     </section>
   </main>
 
+  <th:block th:replace="~{fragments/auth-modal :: authModal}"></th:block>
+
   <!-- Footer -->
   <footer>
-    <p>&copy; 2024 CineBook. All rights reserved.</p>
+    <p>&copy; 2026 CineBook. All rights reserved.</p>
   </footer>
 </body>
 </html>
