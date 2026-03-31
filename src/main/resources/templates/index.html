@@ -5,16 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CineBook - Movie Ticket Booking</title>
   <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" href="/css/index.css" th:href="@{/css/index.css}">
   <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
+  <script src="/js/index.js" th:src="@{/js/index.js}"></script>
   <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
 <body>
   <!-- Header -->
   <header>
     <div class="header-top">
-      <a href="/" th:href="@{/}" class="logo">CineBook</a>
+      <div href="/" th:href="@{/}" class="logo"><img src="/images/title-nobg.png" alt="CineBook" class="logo-img"></div>
       <div class="search-bar">
-        <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+        <input id="home-movie-search"
+               type="text"
+               placeholder="Search movies"
+               autocomplete="off"
+               th:attr="data-city=${selectedCity}">
+        <div id="home-movie-suggestions" class="home-autocomplete-suggestions"></div>
       </div>
       <div class="header-right">
         <form class="location-selector" th:action="@{/}" action="/" method="get">
@@ -70,7 +78,7 @@
     <section>
       <h1 class="section-title" th:text="${selectedCity != null ? 'Recommended Movies - ' + selectedCity : 'Recommended Movies'}">Recommended Movies</h1>
       <div id="movies-grid" th:if="${!#lists.isEmpty(movies)}">
-        <a th:each="movie : ${movies}" th:href="@{/movie(movieId=${movie.id})}" class="movie-card" th:attr="data-movie-id=${movie.id}">
+        <a th:each="movie : ${movies}" th:href="@{/movie(movieId=${movie.id}, city=${selectedCity})}" class="movie-card" th:attr="data-movie-id=${movie.id}">
           <img class="movie-poster" th:src="@{/movie/poster/{id}(id=${movie.id})}" th:alt="${movie.title + ' poster'}" />
           <div class="movie-info">
             <h2 class="movie-title" th:text="${movie.title}">Movie Title</h2>

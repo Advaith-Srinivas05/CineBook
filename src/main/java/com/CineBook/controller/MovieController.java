@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.format.annotation.DateTimeFormat;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 import jakarta.transaction.Transactional;
 
 @Controller
@@ -96,9 +100,79 @@ public class MovieController {
     }
 
     @GetMapping("/movie")
-    public String movie(HttpSession session) {
+    public String movie(@RequestParam("movieId") Long movieId,
+                        @RequestParam(value = "city", required = false) String city,
+                        @RequestParam(value = "date", required = false)
+                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                        Model model,
+                        HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+
+        java.util.Optional<Movie> movieOpt = movieRepository.findById(movieId);
+        if (movieOpt.isEmpty()) {
+            return "redirect:/";
+        }
+
+        List<String> cities = theaterRepository.findDistinctCities();
+        String selectedCity = (city == null || city.isBlank()) ? null : city.trim();
+        if ((selectedCity == null || selectedCity.isBlank()) && !cities.isEmpty()) {
+            selectedCity = cities.get(0);
+        }
+        if (selectedCity != null) {
+            for (String knownCity : cities) {
+                if (knownCity.equalsIgnoreCase(selectedCity)) {
+                    selectedCity = knownCity;
+                    break;
+                }
+            }
+        }
+        final String resolvedCity = selectedCity;
+
+        LocalDate selectedDate = date == null ? LocalDate.now() : date;
+        List<LocalDate> dateOptions = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            dateOptions.add(LocalDate.now().plusDays(i));
+        }
+
+        List<ShowSchedule> schedules = showScheduleRepository.findByMovieId(movieId);
+        List<ShowSchedule> filteredSchedules = schedules.stream()
+                .filter(s -> s.getTheater() != null)
+            .filter(s -> resolvedCity == null || resolvedCity.isBlank()
+                || (s.getTheater().getCity() != null && s.getTheater().getCity().equalsIgnoreCase(resolvedCity)))
+                .filter(s -> s.getStartDate() != null && s.getEndDate() != null && s.getStartTime() != null)
+                .filter(s -> !selectedDate.isBefore(s.getStartDate()) && !selectedDate.isAfter(s.getEndDate()))
+                .sorted(Comparator
+                        .comparing((ShowSchedule s) -> s.getTheater().getCity(), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(s -> s.getTheater().getName(), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(ShowSchedule::getStartTime))
+                .collect(Collectors.toList());
+
+        LinkedHashMap<Long, TheaterShowView> groupedShows = new LinkedHashMap<>();
+        for (ShowSchedule schedule : filteredSchedules) {
+            Long theaterId = schedule.getTheater().getId();
+            TheaterShowView theaterShow = groupedShows.computeIfAbsent(
+                    theaterId,
+                    id -> new TheaterShowView(
+                            id,
+                            schedule.getTheater().getName(),
+                            schedule.getTheater().getCity(),
+                            schedule.getTheater().getLocation()
+                    )
+            );
+            theaterShow.getShows().add(new ShowTimeView(
+                    schedule.getId(),
+                    schedule.getStartTime(),
+                    schedule.getScreen()
+            ));
+        }
+
+        model.addAttribute("movie", movieOpt.get());
+        model.addAttribute("cities", cities);
+        model.addAttribute("selectedCity", selectedCity);
+        model.addAttribute("selectedDate", selectedDate);
+        model.addAttribute("dateOptions", dateOptions);
+        model.addAttribute("theaterShows", new ArrayList<>(groupedShows.values()));
         return "movie";
     }
 
@@ -614,5 +688,64 @@ public class MovieController {
 
         return firstStartDateTime.isBefore(secondEndDateTime)
                 && secondStartDateTime.isBefore(firstEndDateTime);
+    }
+
+    public static class TheaterShowView {
+        private final Long theaterId;
+        private final String theaterName;
+        private final String city;
+        private final String location;
+        private final List<ShowTimeView> shows = new ArrayList<>();
+
+        public TheaterShowView(Long theaterId, String theaterName, String city, String location) {
+            this.theaterId = theaterId;
+            this.theaterName = theaterName;
+            this.city = city;
+            this.location = location;
+        }
+
+        public Long getTheaterId() {
+            return theaterId;
+        }
+
+        public String getTheaterName() {
+            return theaterName;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public List<ShowTimeView> getShows() {
+            return shows;
+        }
+    }
+
+    public static class ShowTimeView {
+        private final Long scheduleId;
+        private final LocalTime startTime;
+        private final Integer screen;
+
+        public ShowTimeView(Long scheduleId, LocalTime startTime, Integer screen) {
+            this.scheduleId = scheduleId;
+            this.startTime = startTime;
+            this.screen = screen;
+        }
+
+        public Long getScheduleId() {
+            return scheduleId;
+        }
+
+        public LocalTime getStartTime() {
+            return startTime;
+        }
+
+        public Integer getScreen() {
+            return screen;
+        }
     }
 }
