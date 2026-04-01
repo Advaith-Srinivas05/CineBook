@@ -61,4 +61,6 @@ public interface ShowScheduleRepository extends JpaRepository<ShowSchedule, Long
                                                @Param("startTime") LocalTime startTime,
                                                @Param("durationMinutes") Integer durationMinutes,
                                                @Param("excludedScheduleId") Long excludedScheduleId);
+
+        boolean existsByTheaterIdAndScreenGreaterThan(Long theaterId, Integer screen);
 }

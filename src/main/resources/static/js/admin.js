@@ -138,12 +138,63 @@ function clearError(inputEl) {
       tbody.innerHTML = '<tr><td colspan="7">Error loading movies.</td></tr>';
     }
 
-    document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    document.querySelectorAll('#admin-movies-table .edit-btn').forEach(function(btn) {
       btn.onclick = onEditMovie;
     });
-    document.querySelectorAll('.delete-btn').forEach(function(btn) {
+    document.querySelectorAll('#admin-movies-table .delete-btn').forEach(function(btn) {
       btn.onclick = onDeleteMovie;
     });
+  }
+
+  async function fetchTheaters() {
+    const tbody = document.querySelector('#admin-theaters-table tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="8">Loading theaters...</td></tr>';
+
+    try {
+      const res = await fetch('/api/admin/theaters');
+      if (!res.ok) {
+        tbody.innerHTML = '<tr><td colspan="8">Failed to load theaters.</td></tr>';
+        return;
+      }
+
+      const list = await res.json();
+      if (!Array.isArray(list) || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8">No theaters found.</td></tr>';
+        return;
+      }
+
+      const sortedList = list.slice().sort(function(a, b) {
+        const aId = Number(a && a.id);
+        const bId = Number(b && b.id);
+        if (!Number.isNaN(aId) && !Number.isNaN(bId)) return aId - bId;
+        return String(a && a.id || '').localeCompare(String(b && b.id || ''));
+      });
+
+      tbody.innerHTML = '';
+      for (const t of sortedList) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + escapeHtml(t.id) + '</td>' +
+          '<td>' + escapeHtml(t.name || '') + '</td>' +
+          '<td>' + escapeHtml(t.city || '') + '</td>' +
+          '<td>' + escapeHtml(t.location || '') + '</td>' +
+          '<td>' + escapeHtml(t.screenCount || '') + '</td>' +
+          '<td>' + escapeHtml(t.price || '') + '</td>' +
+          '<td>' + escapeHtml(t.elitePrice || '') + '</td>' +
+          '<td><button class="admin-action-btn edit theater-edit-btn" data-id="' + escapeHtml(t.id || '') + '">Edit</button> <button class="admin-action-btn delete theater-delete-btn" data-id="' + escapeHtml(t.id || '') + '">Delete</button></td>';
+        tbody.appendChild(tr);
+      }
+
+      document.querySelectorAll('#admin-theaters-table .theater-edit-btn').forEach(function(btn) {
+        btn.onclick = onEditTheater;
+      });
+      document.querySelectorAll('#admin-theaters-table .theater-delete-btn').forEach(function(btn) {
+        btn.onclick = onDeleteTheater;
+      });
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="8">Error loading theaters.</td></tr>';
+    }
   }
 
   async function onEditMovie(e) {
@@ -176,6 +227,38 @@ function clearError(inputEl) {
     }
   }
 
+  async function onEditTheater(e) {
+    const id = e.target.dataset.id;
+    const res = await fetch('/api/admin/theaters');
+    if (!res.ok) return alert('Failed to load theater details');
+    const list = await res.json();
+    const t = list.find(function(x) {
+      return String(x.id) === String(id);
+    });
+    if (!t) return alert('Theater not found');
+
+    document.getElementById('edit-theater-id').value = t.id || '';
+    document.getElementById('edit-theater-name').value = t.name || '';
+    document.getElementById('edit-theater-city').value = t.city || '';
+    document.getElementById('edit-theater-location').value = t.location || '';
+    document.getElementById('edit-theater-screen-count').value = t.screenCount || 1;
+    document.getElementById('edit-theater-price').value = t.price || 1;
+    document.getElementById('edit-theater-elite-price').value = t.elitePrice || 1;
+    openModal(document.getElementById('edit-theater-modal'));
+  }
+
+  async function onDeleteTheater(e) {
+    if (!confirm('Delete this theater? This will remove related show schedules.')) return;
+    const id = e.target.dataset.id;
+    const res = await fetch('/admin/theaters/' + id + '/delete', { method: 'POST' });
+    if (res.ok) {
+      fetchTheaters();
+    } else {
+      const message = await res.text();
+      alert(message || 'Failed to delete theater');
+    }
+  }
+
   const editModal = document.getElementById('edit-movie-modal');
   document.getElementById('close-edit-modal').onclick = function() {
     closeModal(editModal);
@@ -186,7 +269,14 @@ function clearError(inputEl) {
     closeModal(editShowModal);
   };
 
-  [editModal, editShowModal].forEach(function(modal) {
+  const editTheaterModal = document.getElementById('edit-theater-modal');
+  if (editTheaterModal) {
+    document.getElementById('close-edit-theater-modal').onclick = function() {
+      closeModal(editTheaterModal);
+    };
+  }
+
+  [editModal, editShowModal, editTheaterModal].forEach(function(modal) {
     if (!modal) return;
     modal.addEventListener('click', function(evt) {
       if (evt.target === modal) {
@@ -467,6 +557,29 @@ function clearError(inputEl) {
     alert(message || 'Failed to update show');
   });
 
+  const editTheaterForm = document.getElementById('edit-theater-form');
+  if (editTheaterForm) {
+    editTheaterForm.addEventListener('submit', async function(evt) {
+      evt.preventDefault();
+      const id = document.getElementById('edit-theater-id').value;
+      const formBody = new URLSearchParams(new FormData(this));
+      const res = await fetch('/admin/theaters/' + id + '/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: formBody
+      });
+
+      if (res.ok) {
+        closeModal(editTheaterModal);
+        fetchTheaters();
+        return;
+      }
+
+      const message = await res.text();
+      alert(message || 'Failed to update theater');
+    });
+  }
+
   function initializeSectionToggles() {
     const headers = document.querySelectorAll('.section-header');
 
@@ -591,6 +704,7 @@ function clearError(inputEl) {
                 submitBtn.style.opacity = '1';
               }
               this.reset();
+              fetchTheaters();
             }, 1500);
           } else if (res.status === 409) {
             const msg = await res.text();
@@ -758,5 +872,6 @@ function clearError(inputEl) {
 
   initializeSectionToggles();
   fetchMovies();
+  fetchTheaters();
   document.querySelector('.shows-table tbody').innerHTML = '<tr><td colspan="6">Select theatre and movie to view shows.</td></tr>';
 })();

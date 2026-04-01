@@ -282,6 +282,72 @@
         </div>
       </div>
 
+      <!-- Manage Theaters Section -->
+      <div class="admin-card">
+        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
+          <span>Manage Theaters</span>
+          <span class="toggle-icon" aria-hidden="true">^</span>
+        </div>
+        <div class="section-content">
+          <div class="movies-table-wrapper">
+            <table class="movies-table" id="admin-theaters-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Theater Name</th>
+                  <th>City</th>
+                  <th>Location</th>
+                  <th>Screens</th>
+                  <th>Price</th>
+                  <th>Elite Price</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- rows populated by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="edit-theater-modal" class="modal">
+            <div class="modal-content">
+              <span class="close-modal" id="close-edit-theater-modal">&times;</span>
+              <h3>Edit Theater</h3>
+              <form id="edit-theater-form">
+                <input type="hidden" id="edit-theater-id" name="id">
+                <div class="form-group span-2">
+                  <label for="edit-theater-name">Theater Name</label>
+                  <input type="text" id="edit-theater-name" name="name" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-theater-city">City</label>
+                  <input type="text" id="edit-theater-city" name="city" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-theater-screen-count">Screen Count</label>
+                  <input type="number" id="edit-theater-screen-count" name="screen_count" min="1" required>
+                </div>
+                <div class="form-group span-2">
+                  <label for="edit-theater-location">Location</label>
+                  <input type="text" id="edit-theater-location" name="location" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-theater-price">Ticket Price (Rs.)</label>
+                  <input type="number" id="edit-theater-price" name="price" min="1" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-theater-elite-price">Elite Ticket Price (Rs.)</label>
+                  <input type="number" id="edit-theater-elite-price" name="elite_price" min="1" required>
+                </div>
+                <div class="form-group span-2">
+                  <button type="submit" class="admin-btn">Save changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Manage Shows Section -->
       <div class="admin-card">
         <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">

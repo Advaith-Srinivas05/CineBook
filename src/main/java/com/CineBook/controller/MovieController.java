@@ -681,6 +681,114 @@ public class MovieController {
         }
     }
 
+    @GetMapping("/api/admin/theaters")
+    public ResponseEntity<List<Map<String, Object>>> getAdminTheaters(HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        List<Theater> theaters = theaterRepository.findAll();
+        theaters.sort(Comparator.comparing(Theater::getId));
+
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (Theater t : theaters) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", t.getId());
+            map.put("name", t.getName());
+            map.put("city", t.getCity());
+            map.put("location", t.getLocation());
+            map.put("screenCount", t.getScreenCount());
+            map.put("price", t.getPrice());
+            map.put("elitePrice", t.getElitePrice());
+            out.add(map);
+        }
+
+        return ResponseEntity.ok(out);
+    }
+
+    @PostMapping(value = "/admin/theaters/{id}/update", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<String> updateTheater(@org.springframework.web.bind.annotation.PathVariable("id") Long id,
+                                                @RequestParam("name") String name,
+                                                @RequestParam("city") String city,
+                                                @RequestParam(value = "location", required = false) String location,
+                                                @RequestParam(value = "screen_count", required = false) Integer screenCount,
+                                                @RequestParam(value = "price", required = false) Integer price,
+                                                @RequestParam(value = "elite_price", required = false) Integer elitePrice,
+                                                HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        try {
+            Optional<Theater> theaterOpt = theaterRepository.findById(id);
+            if (theaterOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Theater not found");
+            }
+
+            name = name == null ? "" : name.trim();
+            city = city == null ? "" : city.trim();
+            location = location == null ? null : location.trim();
+
+            if (name.isEmpty()) {
+                return ResponseEntity.badRequest().body("Theater name is required");
+            }
+            if (city.isEmpty()) {
+                return ResponseEntity.badRequest().body("City is required");
+            }
+            if (screenCount == null || screenCount < 1) {
+                return ResponseEntity.badRequest().body("Screen count must be at least 1");
+            }
+            if (price == null || price < 1) {
+                return ResponseEntity.badRequest().body("Ticket price must be at least 1");
+            }
+            if (elitePrice == null || elitePrice < 1) {
+                return ResponseEntity.badRequest().body("Elite ticket price must be at least 1");
+            }
+
+            Optional<Theater> sameName = theaterRepository.findByName(name);
+            if (sameName.isPresent() && !sameName.get().getId().equals(id)) {
+                return ResponseEntity.status(409).body("Theater with this name already exists");
+            }
+
+            if (showScheduleRepository.existsByTheaterIdAndScreenGreaterThan(id, screenCount)) {
+                return ResponseEntity.badRequest().body("Cannot reduce screen count below existing scheduled screen numbers");
+            }
+
+            Theater theater = theaterOpt.get();
+            theater.setName(name);
+            theater.setCity(city);
+            theater.setLocation(location);
+            theater.setScreenCount(screenCount);
+            theater.setPrice(price);
+            theater.setElitePrice(elitePrice);
+            theaterRepository.save(theater);
+            return ResponseEntity.ok("OK");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
+    @PostMapping("/admin/theaters/{id}/delete")
+    public ResponseEntity<String> deleteTheater(@org.springframework.web.bind.annotation.PathVariable("id") Long id,
+                                                HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        try {
+            if (!theaterRepository.existsById(id)) {
+                return ResponseEntity.status(404).body("Theater not found");
+            }
+            theaterRepository.deleteById(id);
+            return ResponseEntity.ok("OK");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
     @GetMapping("/api/movies/search")
     public ResponseEntity<java.util.List<java.util.Map<String,Object>>> searchMovies(@RequestParam(value = "q", required = false) String q) {
         if (q == null) q = "";
