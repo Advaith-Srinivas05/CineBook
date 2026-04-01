@@ -20,7 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function getCurrentReturnTo() {
-    return window.location.pathname + window.location.search;
+    const params = new URLSearchParams(window.location.search);
+    params.delete('auth');
+    const query = params.toString();
+    return window.location.pathname + (query ? ('?' + query) : '');
   }
 
   function populateReturnToFields() {

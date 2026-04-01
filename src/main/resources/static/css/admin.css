@@ -35,6 +35,17 @@
 }
 
 /* Center admin title inside header-top */
+.header-top {
+  position: relative;
+}
+
+.admin-title-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
 .admin-title {
   position: absolute;
   left: 50%;
@@ -44,6 +55,7 @@
   font-weight: 700;
   color: var(--text-primary);
   text-align: center;
+  white-space: nowrap;
 }
 
 #admin-container {
@@ -493,4 +505,11 @@ body.modal-open {
     max-height: calc(100vh - 1.5rem);
     padding: 1rem;
   }
+}
+
+/* Profile page: title is inside a flex grid cell, not a direct flex child */
+.admin-title-profile {
+  position: static;
+  transform: none;
+  left: auto;
 }

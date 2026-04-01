@@ -14,11 +14,11 @@
           <span class="menu-item-icon" aria-hidden="true">👤</span>
           <span class="menu-item-label">Profile</span>
         </a>
-        <a th:href="@{/booking-history}" href="/booking-history" class="user-dropdown-item" role="menuitem">
+        <a th:if="${session.isAdmin == null or !session.isAdmin}" th:href="@{/booking-history}" href="/booking-history" class="user-dropdown-item" role="menuitem">
           <span class="menu-item-icon" aria-hidden="true">🎟</span>
           <span class="menu-item-label">Booking History</span>
         </a>
-        <a th:href="@{/rating-history}" href="/rating-history" class="user-dropdown-item" role="menuitem">
+        <a th:if="${session.isAdmin == null or !session.isAdmin}" th:href="@{/rating-history}" href="/rating-history" class="user-dropdown-item" role="menuitem">
           <span class="menu-item-icon" aria-hidden="true">⭐</span>
           <span class="menu-item-label">Rating History</span>
         </a>

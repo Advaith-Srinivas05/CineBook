@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -26,12 +27,13 @@ public class AuthController {
     private LoginAttemptRepository loginAttemptRepository;
 
     @PostMapping("/login")
-    public String doLogin(@RequestParam String username,
+    public String doLogin(@RequestParam String email,
                           @RequestParam String password,
                           @RequestParam(value = "returnTo", required = false) String returnTo,
                           HttpServletRequest request,
                           RedirectAttributes redirectAttributes) {
-        Optional<User> maybeUser = userRepository.findByUsername(username);
+        String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
+        Optional<User> maybeUser = userRepository.findByEmail(normalizedEmail);
         boolean success = false;
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
@@ -43,12 +45,12 @@ public class AuthController {
                 session.setAttribute("userId", user.getId());
                 if ("Admin".equals(user.getUsername())) {
                     session.setAttribute("isAdmin", true);
-                    loginAttemptRepository.save(new LoginAttempt(user.getUsername(), true));
+                    loginAttemptRepository.save(new LoginAttempt(normalizedEmail, true));
                     return "redirect:/admin";
                 }
             }
         }
-        loginAttemptRepository.save(new LoginAttempt(username, success));
+        loginAttemptRepository.save(new LoginAttempt(normalizedEmail, success));
         String redirectTarget = resolveRedirectTarget(returnTo, request.getHeader("Referer"));
         if (success) {
             return "redirect:" + redirectTarget;
@@ -65,12 +67,20 @@ public class AuthController {
                            HttpServletRequest request,
                            RedirectAttributes redirectAttributes) {
         String redirectTarget = resolveRedirectTarget(returnTo, request.getHeader("Referer"));
+        String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
+
         if (userRepository.findByUsername(username).isPresent()) {
             redirectAttributes.addFlashAttribute("signupError", "Username already exists");
             return "redirect:" + withAuthParam(redirectTarget, "signup");
         }
+
+        if (userRepository.findByEmail(normalizedEmail).isPresent()) {
+            redirectAttributes.addFlashAttribute("signupError", "Email already exists");
+            return "redirect:" + withAuthParam(redirectTarget, "signup");
+        }
+
         String hash = hash(password);
-        User u = new User(username, email, hash);
+        User u = new User(username, normalizedEmail, hash);
         User saved = userRepository.save(u);
         HttpSession session = request.getSession(true);
         session.setAttribute("username", saved.getUsername());
@@ -134,7 +144,8 @@ public class AuthController {
             return "/";
         }
 
-        return candidate;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(candidate).replaceQueryParam("auth");
+        return builder.build(false).toUriString();
     }
 
     private String withAuthParam(String path, String authTab) {
@@ -144,9 +155,8 @@ public class AuthController {
         }
 
         String encodedTab = UriUtils.encodeQueryParam(authTab, StandardCharsets.UTF_8);
-        if (safePath.contains("auth=")) {
-            return safePath;
-        }
-        return safePath + (safePath.contains("?") ? "&" : "?") + "auth=" + encodedTab;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(safePath).replaceQueryParam("auth");
+        builder.queryParam("auth", encodedTab);
+        return builder.build(false).toUriString();
     }
 }
