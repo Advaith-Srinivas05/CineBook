@@ -296,6 +296,18 @@
   letter-spacing: 0.04em;
 }
 
+.current-date-icon {
+  margin-top: 0.2rem;
+  font-size: 0.62rem;
+  line-height: 1;
+  color: var(--available-green);
+}
+
+.date-button.past-cutoff-current .current-date-icon {
+  color: var(--sold-grey);
+  opacity: 0.45;
+}
+
 #theatre-list {
   display: flex;
   flex-direction: column;
@@ -310,6 +322,19 @@
   transition: all 0.3s ease;
 }
 
+.theatre-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.theatre-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .theatre-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
@@ -317,14 +342,20 @@
 .theatre-name {
   font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.3rem;
   color: var(--text-primary);
+}
+
+.theatre-info .movie-genre {
+  margin-bottom: 0;
 }
 
 .showtime-list {
   display: flex;
-  gap: 1rem;
+  gap: 12px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .showtime-button {
@@ -338,6 +369,98 @@
   transition: all 0.3s ease;
   text-decoration: none;
   display: inline-block;
+  position: relative;
+}
+
+.showtime-time {
+  display: inline-block;
+}
+
+.showtime-price-popover {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+  padding: 0.7rem 0.8rem;
+  min-width: 220px;
+  width: max-content;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(90px, auto);
+  gap: 1.1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 30;
+}
+
+.showtime-price-popover::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: #ffffff;
+}
+
+.popover-tier {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  text-align: center;
+}
+
+.popover-tier:not(:last-child) {
+  border-right: 1px solid rgba(17, 24, 39, 0.12);
+  padding-right: 1rem;
+}
+
+.tier-price {
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.tier-type {
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tier-status {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.tier-status.available {
+  color: #16a34a;
+}
+
+.tier-status.filling {
+  color: #f59e0b;
+}
+
+.tier-status.sold-out {
+  color: #6b7280;
+}
+
+.showtime-button:hover .showtime-price-popover,
+.showtime-button:focus-visible .showtime-price-popover {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
 }
 
 .showtime-button.available {
@@ -361,9 +484,36 @@
 }
 
 .showtime-button.sold-out {
-  border-color: var(--sold-grey);
-  color: var(--sold-grey);
+  border-color: #c8cdd4;
+  color: #b9bec7;
   cursor: not-allowed;
+}
+
+.showtime-button.booking-closed {
+  background-color: #f7f8fa;
+  border-color: #c8cdd4;
+  color: #b9bec7;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+.showtime-button.booking-closed .showtime-time {
+  color: #c0c5ce;
+}
+
+.showtime-button.booking-closed::after {
+  content: "";
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  top: 52%;
+  height: 3px;
+  background: #c1c7d0;
+  transform: rotate(-27deg);
+  transform-origin: center;
+  border-radius: 999px;
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {
@@ -398,6 +548,16 @@
   .movie-meta-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
+  }
+
+  .theatre-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .showtime-list {
+    justify-content: flex-start;
+    margin-left: 0;
   }
 
   .description-item {

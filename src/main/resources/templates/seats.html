@@ -48,25 +48,26 @@
       <div class="booking-summary">
         <div class="summary-item">
           <span class="summary-label">Movie</span>
-          <span class="summary-value">Action Adventure Placeholder</span>
+          <span class="summary-value" th:text="${movie.title}">Movie</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Theatre</span>
-          <span class="summary-value">Grand Cinema Multiplex</span>
+          <span class="summary-value" th:text="${theater.name}">Theatre</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Showtime</span>
-          <span class="summary-value">03:00 PM</span>
+          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen}">Showtime</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Tickets</span>
-          <span class="summary-value">3</span>
+          <span class="summary-value" id="ticket-count-value" th:text="${ticketCount}">1</span>
         </div>
       </div>
     </section>
 
     <!-- Seat Selection -->
-    <section id="seat-map">
+    <section id="seat-map"
+         th:attr="data-ticket-count=${ticketCount},data-booked-seats=${#strings.listJoin(bookedSeats, ',')},data-is-logged-in=${session.username != null}">
       <div class="screen-label">SCREEN</div>
 
       <!-- Seat Legend -->
@@ -87,6 +88,11 @@
 
       <!-- Seat Grid -->
       <div class="seat-grid">
+        <div class="seat-class-banner premium-banner"
+             th:text="${'PREMIUM (Rows A-D) - Rs. ' + eliteTicketPrice}">
+          PREMIUM (Rows A-D) - Rs. 350
+        </div>
+
         <!-- Front Section: A-D -->
         <!-- Row A -->
         <div class="seat-row">
@@ -198,6 +204,11 @@
 
         <!-- Walkway Gap between sections -->
         <div class="seat-row walkway"></div>
+
+        <div class="seat-class-banner normal-banner"
+             th:text="${'NORMAL (Rows E-K) - Rs. ' + ticketPrice}">
+          NORMAL (Rows E-K) - Rs. 250
+        </div>
 
         <!-- Back Section: E-K -->
         <!-- Row E -->
@@ -394,7 +405,15 @@
       </div>
 
       <br>
-      <a href="/payment" th:href="@{/payment}" class="btn btn-primary">Proceed to Payment</a>
+      <form id="proceed-payment-form" th:action="@{/payment}" action="/payment" method="get">
+        <input type="hidden" name="movieId" th:value="${movie.id}">
+        <input type="hidden" name="theaterId" th:value="${theater.id}">
+        <input type="hidden" name="scheduleId" th:value="${schedule.id}">
+        <input type="hidden" name="date" th:value="${showDate}">
+        <input type="hidden" name="ticketCount" th:value="${ticketCount}">
+        <input type="hidden" id="selected-seats-input" name="selectedSeats" value="">
+        <button id="proceed-payment" type="submit" class="btn btn-primary">Proceed to Payment</button>
+      </form>
     </section>
   </main>
 
@@ -404,5 +423,6 @@
   <footer>
     <p>&copy; 2026 CineBook. All rights reserved.</p>
   </footer>
+  <script src="/js/seats.js" th:src="@{/js/seats.js}"></script>
 </body>
 </html>

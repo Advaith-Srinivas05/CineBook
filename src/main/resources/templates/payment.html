@@ -48,27 +48,35 @@
       <div class="booking-summary">
         <div class="summary-item">
           <span class="summary-label">Movie</span>
-          <span class="summary-value">Action Adventure Placeholder</span>
+          <span class="summary-value" th:text="${movie.title}">Movie</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Theatre</span>
-          <span class="summary-value">Grand Cinema Multiplex</span>
+          <span class="summary-value" th:text="${theater.name}">Theatre</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Showtime</span>
-          <span class="summary-value">03:00 PM</span>
+          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen}">Showtime</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Seats</span>
-          <span class="summary-value">A1, A2, A3</span>
+          <span class="summary-value" th:text="${selectedSeats}">Seats</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Ticket Count</span>
-          <span class="summary-value">3</span>
+          <span class="summary-value" th:text="${ticketCount}">1</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Normal (Rows E-K)</span>
+          <span class="summary-value" th:text="${normalSeatCount + ' x Rs. ' + ticketPrice}">0 x Rs. 250</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Premium (Rows A-D)</span>
+          <span class="summary-value" th:text="${eliteSeatCount + ' x Rs. ' + eliteTicketPrice}">1 x Rs. 350</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Total Amount</span>
-          <span class="summary-value">$45.00</span>
+          <span class="summary-value" th:text="'Rs. ' + ${totalAmount}">Rs. 0</span>
         </div>
       </div>
     </section>
@@ -77,7 +85,14 @@
     <section id="payment-form">
       <h1 class="section-title">Payment Details</h1>
       
-      <form onsubmit="event.preventDefault(); window.location.href='/success';">
+      <form th:action="@{/payment/confirm}" action="/payment/confirm" method="post">
+        <input type="hidden" name="movieId" th:value="${movie.id}">
+        <input type="hidden" name="theaterId" th:value="${theater.id}">
+        <input type="hidden" name="scheduleId" th:value="${schedule.id}">
+        <input type="hidden" name="date" th:value="${showDate}">
+        <input type="hidden" name="ticketCount" th:value="${ticketCount}">
+        <input type="hidden" name="selectedSeats" th:value="${selectedSeats}">
+
         <div class="form-group">
           <label for="cardholder">Name on Card</label>
           <input type="text" id="cardholder" placeholder="John Doe" required>

@@ -621,17 +621,23 @@ function clearError(inputEl) {
         clearError(document.getElementById('theater-city'));
         clearError(document.getElementById('theater-location'));
         clearError(document.getElementById('screen-count'));
+        clearError(document.getElementById('ticket-price'));
+        clearError(document.getElementById('elite-ticket-price'));
 
         let hasError = false;
         const nameEl = document.getElementById('theater-name');
         const cityEl = document.getElementById('theater-city');
         const locationEl = document.getElementById('theater-location');
         const screenEl = document.getElementById('screen-count');
+        const priceEl = document.getElementById('ticket-price');
+        const elitePriceEl = document.getElementById('elite-ticket-price');
 
         const name = nameEl.value && nameEl.value.trim();
         const city = cityEl.value && cityEl.value.trim();
         const location = locationEl.value && locationEl.value.trim();
         const screenCount = parseInt(screenEl.value, 10);
+        const ticketPrice = parseInt(priceEl.value, 10);
+        const eliteTicketPrice = parseInt(elitePriceEl.value, 10);
 
         if (!name) {
           showError(nameEl, 'Theater name is required');
@@ -650,6 +656,20 @@ function clearError(inputEl) {
           hasError = true;
         } else if (screenCount < 1) {
           showError(screenEl, 'Screen count must be at least 1');
+          hasError = true;
+        }
+        if (!ticketPrice || isNaN(ticketPrice)) {
+          showError(priceEl, 'Ticket price is required');
+          hasError = true;
+        } else if (ticketPrice < 1) {
+          showError(priceEl, 'Ticket price must be at least 1');
+          hasError = true;
+        }
+        if (!eliteTicketPrice || isNaN(eliteTicketPrice)) {
+          showError(elitePriceEl, 'Elite ticket price is required');
+          hasError = true;
+        } else if (eliteTicketPrice < 1) {
+          showError(elitePriceEl, 'Elite ticket price must be at least 1');
           hasError = true;
         }
 

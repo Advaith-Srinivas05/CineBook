@@ -40,6 +40,7 @@ public class AuthController {
                 success = true;
                 HttpSession session = request.getSession(true);
                 session.setAttribute("username", user.getUsername());
+                session.setAttribute("userId", user.getId());
                 if ("Admin".equals(user.getUsername())) {
                     session.setAttribute("isAdmin", true);
                     loginAttemptRepository.save(new LoginAttempt(user.getUsername(), true));
@@ -73,6 +74,7 @@ public class AuthController {
         User saved = userRepository.save(u);
         HttpSession session = request.getSession(true);
         session.setAttribute("username", saved.getUsername());
+        session.setAttribute("userId", saved.getId());
         session.removeAttribute("isAdmin");
         return "redirect:" + redirectTarget;
     }

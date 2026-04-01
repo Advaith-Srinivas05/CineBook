@@ -53,7 +53,7 @@
   </header>
 
   <main>
-    <section id="movie-info" th:attr="data-movie-id=${movie.id}">
+    <section id="movie-info" th:attr="data-movie-id=${movie.id},data-is-logged-in=${session.username != null}">
       <div class="movie-details">
         <div id="movie-details-content" class="content-row">
           <div class="left-section">
@@ -142,16 +142,41 @@
       <h2 class="movie-section-title" style="margin-bottom: 0.5rem;">Select Theatre & Showtime</h2>
       <div id="theatre-list">
         <article class="theatre-card" th:each="entry : ${theaterShows}" th:attr="data-theatre-id=${entry.theaterId}">
-          <div class="theatre-name" th:text="${entry.theaterName + ' - ' + entry.city}">Theater</div>
-          <div class="movie-genre" th:if="${entry.location != null && !entry.location.isBlank()}" th:text="${entry.location}">Location</div>
-          <div class="showtime-list">
-            <a th:each="show : ${entry.shows}"
-               href="/tickets"
-               th:href="@{/tickets(movieId=${movie.id}, theaterId=${entry.theaterId}, scheduleId=${show.scheduleId}, city=${selectedCity}, date=${selectedDate})}"
-               class="showtime-button available"
-               th:text="${#temporals.format(show.startTime, 'hh:mm a') + ' | Screen ' + show.screen}">
-              Showtime
-            </a>
+          <div class="theatre-row">
+            <div class="theatre-info">
+              <div class="theatre-name" th:text="${entry.theaterName + ' - ' + entry.city}">Theater</div>
+              <div class="movie-genre" th:if="${entry.location != null && !entry.location.isBlank()}" th:text="${entry.location}">Location</div>
+            </div>
+            <div class="showtime-list">
+                <a th:each="show : ${entry.shows}"
+                  href="/tickets"
+                  th:href="${show.bookingOpen} ? @{/tickets(movieId=${movie.id}, theaterId=${entry.theaterId}, scheduleId=${show.scheduleId}, city=${selectedCity}, date=${selectedDate})} : '#'"
+                  class="showtime-button"
+                  th:classappend="${show.bookingOpen} ? ' available' : ' sold-out booking-closed'"
+                  data-requires-auth="true"
+                  th:data-booking-open="${show.bookingOpen}"
+                  th:aria-disabled="${!show.bookingOpen}"
+                  th:tabindex="${show.bookingOpen ? 0 : -1}"
+                  th:aria-label="${'Showtime ' + #temporals.format(show.startTime, 'hh:mm a') + (show.bookingOpen ? '. Hover for ticket prices.' : '. Booking closed for this show.')}">
+                <span class="showtime-time" th:text="${#temporals.format(show.startTime, 'hh:mm a')}">Showtime</span>
+                <div class="showtime-price-popover tooltip" aria-hidden="true">
+                  <div class="popover-tier tier">
+                    <span class="tier-price price" th:text="${'₹' + #numbers.formatDecimal(show.ticketPrice, 1, 2)}">₹250.00</span>
+                    <span class="tier-type type">NORMAL</span>
+                    <span class="tier-status status"
+                          th:classappend="${' ' + show.normalStatusClass}"
+                          th:text="${show.normalStatusLabel}">Available</span>
+                  </div>
+                  <div class="popover-tier tier">
+                    <span class="tier-price price" th:text="${'₹' + #numbers.formatDecimal(show.eliteTicketPrice, 1, 2)}">₹350.00</span>
+                    <span class="tier-type type">ELITE</span>
+                    <span class="tier-status status"
+                          th:classappend="${' ' + show.eliteStatusClass}"
+                          th:text="${show.eliteStatusLabel}">Filling Fast</span>
+                  </div>
+                </div>
+              </a>
+            </div>
           </div>
         </article>
         <p th:if="${#lists.isEmpty(theaterShows)}">No theaters found for the selected city and date.</p>

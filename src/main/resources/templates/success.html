@@ -53,33 +53,37 @@
       <div class="booking-summary" style="max-width: 500px; margin: 0 auto;">
         <div class="summary-item">
           <span class="summary-label">Movie</span>
-          <span class="summary-value">Action Adventure Placeholder</span>
+          <span class="summary-value" th:text="${movie.title}">Movie</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Theatre</span>
-          <span class="summary-value">Grand Cinema Multiplex</span>
+          <span class="summary-value" th:text="${theater.name}">Theatre</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Showtime</span>
-          <span class="summary-value">03:00 PM</span>
+          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen + ' | ' + #temporals.format(showDate, 'dd MMM yyyy')}">Showtime</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Seats</span>
-          <span class="summary-value">A1, A2, A3</span>
+          <span class="summary-value" th:text="${selectedSeats}">Seats</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Ticket Count</span>
-          <span class="summary-value">3</span>
+          <span class="summary-value" th:text="${ticketCount}">1</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Amount</span>
+          <span class="summary-value" th:text="'Rs. ' + ${totalAmount}">Rs. 0</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Booking ID</span>
-          <span class="summary-value">#CB2024-85392</span>
+          <span class="summary-value" th:text="'CB-' + ${bookingId}">CB-0</span>
         </div>
       </div>
 
       <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 2rem;">A confirmation email has been sent to your registered email address.</p>
       
-      <a href="index.html" class="btn btn-primary" style="margin-top: 2rem; max-width: 300px;">Back to Home</a>
+      <a href="/" th:href="@{/}" class="btn btn-primary" style="margin-top: 2rem; max-width: 300px;">Back to Home</a>
     </section>
   </main>
 

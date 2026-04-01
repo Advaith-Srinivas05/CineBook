@@ -81,6 +81,10 @@ document.addEventListener("DOMContentLoaded", function() {
         link.classList.add("selected");
       }
 
+      if (i === 0) {
+        link.classList.add("current-date");
+      }
+
       const daySpan = document.createElement("span");
       daySpan.className = "day";
       daySpan.textContent = dayText;
@@ -96,6 +100,15 @@ document.addEventListener("DOMContentLoaded", function() {
       link.appendChild(daySpan);
       link.appendChild(dateSpan);
       link.appendChild(monthSpan);
+
+      if (i === 0) {
+        const currentDateIcon = document.createElement("span");
+        currentDateIcon.className = "current-date-icon";
+        currentDateIcon.setAttribute("aria-hidden", "true");
+        currentDateIcon.textContent = "●";
+        link.appendChild(currentDateIcon);
+      }
+
       dateSelector.appendChild(link);
     }
   }());
@@ -110,15 +123,71 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  const showtimeButtons = document.querySelectorAll(".showtime-button.available");
+  const showtimeButtons = document.querySelectorAll(".showtime-button");
+  const movieInfo = document.getElementById("movie-info");
+  const isLoggedIn = movieInfo && movieInfo.dataset.isLoggedIn === "true";
+  const dateSelector = document.getElementById("date-selector");
+
+  const openLoginModal = function() {
+    if (window.CineBookAuthModal && typeof window.CineBookAuthModal.open === "function") {
+      window.CineBookAuthModal.open("login");
+      return;
+    }
+    document.dispatchEvent(new CustomEvent("cinebook:open-auth-modal", { detail: { tab: "login" } }));
+  };
+
   showtimeButtons.forEach(function(button) {
-    button.addEventListener("click", function() {
+    button.addEventListener("click", function(event) {
+      if (button.dataset.bookingOpen === "false") {
+        event.preventDefault();
+        return;
+      }
+
+      if (!isLoggedIn && button.dataset.requiresAuth === "true") {
+        event.preventDefault();
+        openLoginModal();
+        return;
+      }
+
       showtimeButtons.forEach(function(btn) {
         btn.classList.remove("selected");
       });
       this.classList.add("selected");
     });
   });
+
+  (function updateCurrentDateIndicatorState() {
+    if (!dateSelector) {
+      return;
+    }
+
+    const selectedDate = dateSelector.dataset.selectedDate || "";
+    if (!selectedDate) {
+      return;
+    }
+
+    const now = new Date();
+    const pad = function(value) {
+      return String(value).padStart(2, "0");
+    };
+    const todayIso = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+    if (selectedDate !== todayIso) {
+      return;
+    }
+
+    const currentDateButton = dateSelector.querySelector(".date-button.current-date");
+    if (!currentDateButton) {
+      return;
+    }
+
+    const hasOpenShow = Array.from(showtimeButtons).some(function(button) {
+      return button.dataset.bookingOpen === "true";
+    });
+
+    if (!hasOpenShow) {
+      currentDateButton.classList.add("past-cutoff-current");
+    }
+  }());
 
   (function initMovieRating() {
     const widget = document.getElementById("movie-rating-widget");

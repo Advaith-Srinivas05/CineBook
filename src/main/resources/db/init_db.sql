@@ -40,7 +40,9 @@ CREATE TABLE theaters (
   name TEXT NOT NULL,
   city TEXT NOT NULL,
   location TEXT,
-  screen_count INTEGER NOT NULL DEFAULT 1
+  screen_count INTEGER NOT NULL DEFAULT 1,
+  price INTEGER NOT NULL DEFAULT 250 CHECK (price > 0),
+  elite_price INTEGER NOT NULL DEFAULT 350 CHECK (elite_price > 0)
 );
 
 CREATE TABLE show_schedules (
@@ -60,6 +62,23 @@ CREATE INDEX idx_show_schedules_theater_screen_date_time
 
 CREATE INDEX idx_show_schedules_movie
   ON show_schedules(movie_id);
+
+CREATE TABLE movie_bookings (
+  id BIGSERIAL PRIMARY KEY,
+  show_id INTEGER NOT NULL REFERENCES show_schedules(id) ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  show_date DATE NOT NULL,
+  seat_count INTEGER NOT NULL CHECK (seat_count > 0),
+  total_price INTEGER NOT NULL CHECK (total_price > 0),
+  seat_numbers TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_movie_bookings_show_date
+  ON movie_bookings(show_id, show_date);
+
+CREATE INDEX idx_movie_bookings_user
+  ON movie_bookings(user_id);
 
 CREATE TABLE movie_ratings (
   id SERIAL PRIMARY KEY,

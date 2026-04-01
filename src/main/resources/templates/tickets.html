@@ -48,19 +48,19 @@
       <div class="booking-summary">
         <div class="summary-item">
           <span class="summary-label">Movie</span>
-          <span class="summary-value">Action Adventure Placeholder</span>
+          <span class="summary-value" th:text="${movie.title}">Movie</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Theatre</span>
-          <span class="summary-value">Grand Cinema Multiplex</span>
+          <span class="summary-value" th:text="${theater.name}">Theatre</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Showtime</span>
-          <span class="summary-value">03:00 PM</span>
+          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen}">Showtime</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Date</span>
-          <span class="summary-value">March 15, 2026</span>
+          <span class="summary-value" th:text="${#temporals.format(showDate, 'dd MMM yyyy')}">Date</span>
         </div>
       </div>
     </section>
@@ -68,19 +68,25 @@
     <!-- Ticket Selection -->
     <section id="ticket-selector">
       <h1 class="section-title">Select Number of Tickets</h1>
-      <div class="ticket-count-grid">
-        <button class="ticket-count" data-ticket-count="1">1</button>
-        <button class="ticket-count" data-ticket-count="2">2</button>
-        <button class="ticket-count" data-ticket-count="3">3</button>
-        <button class="ticket-count" data-ticket-count="4">4</button>
-        <button class="ticket-count" data-ticket-count="5">5</button>
-        <button class="ticket-count" data-ticket-count="6">6</button>
-        <button class="ticket-count" data-ticket-count="7">7</button>
-        <button class="ticket-count" data-ticket-count="8">8</button>
-        <button class="ticket-count" data-ticket-count="9">9</button>
-        <button class="ticket-count" data-ticket-count="10">10</button>
-      </div>
-      <a href="/seats" th:href="@{/seats}" class="btn btn-primary">Select Seats</a>
+      <form th:action="@{/seats}" action="/seats" method="get">
+        <input type="hidden" name="movieId" th:value="${movie.id}">
+        <input type="hidden" name="theaterId" th:value="${theater.id}">
+        <input type="hidden" name="scheduleId" th:value="${schedule.id}">
+        <input type="hidden" name="date" th:value="${showDate}">
+
+        <div class="ticket-count-grid">
+          <button type="submit" class="ticket-count" name="ticketCount" value="1">1</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="2">2</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="3">3</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="4">4</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="5">5</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="6">6</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="7">7</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="8">8</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="9">9</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="10">10</button>
+        </div>
+      </form>
     </section>
   </main>
 

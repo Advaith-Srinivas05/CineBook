@@ -364,6 +364,27 @@ section {
   margin: 0 auto 2rem;
 }
 
+.seat-class-banner {
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  margin: 0.6rem 0 1rem;
+}
+
+.premium-banner {
+  background: #fff4f4;
+  border: 1px solid #f9b8b8;
+  color: #9f1239;
+}
+
+.normal-banner {
+  background: #f2fbf5;
+  border: 1px solid #9be0b1;
+  color: #166534;
+}
+
 .seat-row {
   display: flex;
   gap: 1rem;

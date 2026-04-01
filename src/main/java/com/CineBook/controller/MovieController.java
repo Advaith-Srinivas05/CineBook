@@ -7,8 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.http.HttpSession;
 import com.CineBook.repository.CarouselRepository;
 import com.CineBook.repository.MovieRepository;
+import com.CineBook.repository.MovieBookingRepository;
+import com.CineBook.repository.UserRepository;
 import com.CineBook.model.Movie;
+import com.CineBook.model.MovieBooking;
 import com.CineBook.model.ShowSchedule;
+import com.CineBook.model.Theater;
+import com.CineBook.model.User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.MediaType;
@@ -28,11 +33,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 import jakarta.transaction.Transactional;
 
 @Controller
 public class MovieController {
+    private static final int ELITE_SEAT_CAPACITY = 64;
+    private static final int NORMAL_SEAT_CAPACITY = 112;
+
     @Autowired
     private CarouselRepository repository;
 
@@ -44,6 +56,12 @@ public class MovieController {
     
     @Autowired
     private com.CineBook.repository.ShowScheduleRepository showScheduleRepository;
+
+    @Autowired
+    private MovieBookingRepository movieBookingRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/")
     public String indexString(@RequestParam(value = "city", required = false) String city,
@@ -162,10 +180,32 @@ public class MovieController {
                             schedule.getTheater().getLocation()
                     )
             );
+
+            List<String> bookedSeats = movieBookingRepository.findBookedSeatNumbers(schedule.getId(), selectedDate);
+            int eliteBookedSeats = 0;
+            int normalBookedSeats = 0;
+            for (String seatNumber : bookedSeats) {
+                if (isEliteSeat(seatNumber)) {
+                    eliteBookedSeats++;
+                } else {
+                    normalBookedSeats++;
+                }
+            }
+
+            TierStatus normalTierStatus = resolveTierStatus(normalBookedSeats, NORMAL_SEAT_CAPACITY);
+            TierStatus eliteTierStatus = resolveTierStatus(eliteBookedSeats, ELITE_SEAT_CAPACITY);
+                boolean bookingOpen = isBookingOpen(schedule, selectedDate);
+
             theaterShow.getShows().add(new ShowTimeView(
                     schedule.getId(),
                     schedule.getStartTime(),
-                    schedule.getScreen()
+                    schedule.getTheater().getPrice(),
+                    schedule.getTheater().getElitePrice(),
+                    normalTierStatus.getLabel(),
+                    normalTierStatus.getCssClass(),
+                    eliteTierStatus.getLabel(),
+                    eliteTierStatus.getCssClass(),
+                    bookingOpen
             ));
         }
 
@@ -179,30 +219,236 @@ public class MovieController {
     }
 
     @GetMapping("/tickets")
-    public String tickets(HttpSession session) {
+    public String tickets(@RequestParam("movieId") Long movieId,
+                          @RequestParam("theaterId") Long theaterId,
+                          @RequestParam("scheduleId") Long scheduleId,
+                          @RequestParam(value = "date", required = false)
+                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                          Model model,
+                          HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+                if (getAuthenticatedUser(session).isEmpty()) return "redirect:/?auth=login";
+
+        Optional<ShowSchedule> scheduleOpt = resolveSchedule(movieId, theaterId, scheduleId);
+        if (scheduleOpt.isEmpty()) {
+            return "redirect:/";
+        }
+
+        ShowSchedule schedule = scheduleOpt.get();
+        LocalDate showDate = date == null ? LocalDate.now() : date;
+        if (showDate.isBefore(schedule.getStartDate()) || showDate.isAfter(schedule.getEndDate())) {
+            showDate = schedule.getStartDate();
+        }
+        if (!isBookingOpen(schedule, showDate)) {
+            return "redirect:" + buildMovieRedirectUrl(schedule, showDate);
+        }
+
+        populateBookingContext(model, schedule, showDate, null, Collections.emptyList());
         return "tickets";
     }
 
     @GetMapping("/seats")
-    public String seats(HttpSession session) {
+    public String seats(@RequestParam("movieId") Long movieId,
+                        @RequestParam("theaterId") Long theaterId,
+                        @RequestParam("scheduleId") Long scheduleId,
+                        @RequestParam(value = "date", required = false)
+                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                        @RequestParam(value = "ticketCount", required = false, defaultValue = "1") Integer ticketCount,
+                        Model model,
+                        HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+                if (getAuthenticatedUser(session).isEmpty()) return "redirect:/?auth=login";
+
+        Optional<ShowSchedule> scheduleOpt = resolveSchedule(movieId, theaterId, scheduleId);
+        if (scheduleOpt.isEmpty()) {
+            return "redirect:/";
+        }
+
+        ShowSchedule schedule = scheduleOpt.get();
+        LocalDate showDate = date == null ? LocalDate.now() : date;
+        if (showDate.isBefore(schedule.getStartDate()) || showDate.isAfter(schedule.getEndDate())) {
+            showDate = schedule.getStartDate();
+        }
+        if (!isBookingOpen(schedule, showDate)) {
+            return "redirect:" + buildMovieRedirectUrl(schedule, showDate);
+        }
+
+        int boundedTicketCount = ticketCount == null ? 1 : Math.max(1, Math.min(ticketCount, 10));
+        List<String> bookedSeats = movieBookingRepository.findBookedSeatNumbers(scheduleId, showDate).stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toUpperCase)
+                .distinct()
+                .collect(Collectors.toList());
+
+        populateBookingContext(model, schedule, showDate, boundedTicketCount, bookedSeats);
         return "seats";
     }
 
     @GetMapping("/payment")
-    public String payment(HttpSession session) {
+    public String payment(@RequestParam("movieId") Long movieId,
+                          @RequestParam("theaterId") Long theaterId,
+                          @RequestParam("scheduleId") Long scheduleId,
+                          @RequestParam(value = "date", required = false)
+                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                          @RequestParam(value = "ticketCount", required = false, defaultValue = "1") Integer ticketCount,
+                          @RequestParam("selectedSeats") String selectedSeats,
+                          Model model,
+                          HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+
+        Optional<User> userOpt = getAuthenticatedUser(session);
+        if (userOpt.isEmpty()) return "redirect:/?auth=login";
+
+        Optional<ShowSchedule> scheduleOpt = resolveSchedule(movieId, theaterId, scheduleId);
+        if (scheduleOpt.isEmpty()) return "redirect:/";
+
+        ShowSchedule schedule = scheduleOpt.get();
+        LocalDate showDate = date == null ? LocalDate.now() : date;
+        if (showDate.isBefore(schedule.getStartDate()) || showDate.isAfter(schedule.getEndDate())) {
+            showDate = schedule.getStartDate();
+        }
+        if (!isBookingOpen(schedule, showDate)) {
+            return "redirect:" + buildMovieRedirectUrl(schedule, showDate);
+        }
+
+        int boundedTicketCount = ticketCount == null ? 1 : Math.max(1, Math.min(ticketCount, 10));
+        List<String> normalizedSelectedSeats = parseSeatNumbers(selectedSeats);
+        if (normalizedSelectedSeats.size() != boundedTicketCount) {
+            return "redirect:" + buildSeatsRedirectUrl(schedule, showDate, boundedTicketCount);
+        }
+
+        Set<String> alreadyBooked = movieBookingRepository.findBookedSeatNumbers(scheduleId, showDate).stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+
+        boolean hasBookedSeat = normalizedSelectedSeats.stream().anyMatch(alreadyBooked::contains);
+        if (hasBookedSeat) {
+            return "redirect:" + buildSeatsRedirectUrl(schedule, showDate, boundedTicketCount);
+        }
+
+        populateBookingContext(model, schedule, showDate, boundedTicketCount, new ArrayList<>(alreadyBooked));
+        model.addAttribute("selectedSeats", String.join(",", normalizedSelectedSeats));
+        int ticketPrice = resolveTicketPrice(schedule.getTheater());
+        int eliteTicketPrice = resolveEliteTicketPrice(schedule.getTheater());
+        int eliteSeatCount = (int) normalizedSelectedSeats.stream().filter(this::isEliteSeat).count();
+        int normalSeatCount = boundedTicketCount - eliteSeatCount;
+
+        model.addAttribute("ticketPrice", ticketPrice);
+        model.addAttribute("eliteTicketPrice", eliteTicketPrice);
+        model.addAttribute("normalSeatCount", normalSeatCount);
+        model.addAttribute("eliteSeatCount", eliteSeatCount);
+        model.addAttribute("totalAmount", calculateBookingTotal(normalizedSelectedSeats, schedule.getTheater()));
         return "payment";
     }
 
-    @GetMapping("/success")
-    public String success(HttpSession session) {
+    @PostMapping("/payment/confirm")
+    @Transactional
+    public String confirmPayment(@RequestParam("movieId") Long movieId,
+                                 @RequestParam("theaterId") Long theaterId,
+                                 @RequestParam("scheduleId") Long scheduleId,
+                                 @RequestParam(value = "date", required = false)
+                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                 @RequestParam(value = "ticketCount", required = false, defaultValue = "1") Integer ticketCount,
+                                 @RequestParam("selectedSeats") String selectedSeats,
+                                 HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+
+        Optional<User> userOpt = getAuthenticatedUser(session);
+        if (userOpt.isEmpty()) return "redirect:/?auth=login";
+
+        Optional<ShowSchedule> scheduleOpt = resolveSchedule(movieId, theaterId, scheduleId);
+        if (scheduleOpt.isEmpty()) return "redirect:/";
+
+        ShowSchedule schedule = scheduleOpt.get();
+        LocalDate showDate = date == null ? LocalDate.now() : date;
+        if (showDate.isBefore(schedule.getStartDate()) || showDate.isAfter(schedule.getEndDate())) {
+            showDate = schedule.getStartDate();
+        }
+        if (!isBookingOpen(schedule, showDate)) {
+            return "redirect:" + buildMovieRedirectUrl(schedule, showDate);
+        }
+
+        int boundedTicketCount = ticketCount == null ? 1 : Math.max(1, Math.min(ticketCount, 10));
+        List<String> normalizedSelectedSeats = parseSeatNumbers(selectedSeats);
+        if (normalizedSelectedSeats.size() != boundedTicketCount) {
+            return "redirect:" + buildSeatsRedirectUrl(schedule, showDate, boundedTicketCount);
+        }
+
+        Set<String> alreadyBooked = movieBookingRepository.findBookedSeatNumbers(scheduleId, showDate).stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+        boolean hasBookedSeat = normalizedSelectedSeats.stream().anyMatch(alreadyBooked::contains);
+        if (hasBookedSeat) {
+            return "redirect:" + buildSeatsRedirectUrl(schedule, showDate, boundedTicketCount);
+        }
+
+        MovieBooking booking = new MovieBooking();
+        booking.setShow(schedule);
+        booking.setUser(userOpt.get());
+        booking.setShowDate(showDate);
+        booking.setSeatCount(boundedTicketCount);
+        booking.setTotalPrice(calculateBookingTotal(normalizedSelectedSeats, schedule.getTheater()));
+        booking.setSeatNumbers(String.join(",", normalizedSelectedSeats));
+        MovieBooking savedBooking = movieBookingRepository.save(booking);
+
+        return "redirect:/success?bookingId=" + savedBooking.getId();
+    }
+
+    @GetMapping("/success")
+    public String success(@RequestParam(value = "bookingId", required = false) Long bookingId,
+                          HttpSession session,
+                          Model model) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+
+        Optional<User> userOpt = getAuthenticatedUser(session);
+        if (userOpt.isEmpty()) return "redirect:/?auth=login";
+        if (bookingId == null) return "redirect:/";
+
+        Optional<MovieBooking> bookingOpt = movieBookingRepository.findOwnedBooking(bookingId, userOpt.get().getId());
+        if (bookingOpt.isEmpty()) return "redirect:/";
+
+        MovieBooking booking = bookingOpt.get();
+        ShowSchedule schedule = booking.getShow();
+        populateBookingContext(model, schedule, booking.getShowDate(), booking.getSeatCount(), Collections.emptyList());
+        model.addAttribute("selectedSeats", booking.getSeatNumbers());
+        model.addAttribute("bookingId", booking.getId());
+        int ticketPrice = resolveTicketPrice(schedule.getTheater());
+        int eliteTicketPrice = resolveEliteTicketPrice(schedule.getTheater());
+        model.addAttribute("ticketPrice", ticketPrice);
+        model.addAttribute("eliteTicketPrice", eliteTicketPrice);
+        int seatCount = 1;
+        Integer seatCountObj = booking.getSeatCount();
+        if (seatCountObj != null) {
+            seatCount = seatCountObj;
+        }
+
+        int eliteSeatCount = 0;
+        List<String> bookingSeats = parseSeatNumbers(booking.getSeatNumbers());
+        for (String seat : bookingSeats) {
+            if (isEliteSeat(seat)) {
+                eliteSeatCount++;
+            }
+        }
+        int normalSeatCount = Math.max(0, seatCount - eliteSeatCount);
+        model.addAttribute("normalSeatCount", normalSeatCount);
+        model.addAttribute("eliteSeatCount", eliteSeatCount);
+
+        int totalAmount = seatCount * ticketPrice;
+        Integer bookingTotalPrice = booking.getTotalPrice();
+        if (bookingTotalPrice != null) {
+            totalAmount = bookingTotalPrice;
+        }
+        model.addAttribute("totalAmount", totalAmount);
         return "success";
     }
 
@@ -391,6 +637,8 @@ public class MovieController {
                                              @RequestParam("city") String city,
                                              @RequestParam(value = "location", required = false) String location,
                                              @RequestParam(value = "screen_count", required = false) Integer screenCount,
+                                             @RequestParam(value = "price", required = false) Integer price,
+                                             @RequestParam(value = "elite_price", required = false) Integer elitePrice,
                                              HttpSession session) {
         Object isAdmin = session.getAttribute("isAdmin");
         if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
@@ -408,6 +656,12 @@ public class MovieController {
             if (city.isEmpty()) {
                 return ResponseEntity.badRequest().body("City is required");
             }
+            if (price == null || price < 1) {
+                return ResponseEntity.badRequest().body("Ticket price must be at least 1");
+            }
+            if (elitePrice == null || elitePrice < 1) {
+                return ResponseEntity.badRequest().body("Elite ticket price must be at least 1");
+            }
 
             // prevent duplicate theater names
             if (theaterRepository.findByName(name).isPresent()) {
@@ -418,6 +672,8 @@ public class MovieController {
             t.setCity(city);
             t.setLocation(location);
             t.setScreenCount(screenCount == null ? 1 : screenCount);
+            t.setPrice(price);
+            t.setElitePrice(elitePrice);
             theaterRepository.save(t);
             return ResponseEntity.ok("OK");
         } catch (Exception ex) {
@@ -451,6 +707,8 @@ public class MovieController {
             map.put("city", t.getCity());
             map.put("location", t.getLocation());
             map.put("screenCount", t.getScreenCount());
+            map.put("price", t.getPrice());
+            map.put("elitePrice", t.getElitePrice());
             out.add(map);
         }
         return ResponseEntity.ok(out);
@@ -741,12 +999,32 @@ public class MovieController {
     public static class ShowTimeView {
         private final Long scheduleId;
         private final LocalTime startTime;
-        private final Integer screen;
+        private final Integer ticketPrice;
+        private final Integer eliteTicketPrice;
+        private final String normalStatusLabel;
+        private final String normalStatusClass;
+        private final String eliteStatusLabel;
+        private final String eliteStatusClass;
+        private final boolean bookingOpen;
 
-        public ShowTimeView(Long scheduleId, LocalTime startTime, Integer screen) {
+        public ShowTimeView(Long scheduleId,
+                            LocalTime startTime,
+                            Integer ticketPrice,
+                            Integer eliteTicketPrice,
+                            String normalStatusLabel,
+                            String normalStatusClass,
+                            String eliteStatusLabel,
+                            String eliteStatusClass,
+                            boolean bookingOpen) {
             this.scheduleId = scheduleId;
             this.startTime = startTime;
-            this.screen = screen;
+            this.ticketPrice = ticketPrice;
+            this.eliteTicketPrice = eliteTicketPrice;
+            this.normalStatusLabel = normalStatusLabel;
+            this.normalStatusClass = normalStatusClass;
+            this.eliteStatusLabel = eliteStatusLabel;
+            this.eliteStatusClass = eliteStatusClass;
+            this.bookingOpen = bookingOpen;
         }
 
         public Long getScheduleId() {
@@ -757,8 +1035,205 @@ public class MovieController {
             return startTime;
         }
 
-        public Integer getScreen() {
-            return screen;
+        public Integer getTicketPrice() {
+            return ticketPrice;
         }
+
+        public Integer getEliteTicketPrice() {
+            return eliteTicketPrice;
+        }
+
+        public String getNormalStatusLabel() {
+            return normalStatusLabel;
+        }
+
+        public String getNormalStatusClass() {
+            return normalStatusClass;
+        }
+
+        public String getEliteStatusLabel() {
+            return eliteStatusLabel;
+        }
+
+        public String getEliteStatusClass() {
+            return eliteStatusClass;
+        }
+
+        public boolean isBookingOpen() {
+            return bookingOpen;
+        }
+    }
+
+    private static class TierStatus {
+        private final String label;
+        private final String cssClass;
+
+        private TierStatus(String label, String cssClass) {
+            this.label = label;
+            this.cssClass = cssClass;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getCssClass() {
+            return cssClass;
+        }
+    }
+
+    private TierStatus resolveTierStatus(int bookedSeats, int totalSeats) {
+        if (totalSeats <= 0) {
+            return new TierStatus("Sold Out", "sold-out");
+        }
+
+        int remainingSeats = Math.max(0, totalSeats - Math.max(0, bookedSeats));
+        if (remainingSeats == 0) {
+            return new TierStatus("Sold Out", "sold-out");
+        }
+
+        double remainingRatio = remainingSeats / (double) totalSeats;
+        if (remainingRatio <= 0.25d) {
+            return new TierStatus("Filling Fast", "filling");
+        }
+
+        return new TierStatus("Available", "available");
+    }
+
+    private boolean isBookingOpen(ShowSchedule schedule, LocalDate showDate) {
+        if (schedule == null || showDate == null || schedule.getStartTime() == null) {
+            return false;
+        }
+
+        LocalDateTime cutoffTime = LocalDateTime.of(showDate, schedule.getStartTime()).minusHours(1);
+        return LocalDateTime.now().isBefore(cutoffTime);
+    }
+
+    private String buildMovieRedirectUrl(ShowSchedule schedule, LocalDate showDate) {
+        Long movieId = schedule.getMovie() != null ? schedule.getMovie().getId() : null;
+        if (movieId == null) {
+            return "/";
+        }
+
+        StringBuilder redirectUrl = new StringBuilder();
+        redirectUrl.append("/movie?movieId=").append(movieId);
+        if (showDate != null) {
+            redirectUrl.append("&date=").append(showDate);
+        }
+
+        String city = schedule.getTheater() != null ? schedule.getTheater().getCity() : null;
+        if (city != null && !city.isBlank()) {
+            redirectUrl.append("&city=")
+                    .append(UriUtils.encodeQueryParam(city, StandardCharsets.UTF_8));
+        }
+
+        return redirectUrl.toString();
+    }
+
+    private int resolveTicketPrice(Theater theater) {
+        if (theater == null || theater.getPrice() == null || theater.getPrice() < 1) {
+            return 250;
+        }
+        return theater.getPrice();
+    }
+
+    private int resolveEliteTicketPrice(Theater theater) {
+        if (theater == null || theater.getElitePrice() == null || theater.getElitePrice() < 1) {
+            return 350;
+        }
+        return theater.getElitePrice();
+    }
+
+    private boolean isEliteSeat(String seatNumber) {
+        if (seatNumber == null || seatNumber.isBlank()) {
+            return false;
+        }
+        char row = Character.toUpperCase(seatNumber.trim().charAt(0));
+        return row >= 'A' && row <= 'D';
+    }
+
+    private int calculateBookingTotal(List<String> seatNumbers, Theater theater) {
+        int ticketPrice = resolveTicketPrice(theater);
+        int eliteTicketPrice = resolveEliteTicketPrice(theater);
+
+        int totalAmount = 0;
+        for (String seat : seatNumbers) {
+            totalAmount += isEliteSeat(seat) ? eliteTicketPrice : ticketPrice;
+        }
+        return totalAmount;
+    }
+
+    private Optional<ShowSchedule> resolveSchedule(Long movieId, Long theaterId, Long scheduleId) {
+        Optional<ShowSchedule> scheduleOpt = showScheduleRepository.findById(scheduleId);
+        if (scheduleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ShowSchedule schedule = scheduleOpt.get();
+        if (schedule.getMovie() == null || schedule.getTheater() == null) {
+            return Optional.empty();
+        }
+
+        if (!schedule.getMovie().getId().equals(movieId) || !schedule.getTheater().getId().equals(theaterId)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(schedule);
+    }
+
+    private Optional<User> getAuthenticatedUser(HttpSession session) {
+        Object userIdAttr = session.getAttribute("userId");
+        if (userIdAttr instanceof Number number) {
+            Long userId = number.longValue();
+            Optional<User> userById = userRepository.findById(userId);
+            if (userById.isPresent()) {
+                return userById;
+            }
+        }
+
+        Object usernameAttr = session.getAttribute("username");
+        if (!(usernameAttr instanceof String username) || username.isBlank()) {
+            return Optional.empty();
+        }
+        return userRepository.findByUsername(username);
+    }
+
+    private List<String> parseSeatNumbers(String seatNumbers) {
+        if (seatNumbers == null || seatNumbers.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        Set<String> uniqueSeats = java.util.Arrays.stream(seatNumbers.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toUpperCase)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return new ArrayList<>(uniqueSeats);
+    }
+
+    private String buildSeatsRedirectUrl(ShowSchedule schedule, LocalDate showDate, Integer ticketCount) {
+        return "/seats?movieId=" + schedule.getMovie().getId()
+                + "&theaterId=" + schedule.getTheater().getId()
+                + "&scheduleId=" + schedule.getId()
+                + "&date=" + showDate
+                + "&ticketCount=" + (ticketCount == null ? 1 : ticketCount);
+    }
+
+    private void populateBookingContext(Model model,
+                                        ShowSchedule schedule,
+                                        LocalDate showDate,
+                                        Integer ticketCount,
+                                        List<String> bookedSeats) {
+        Movie movie = schedule.getMovie();
+        Theater theater = schedule.getTheater();
+
+        model.addAttribute("movie", movie);
+        model.addAttribute("theater", theater);
+        model.addAttribute("schedule", schedule);
+        model.addAttribute("showDate", showDate);
+        model.addAttribute("ticketCount", ticketCount == null ? 1 : ticketCount);
+        model.addAttribute("ticketPrice", resolveTicketPrice(theater));
+        model.addAttribute("eliteTicketPrice", resolveEliteTicketPrice(theater));
+        model.addAttribute("bookedSeats", bookedSeats == null ? Collections.emptyList() : bookedSeats);
     }
 }

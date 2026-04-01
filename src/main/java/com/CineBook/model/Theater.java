@@ -26,6 +26,12 @@ public class Theater {
     @Column(name = "screen_count", nullable = false)
     private Integer screenCount = 1;
 
+    @Column(name = "price", nullable = false)
+    private Integer price = 250;
+
+    @Column(name = "elite_price", nullable = false)
+    private Integer elitePrice = 350;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -40,4 +46,10 @@ public class Theater {
 
     public Integer getScreenCount() { return screenCount; }
     public void setScreenCount(Integer screenCount) { this.screenCount = screenCount; }
+
+    public Integer getPrice() { return price; }
+    public void setPrice(Integer price) { this.price = price; }
+
+    public Integer getElitePrice() { return elitePrice; }
+    public void setElitePrice(Integer elitePrice) { this.elitePrice = elitePrice; }
 }
