@@ -1,0 +1,38 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="userControls">
+  <th:block th:if="${session.username == null}">
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+    <a href="#" class="signin-btn" data-auth-open="login">Sign In</a>
+  </th:block>
+
+  <th:block th:if="${session.username != null}">
+    <div class="user-menu-container">
+      <button type="button" class="avatar-trigger" aria-label="Open profile menu" aria-expanded="false">
+        <img th:src="${currentUserProfileImage}" src="/images/avatar.png" alt="User avatar" class="nav-avatar">
+      </button>
+      <div class="user-dropdown-menu" role="menu">
+        <a th:href="@{/profile}" href="/profile" class="user-dropdown-item" role="menuitem">
+          <span class="menu-item-icon" aria-hidden="true">👤</span>
+          <span class="menu-item-label">Profile</span>
+        </a>
+        <a th:href="@{/booking-history}" href="/booking-history" class="user-dropdown-item" role="menuitem">
+          <span class="menu-item-icon" aria-hidden="true">🎟</span>
+          <span class="menu-item-label">Booking History</span>
+        </a>
+        <a th:href="@{/rating-history}" href="/rating-history" class="user-dropdown-item" role="menuitem">
+          <span class="menu-item-icon" aria-hidden="true">⭐</span>
+          <span class="menu-item-label">Rating History</span>
+        </a>
+        <button type="button" id="theme-toggle" class="user-dropdown-item user-dropdown-button" aria-label="Toggle dark mode">
+          <span class="menu-item-icon" aria-hidden="true">🌙</span>
+          <span class="menu-item-label">Theme</span>
+        </button>
+        <form th:action="@{/logout}" action="/logout" method="post" class="user-dropdown-form">
+          <button type="submit" class="user-dropdown-item user-dropdown-button">
+            <span class="menu-item-icon" aria-hidden="true">↩</span>
+            <span class="menu-item-label">Sign Out</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </th:block>
+</th:block>

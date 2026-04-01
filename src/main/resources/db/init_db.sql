@@ -3,6 +3,9 @@ CREATE TABLE users (
   username VARCHAR(100) NOT NULL UNIQUE,
   email VARCHAR(255) UNIQUE,
   password_hash CHAR(64) NOT NULL,
+  profile_image VARCHAR(255),
+  phone_number VARCHAR(20),
+  location VARCHAR(120),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

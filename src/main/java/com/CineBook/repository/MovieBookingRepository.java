@@ -23,4 +23,12 @@ public interface MovieBookingRepository extends JpaRepository<MovieBooking, Long
         @Query("SELECT mb FROM MovieBooking mb WHERE mb.id = :bookingId AND mb.user.id = :userId")
         Optional<MovieBooking> findOwnedBooking(@Param("bookingId") Long bookingId,
                                                                                         @Param("userId") Long userId);
+
+        @Query("SELECT mb FROM MovieBooking mb " +
+                        "JOIN FETCH mb.show s " +
+                        "JOIN FETCH s.movie " +
+                        "JOIN FETCH s.theater " +
+                        "WHERE mb.user.id = :userId " +
+                        "ORDER BY mb.createdAt DESC")
+        List<MovieBooking> findHistoryByUserId(@Param("userId") Long userId);
 }

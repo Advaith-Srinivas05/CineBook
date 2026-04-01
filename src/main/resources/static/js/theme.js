@@ -1,20 +1,6 @@
 // Global theme toggle support.
 document.addEventListener('DOMContentLoaded', function() {
-  const header = document.querySelector('.header-right');
-  if (header) {
-    const themeToggle = document.createElement('button');
-    themeToggle.id = 'theme-toggle';
-    themeToggle.className = 'theme-toggle';
-    themeToggle.setAttribute('aria-label', 'Toggle dark mode');
-    themeToggle.innerHTML = '🌙';
-
-    const menuIcon = header.querySelector('.menu-icon');
-    if (menuIcon) {
-      header.insertBefore(themeToggle, menuIcon);
-    } else {
-      header.appendChild(themeToggle);
-    }
-  }
+  ensureThemeToggleExists();
 
   const currentTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', currentTheme);
@@ -34,6 +20,24 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+function ensureThemeToggleExists() {
+  if (document.getElementById('theme-toggle')) {
+    return;
+  }
+
+  const header = document.querySelector('.header-right');
+  if (!header) {
+    return;
+  }
+
+  const themeToggle = document.createElement('button');
+  themeToggle.id = 'theme-toggle';
+  themeToggle.className = 'theme-toggle';
+  themeToggle.setAttribute('aria-label', 'Toggle dark mode');
+  themeToggle.innerHTML = '🌙';
+  header.insertBefore(themeToggle, header.firstChild);
+}
+
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute('data-theme');
   const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -46,6 +50,12 @@ function toggleTheme() {
 function updateToggleButton(theme) {
   const toggleBtn = document.getElementById('theme-toggle');
   if (toggleBtn) {
-    toggleBtn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+    const icon = theme === 'dark' ? '☀️' : '🌙';
+    const iconSpan = toggleBtn.querySelector('.menu-item-icon');
+    if (iconSpan) {
+      iconSpan.textContent = icon;
+      return;
+    }
+    toggleBtn.innerHTML = icon;
   }
 }

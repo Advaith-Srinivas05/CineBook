@@ -23,11 +23,7 @@
         <!-- <div class="location-selector">
           📍 Select Location
         </div> -->
-        <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" class="inline-logout-form">
-          <button type="submit" class="signin-btn">Logout</button>
-        </form>
-        <a th:if="${session.username == null}" href="#" class="signin-btn" data-auth-open="login">Sign In</a>
-        <div class="menu-icon">☰</div>
+        <th:block th:replace="~{fragments/header-user-controls :: userControls}"></th:block>
       </div>
     </div>
     <!-- <nav>

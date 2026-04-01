@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - CineBook</title>
+  <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
+  <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <div class="header-top header-top-balanced">
+        <div class="header-side-left">
+          <a href="/" th:href="@{/}" class="logo"><img src="/images/title-nobg.png" alt="CineBook" style="height: 40px; margin-top: -5px;"></a>
+        </div>
+        <div class="search-bar search-bar-center">
+          <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
+        </div>
+        <div class="header-right header-side-right">
+          <div class="header-location-pill" th:if="${currentUserRecord != null and currentUserRecord.location != null and !#strings.isEmpty(currentUserRecord.location)}">
+            <span aria-hidden="true">📍</span>
+            <span th:text="${currentUserRecord.location}">Location</span>
+          </div>
+          <th:block th:replace="~{fragments/header-user-controls :: userControls}"></th:block>
+        </div>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/" th:href="@{/}">Movies</a></li>
+          <li><a href="/profile" th:href="@{/profile}">Profile</a></li>
+          <li><a href="/rating-history" th:href="@{/rating-history}">Rating History</a></li>
+          <li><a href="/booking-history" th:href="@{/booking-history}">Booking History</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="content">
+      <section class="profile-panel"
+               id="profile-page"
+               th:attr="data-profile-success=${profileSuccess},data-profile-error=${profileError},data-password-success=${passwordSuccess},data-password-error=${passwordError}">
+        <h1 class="section-title">My Profile</h1>
+
+        <p th:if="${profileSuccess}" class="profile-alert success" th:text="${profileSuccess}">Profile updated successfully.</p>
+        <p th:if="${profileError}" class="profile-alert error" th:text="${profileError}">Profile update failed.</p>
+        <p th:if="${passwordSuccess}" class="profile-alert success" th:text="${passwordSuccess}">Password updated successfully.</p>
+        <p th:if="${passwordError}" class="profile-alert error" th:text="${passwordError}">Password update failed.</p>
+
+        <div class="profile-header">
+          <input id="profile-image-input" type="file" name="profileImage" accept="image/*" style="display:none">
+          <button type="button" class="profile-avatar-button" id="profile-avatar-button" aria-label="Change profile photo">
+            <img id="profile-avatar-preview" th:src="${profileImageUrl}" src="/images/avatar.png" alt="Profile picture" class="profile-avatar-large">
+            <span class="profile-avatar-overlay">Change Photo</span>
+          </button>
+          <div class="profile-identity">
+            <h2 th:text="${profileUser.username}">Username</h2>
+            <p th:text="${profileUser.email != null ? profileUser.email : 'No email added'}">Email</p>
+          </div>
+        </div>
+
+        <div class="profile-grid">
+          <form th:action="@{/profile/update}" action="/profile/update" method="post" class="profile-form-card">
+            <h3>Edit Profile</h3>
+            <label for="profile-username">Username</label>
+            <input id="profile-username" type="text" name="username" th:value="${profileUser.username}" required>
+
+            <label for="profile-email">Email</label>
+            <input id="profile-email" type="email" name="email" th:value="${profileUser.email}">
+
+            <label for="profile-phone-number">Phone Number</label>
+            <input id="profile-phone-number" type="text" name="phoneNumber" th:value="${profileUser.phoneNumber}" inputmode="numeric" pattern="[0-9]{7,15}" maxlength="15" placeholder="Optional">
+
+            <label for="profile-location">Location</label>
+            <input id="profile-location" type="text" name="location" th:value="${profileUser.location}" maxlength="120" placeholder="Optional">
+
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </form>
+
+          <form th:action="@{/profile/change-password}" action="/profile/change-password" method="post" class="profile-form-card profile-password-card">
+            <h3>Change Password</h3>
+            <label for="current-password">Current Password</label>
+            <input id="current-password" type="password" name="currentPassword" required>
+
+            <label for="new-password">New Password</label>
+            <input id="new-password" type="password" name="newPassword" minlength="8" required>
+
+            <label for="confirm-password">Re-enter New Password</label>
+            <input id="confirm-password" type="password" name="confirmPassword" minlength="8" required>
+
+            <button type="submit" class="btn btn-primary">Change Password</button>
+          </form>
+        </div>
+
+        <div id="profile-toast" class="profile-toast" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <th:block th:replace="~{fragments/auth-modal :: authModal}"></th:block>
+
+    <footer>
+      <p>&copy; 2026 CineBook. All rights reserved.</p>
+    </footer>
+  </div>
+  <script src="/js/profile.js" th:src="@{/js/profile.js}"></script>
+</body>
+</html>

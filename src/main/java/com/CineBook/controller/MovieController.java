@@ -79,6 +79,18 @@ public class MovieController {
 
             String selectedCity = (city == null || city.isBlank()) ? null : city.trim();
             if ((selectedCity == null || selectedCity.isBlank()) && !cities.isEmpty()) {
+                Optional<User> userOpt = getAuthenticatedUser(session);
+                if (userOpt.isPresent() && userOpt.get().getLocation() != null && !userOpt.get().getLocation().isBlank()) {
+                    String preferredLocation = userOpt.get().getLocation().trim();
+                    for (String knownCity : cities) {
+                        if (knownCity.equalsIgnoreCase(preferredLocation)) {
+                            selectedCity = knownCity;
+                            break;
+                        }
+                    }
+                }
+            }
+            if ((selectedCity == null || selectedCity.isBlank()) && !cities.isEmpty()) {
                 selectedCity = cities.get(0);
             }
             if (selectedCity != null) {
@@ -136,6 +148,18 @@ public class MovieController {
 
         List<String> cities = theaterRepository.findDistinctCities();
         String selectedCity = (city == null || city.isBlank()) ? null : city.trim();
+        if ((selectedCity == null || selectedCity.isBlank()) && !cities.isEmpty()) {
+            Optional<User> userOpt = getAuthenticatedUser(session);
+            if (userOpt.isPresent() && userOpt.get().getLocation() != null && !userOpt.get().getLocation().isBlank()) {
+                String preferredLocation = userOpt.get().getLocation().trim();
+                for (String knownCity : cities) {
+                    if (knownCity.equalsIgnoreCase(preferredLocation)) {
+                        selectedCity = knownCity;
+                        break;
+                    }
+                }
+            }
+        }
         if ((selectedCity == null || selectedCity.isBlank()) && !cities.isEmpty()) {
             selectedCity = cities.get(0);
         }

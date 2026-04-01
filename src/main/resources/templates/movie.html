@@ -32,14 +32,10 @@
             </option>
           </select>
         </form>
-        <form th:if="${session.username != null}" th:action="@{/logout}" action="/logout" method="post" style="display:inline">
-          <button type="submit" class="signin-btn">Logout</button>
-        </form>
-        <a th:if="${session.username == null}" href="#" class="signin-btn" data-auth-open="login">Sign In</a>
-        <div class="menu-icon">☰</div>
+        <th:block th:replace="~{fragments/header-user-controls :: userControls}"></th:block>
       </div>
     </div>
-    <nav>
+    <!-- <nav>
       <ul class="nav-links">
         <li><a href="/" th:href="@{/}">Movies</a></li>
         <li><a href="#stream">Stream</a></li>
@@ -49,7 +45,7 @@
         <li><a href="#activities">Activities</a></li>
         <li><a href="#buzz">Buzz</a></li>
       </ul>
-    </nav>
+    </nav> -->
   </header>
 
   <main>
