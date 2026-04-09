@@ -61,6 +61,20 @@ function clearError(inputEl) {
     }
   }
 
+  function inferImageMimeType(name) {
+    const value = String(name || '').toLowerCase();
+    if (value.endsWith('.jpg') || value.endsWith('.jpeg')) return 'image/jpeg';
+    if (value.endsWith('.gif')) return 'image/gif';
+    if (value.endsWith('.webp')) return 'image/webp';
+    return 'image/png';
+  }
+
+  function buildBannerDataUri(imageName, imageBase64) {
+    if (!imageBase64) return '';
+    const mimeType = inferImageMimeType(imageName);
+    return 'data:' + mimeType + ';base64,' + imageBase64;
+  }
+
   function showSuggestions(container, items, labelSelector, onSelect) {
     container.innerHTML = '';
     if (!items || items.length === 0) {
@@ -101,6 +115,102 @@ function clearError(inputEl) {
     modal.classList.remove('active');
     if (!document.querySelector('.modal.active')) {
       document.body.classList.remove('modal-open');
+    }
+  }
+
+  const bannerPreviewOverlay = document.getElementById('banner-preview-overlay');
+  const bannerPreviewImage = document.getElementById('banner-preview-image');
+  const bannerPreviewName = document.getElementById('banner-preview-name');
+
+  function openBannerPreview(imageSrc, imageName) {
+    if (!bannerPreviewOverlay || !bannerPreviewImage || !bannerPreviewName) return;
+    if (!imageSrc) return;
+
+    bannerPreviewImage.src = imageSrc;
+    bannerPreviewImage.alt = imageName || 'Banner Preview';
+    bannerPreviewName.textContent = imageName || 'Banner Preview';
+    bannerPreviewOverlay.classList.add('active');
+    bannerPreviewOverlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeBannerPreview() {
+    if (!bannerPreviewOverlay || !bannerPreviewImage) return;
+    bannerPreviewOverlay.classList.remove('active');
+    bannerPreviewOverlay.setAttribute('aria-hidden', 'true');
+    bannerPreviewImage.src = '';
+    if (!document.querySelector('.modal.active')) {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
+  async function fetchBanners() {
+    const tbody = document.querySelector('#admin-banners-table tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="8">Loading banners...</td></tr>';
+    try {
+      const res = await fetch('/api/admin/banners');
+      if (!res.ok) {
+        tbody.innerHTML = '<tr><td colspan="8">Failed to load banners.</td></tr>';
+        return;
+      }
+
+      const list = await res.json();
+      if (!Array.isArray(list) || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8">No banners found.</td></tr>';
+        closeBannerPreview();
+        return;
+      }
+
+      const sortedList = list.slice().sort(function(a, b) {
+        const aId = Number(a && a.id);
+        const bId = Number(b && b.id);
+        if (!Number.isNaN(aId) && !Number.isNaN(bId)) return aId - bId;
+        return String(a && a.id || '').localeCompare(String(b && b.id || ''));
+      });
+
+      tbody.innerHTML = '';
+      for (const banner of sortedList) {
+        const tr = document.createElement('tr');
+        const imageSrc = banner.imageDataUri || buildBannerDataUri(banner.imageName, banner.imageBase64);
+        tr.innerHTML =
+          '<td>' + escapeHtml(banner.id) + '</td>' +
+          '<td>' + escapeHtml(banner.imageName || '') + '</td>' +
+          '<td>' + escapeHtml(banner.imageSizeDisplay || '-') + '</td>' +
+          '<td>' + escapeHtml(banner.dimensions || '-') + '</td>' +
+          '<td>' + escapeHtml(banner.aspectRatio || '-') + '</td>' +
+          '<td>' + escapeHtml(banner.fileType || '-') + '</td>' +
+          '<td class="banner-preview-cell"><button type="button" class="banner-thumb-btn" data-image-src="' + escapeHtml(imageSrc) + '" data-image-name="' + escapeHtml(banner.imageName || '') + '" aria-label="Preview banner ' + escapeHtml(banner.imageName || '') + '"><img class="banner-thumb" src="' + escapeHtml(imageSrc) + '" alt="Banner thumbnail"></button></td>' +
+          '<td><button type="button" class="delete-btn banner-delete-btn" data-id="' + escapeHtml(banner.id) + '">Delete</button></td>';
+        tbody.appendChild(tr);
+      }
+
+      document.querySelectorAll('#admin-banners-table .banner-delete-btn').forEach(function(btn) {
+        btn.onclick = onDeleteBanner;
+      });
+
+      document.querySelectorAll('#admin-banners-table .banner-thumb-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const src = this.dataset.imageSrc || '';
+          const name = this.dataset.imageName || 'Banner Preview';
+          openBannerPreview(src, name);
+        });
+      });
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="8">Error loading banners.</td></tr>';
+    }
+  }
+
+  async function onDeleteBanner(e) {
+    if (!confirm('Delete this banner image?')) return;
+    const id = e.target.dataset.id;
+    const res = await fetch('/admin/banners/' + id, { method: 'DELETE' });
+    if (res.ok) {
+      fetchBanners();
+    } else {
+      const message = await res.text();
+      alert(message || 'Failed to delete banner');
     }
   }
 
@@ -264,6 +374,123 @@ function clearError(inputEl) {
     closeModal(editModal);
   };
 
+  const addMovieModal = document.getElementById('add-movie-modal');
+  const addTheaterModal = document.getElementById('add-theater-modal');
+
+  const openAddMovieBtn = document.getElementById('open-add-movie-modal');
+  if (openAddMovieBtn) {
+    openAddMovieBtn.addEventListener('click', function(evt) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      openModal(addMovieModal);
+    });
+    openAddMovieBtn.addEventListener('keydown', function(evt) {
+      evt.stopPropagation();
+    });
+  }
+
+  const openAddTheaterBtn = document.getElementById('open-add-theater-modal');
+  if (openAddTheaterBtn) {
+    openAddTheaterBtn.addEventListener('click', function(evt) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      openModal(addTheaterModal);
+    });
+    openAddTheaterBtn.addEventListener('keydown', function(evt) {
+      evt.stopPropagation();
+    });
+  }
+
+  if (addMovieModal) {
+    const closeAddMovieBtn = document.getElementById('close-add-movie-modal');
+    if (closeAddMovieBtn) {
+      closeAddMovieBtn.onclick = function() {
+        closeModal(addMovieModal);
+      };
+    }
+  }
+
+  if (addTheaterModal) {
+    const closeAddTheaterBtn = document.getElementById('close-add-theater-modal');
+    if (closeAddTheaterBtn) {
+      closeAddTheaterBtn.onclick = function() {
+        closeModal(addTheaterModal);
+      };
+    }
+  }
+
+  const bannerUploadButton = document.getElementById('open-banner-upload');
+  const bannerFileInput = document.getElementById('banner-file-input');
+  const bannerClosePreviewBtn = document.getElementById('banner-preview-close');
+
+  if (bannerUploadButton && bannerFileInput) {
+    bannerUploadButton.addEventListener('click', function(evt) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      bannerFileInput.click();
+    });
+
+    bannerFileInput.addEventListener('change', async function() {
+      if (!this.files || this.files.length === 0) return;
+
+      const file = this.files[0];
+      const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/x-webp'];
+      const name = (file && file.name) ? file.name.toLowerCase() : '';
+      const ext = name.includes('.') ? name.split('.').pop() : '';
+      const allowedExtensions = ['png', 'jpg', 'jpeg', 'webp'];
+
+      const normalizedType = (file.type || '').toLowerCase();
+      const mimeValid = !normalizedType || allowedMimeTypes.includes(normalizedType);
+      const extensionValid = allowedExtensions.includes(ext);
+      if (!mimeValid || !extensionValid) {
+        alert('Only PNG, JPEG, or WebP images are allowed.');
+        this.value = '';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('banner', file);
+
+      try {
+        const res = await fetch('/admin/banners', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (!res.ok) {
+          const message = await res.text();
+          alert(message || 'Failed to upload banner');
+        }
+      } catch (err) {
+        alert('Failed to upload banner');
+      } finally {
+        this.value = '';
+        fetchBanners();
+      }
+    });
+  }
+
+  if (bannerClosePreviewBtn) {
+    bannerClosePreviewBtn.addEventListener('click', function() {
+      closeBannerPreview();
+    });
+  }
+
+  if (bannerPreviewOverlay) {
+    bannerPreviewOverlay.addEventListener('click', function(evt) {
+      if (evt.target === bannerPreviewOverlay) {
+        closeBannerPreview();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function(evt) {
+    if (evt.key === 'Escape' && bannerPreviewOverlay && bannerPreviewOverlay.classList.contains('active')) {
+      closeBannerPreview();
+    }
+  });
+
   const editShowModal = document.getElementById('edit-show-modal');
   document.getElementById('close-edit-show-modal').onclick = function() {
     closeModal(editShowModal);
@@ -276,7 +503,7 @@ function clearError(inputEl) {
     };
   }
 
-  [editModal, editShowModal, editTheaterModal].forEach(function(modal) {
+  [editModal, editShowModal, editTheaterModal, addMovieModal, addTheaterModal].forEach(function(modal) {
     if (!modal) return;
     modal.addEventListener('click', function(evt) {
       if (evt.target === modal) {
@@ -588,10 +815,28 @@ function clearError(inputEl) {
       if (!content || !content.classList.contains('section-content')) return;
 
       const icon = header.querySelector('.toggle-icon');
+      const toggleBtn = header.querySelector('.section-toggle-btn');
       const syncState = function() {
         const expanded = !content.classList.contains('hidden');
         header.setAttribute('aria-expanded', String(expanded));
-        if (icon) icon.classList.toggle('rotate', expanded);
+
+        if (toggleBtn) {
+          toggleBtn.setAttribute('aria-expanded', String(expanded));
+        }
+
+        if (icon) {
+          if (icon.tagName === 'IMG') {
+            const expandedSrc = icon.dataset.expandedSrc || '';
+            const collapsedSrc = icon.dataset.collapsedSrc || '';
+            if (expanded && expandedSrc) {
+              icon.setAttribute('src', expandedSrc);
+            } else if (!expanded && collapsedSrc) {
+              icon.setAttribute('src', collapsedSrc);
+            }
+          } else {
+            icon.classList.toggle('rotate', expanded);
+          }
+        }
       };
 
       const onToggle = function() {
@@ -599,20 +844,28 @@ function clearError(inputEl) {
         syncState();
       };
 
-      header.addEventListener('click', onToggle);
-      header.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter' || event.key === ' ') {
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function(event) {
           event.preventDefault();
+          event.stopPropagation();
           onToggle();
-        }
-      });
+        });
+      } else {
+        header.addEventListener('click', onToggle);
+        header.addEventListener('keydown', function(event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onToggle();
+          }
+        });
+      }
 
       syncState();
     });
   }
 
   // Admin form submissions for add movie and add theater.
-  const adminForms = document.querySelectorAll('.admin-card form');
+  const adminForms = document.querySelectorAll('#add-movie-form, #add-theater-form');
   adminForms.forEach(function(form) {
     if (form.id === 'add-movie-form') {
       form.addEventListener('submit', async function(e) {
@@ -704,7 +957,8 @@ function clearError(inputEl) {
                 submitBtn.style.opacity = '1';
               }
               this.reset();
-              fetchTheaters();
+              closeModal(addMovieModal);
+              fetchMovies();
             }, 1500);
           } else if (res.status === 409) {
             const msg = await res.text();
@@ -813,6 +1067,8 @@ function clearError(inputEl) {
                 submitBtn.style.opacity = '1';
               }
               this.reset();
+              closeModal(addTheaterModal);
+              fetchTheaters();
             }, 1500);
           } else if (res.status === 409) {
             const msg = await res.text();
@@ -835,24 +1091,6 @@ function clearError(inputEl) {
       return;
     }
 
-    if (form.id === 'schedule-show-form') {
-      return;
-    }
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const submitBtn = this.querySelector('button[type="submit"]');
-      if (submitBtn) {
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Added Successfully!';
-        submitBtn.style.opacity = '0.7';
-        setTimeout(() => {
-          submitBtn.textContent = originalText;
-          submitBtn.style.opacity = '1';
-          this.reset();
-        }, 1500);
-      }
-    });
   });
 
   const removeMovieBtns = document.querySelectorAll('.admin-remove-btn');
@@ -871,6 +1109,7 @@ function clearError(inputEl) {
   });
 
   initializeSectionToggles();
+  fetchBanners();
   fetchMovies();
   fetchTheaters();
   document.querySelector('.shows-table tbody').innerHTML = '<tr><td colspan="6">Select theatre and movie to view shows.</td></tr>';

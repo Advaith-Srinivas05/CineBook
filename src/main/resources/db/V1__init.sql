@@ -23,6 +23,11 @@ CREATE TABLE carousel_images (
     id SERIAL PRIMARY KEY,
     image_name VARCHAR(255),
     image_data BYTEA NOT NULL,
+    image_size_bytes BIGINT,
+    image_width INTEGER,
+    image_height INTEGER,
+    aspect_ratio VARCHAR(20),
+    file_type VARCHAR(20),
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

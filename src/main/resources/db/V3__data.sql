@@ -1,20 +1,19 @@
 DO $$
 DECLARE
-    file TEXT;
     project_path TEXT := '${projectRootPath}';
     folder_path TEXT := 'src\\main\\resources\\static\\images\\banner\\';
     folder TEXT;
 BEGIN
     folder := project_path || folder_path;
-
-    FOR file IN SELECT pg_ls_dir(folder)
-    LOOP
-        INSERT INTO carousel_images(image_name, image_data)
-        VALUES (
-            file,
-            pg_read_binary_file(folder || file)
-        );
-    END LOOP;
+    INSERT INTO carousel_images
+    (image_name, image_data, image_size_bytes, image_width, image_height, aspect_ratio, file_type)
+    VALUES
+    ('banner1.webp', pg_read_binary_file(folder || 'banner1.webp'), 40144, 1240, 300, '62:15', 'webp'),
+    ('banner2.webp', pg_read_binary_file(folder || 'banner2.webp'), 36132, 1240, 300, '62:15', 'webp'),
+    ('banner3.webp', pg_read_binary_file(folder || 'banner3.webp'), 31450, 1240, 300, '62:15', 'webp'),
+    ('banner4.webp', pg_read_binary_file(folder || 'banner4.webp'), 65842, 1240, 300, '62:15', 'webp'),
+    ('banner5.webp', pg_read_binary_file(folder || 'banner5.webp'), 45284, 1240, 300, '62:15', 'webp'),
+    ('banner6.webp', pg_read_binary_file(folder || 'banner6.webp'), 27926, 1240, 300, '62:15', 'webp');
 END
 $$;
 

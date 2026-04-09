@@ -37,173 +37,77 @@
   <!-- Main Content -->
   <main>
     <section id="admin-container">
-      <!-- <h1 class="admin-title">Admin Dashboard</h1> -->
-
-      <div class="admin-row">
-        <!-- Add Movie Section -->
-        <div class="admin-card">
-          <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
-            <span>Add Movie</span>
-            <span class="toggle-icon" aria-hidden="true">^</span>
-          </div>
-          <div class="section-content">
-            <form id="add-movie-form" action="/admin/movies" method="post" enctype="multipart/form-data">
-              <div class="form-group span-2">
-                <label for="movie-title">Movie Title</label>
-                <input type="text" id="movie-title" name="title" placeholder="Enter movie title" required>
-                <div class="field-error" id="movie-title-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="movie-language">Language</label>
-                <input type="text" id="movie-language" name="language" placeholder="English, Hindi, etc." required>
-                <div class="field-error" id="movie-language-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="movie-certification">Certification</label>
-                <select id="movie-certification" name="certification" required>
-                  <option value="" disabled selected>Select Certification</option>
-                  <option value="U">U</option>
-                  <option value="U/A 7+">U/A 7+</option>
-                  <option value="U/A 13+">U/A 13+</option>
-                  <option value="U/A 16+">U/A 16+</option>
-                  <option value="A">A</option>
-                </select>
-                <div class="field-error" id="movie-certification-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="movie-duration">Duration (minutes)</label>
-                <input type="number" id="movie-duration" name="duration" placeholder="120" required>
-                <div class="field-error" id="movie-duration-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="movie-poster">Movie Poster (jpg, jpeg, png)</label>
-                <input type="file" id="movie-poster" name="poster" accept=".jpg,.jpeg,.png" required>
-                <div class="field-error" id="movie-poster-error"></div>
-              </div>
-              <div class="form-group span-2">
-                <label for="movie-description">Description</label>
-                <textarea id="movie-description" name="description" rows="3" placeholder="Enter movie description"></textarea>
-                <div class="field-error" id="movie-description-error"></div>
-              </div>
-              <button type="submit" class="admin-btn">Add Movie</button>
-            </form>
-          </div>
-        </div>
-
-        <!-- Add Theater Section -->
-        <div class="admin-card">
-          <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
-            <span>Add Theater</span>
-            <span class="toggle-icon" aria-hidden="true">^</span>
-          </div>
-          <div class="section-content">
-            <form id="add-theater-form" action="/admin/theaters" method="post">
-              <div class="form-group span-2">
-                <label for="theater-name">Theater Name</label>
-                <input type="text" id="theater-name" name="name" placeholder="Enter theater name" required>
-                <div class="field-error" id="theater-name-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="theater-city">City</label>
-                <input type="text" id="theater-city" name="city" placeholder="Enter city" required>
-                <div class="field-error" id="theater-city-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="screen-count">Screen Count</label>
-                <input type="number" id="screen-count" name="screen_count" placeholder="5" value="1" min="1">
-                <div class="field-error" id="screen-count-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="ticket-price">Ticket Price (Rs.)</label>
-                <input type="number" id="ticket-price" name="price" placeholder="250" value="250" min="1" required>
-                <div class="field-error" id="ticket-price-error"></div>
-              </div>
-              <div class="form-group">
-                <label for="elite-ticket-price">Elite Ticket Price (Rs.)</label>
-                <input type="number" id="elite-ticket-price" name="elite_price" placeholder="350" value="350" min="1" required>
-                <div class="field-error" id="elite-ticket-price-error"></div>
-              </div>
-              <div class="form-group span-2">
-                <label for="theater-location">Location</label>
-                <input type="text" id="theater-location" name="location" placeholder="Area / Address" required>
-                <div class="field-error" id="theater-location-error"></div>
-              </div>
-              <button type="submit" class="admin-btn">Add Theater</button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- Schedule Show Section -->
+      <!-- Manage Banners Section -->
       <div class="admin-card">
-        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
-          <span>Schedule Show</span>
-          <span class="toggle-icon" aria-hidden="true">^</span>
+        <div class="admin-card-title section-header section-header-with-actions">
+          <h2 class="section-title">Manage Banners</h2>
+          <div class="section-actions">
+            <button type="button" class="add-icon-btn upload-icon-btn" id="open-banner-upload" title="Upload Banner" aria-label="Upload Banner">
+              <img th:src="@{/images/upload.svg}" src="/images/upload.svg" alt="" aria-hidden="true">
+            </button>
+            <button type="button" class="section-toggle-btn" title="Toggle Section" aria-label="Toggle Section" aria-expanded="true">
+              <img class="toggle-icon" th:src="@{/images/chevron-up.svg}" src="/images/chevron-up.svg" data-expanded-src="/images/chevron-up.svg" data-collapsed-src="/images/chevron-down.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
         </div>
         <div class="section-content">
-          <form id="schedule-show-form" action="/admin/shows" method="post">
-            <div class="admin-row">
-              <div class="form-group">
-                <label for="show-movie-input">Select Movie</label>
-                <input type="text" id="show-movie-input" placeholder="Type to search movies" autocomplete="off">
-                <input type="hidden" id="show-movie-id" name="movie_id">
-                <div class="autocomplete-suggestions" id="show-movie-suggestions"></div>
-              </div>
-              <div class="form-group">
-                <label for="show-theater-input">Select Theatre</label>
-                <input type="text" id="show-theater-input" placeholder="Type to search theatres" autocomplete="off">
-                <input type="hidden" id="show-theater-id" name="theater_id">
-                <div class="autocomplete-suggestions" id="show-theater-suggestions"></div>
-              </div>
-            </div>
-
-            <div class="admin-row">
-              <div class="form-group">
-                <label for="show-start-date">Start Date</label>
-                <input type="date" id="show-start-date" name="start_date" required>
-              </div>
-              <div class="form-group">
-                <label for="show-end-date">End Date</label>
-                <input type="date" id="show-end-date" name="end_date" required>
-              </div>
-            </div>
-
-            <div id="timeslot-rows"></div>
-            
-            <div id="schedule-button">
-              <div class="schedule-show-button">
-                <button type="button" class="admin-btn" id="add-timeslot-btn">+ Add Timeslot</button>
-                <button type="submit" class="admin-btn">Schedule Show</button>
-              </div>
-            </div>
+          <form id="banner-upload-form" action="/admin/banners" method="post" enctype="multipart/form-data" class="visually-hidden" aria-hidden="true">
+            <input type="file" id="banner-file-input" name="banner" accept="image/png, image/jpeg, image/jpg, image/webp">
           </form>
+
+          <div class="movies-table-wrapper">
+            <table class="movies-table" id="admin-banners-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Image Name</th>
+                  <th>Size</th>
+                  <th>Dimensions</th>
+                  <th>Aspect Ratio</th>
+                  <th>Type</th>
+                  <th>Preview</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:if="${adminBanners == null || #lists.isEmpty(adminBanners)}">
+                  <td colspan="8">No banners found.</td>
+                </tr>
+                <tr th:each="banner : ${adminBanners}">
+                  <td th:text="${banner.id}">1</td>
+                  <td th:text="${banner.imageName}">banner.png</td>
+                  <td th:text="${banner.imageSizeDisplay}">120 KB</td>
+                  <td th:text="${banner.dimensions}">1200 x 400</td>
+                  <td th:text="${banner.aspectRatio}">3:1</td>
+                  <td th:text="${banner.fileType}">PNG</td>
+                  <td class="banner-preview-cell">
+                    <button type="button" class="banner-thumb-btn" th:attr="data-image-src=${'data:image/' + banner.fileTypeValue + ';base64,' + banner.imageBase64},data-image-name=${banner.imageName}">
+                      <img class="banner-thumb" th:src="${'data:image/' + banner.fileTypeValue + ';base64,' + banner.imageBase64}" alt="Banner thumbnail">
+                    </button>
+                  </td>
+                  <td>
+                    <button type="button" class="delete-btn banner-delete-btn" th:attr="data-id=${banner.id}">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </div>
-
-      <!-- Remove Movie Section -->
-      <!-- <div class="admin-card">
-        <h2 class="admin-card-title">Remove Movie</h2>
-        <div class="movie-list">
-          <div class="movie-item">
-            <span class="movie-name">Movie 1</span>
-            <button type="button" class="admin-remove-btn">Remove</button>
-          </div>
-          <div class="movie-item">
-            <span class="movie-name">Movie 2</span>
-            <button type="button" class="admin-remove-btn">Remove</button>
-          </div>
-          <div class="movie-item">
-            <span class="movie-name">Movie 3</span>
-            <button type="button" class="admin-remove-btn">Remove</button>
-          </div>
-        </div>
-      </div> -->
 
       <!-- Manage Movies Section -->
       <div class="admin-card">
-        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
-          <span>Manage Movies</span>
-          <span class="toggle-icon" aria-hidden="true">^</span>
+        <div class="admin-card-title section-header section-header-with-actions">
+          <h2 class="section-title">Manage Movies</h2>
+          <div class="section-actions">
+            <button type="button" class="add-icon-btn" id="open-add-movie-modal" title="Add Movie" aria-label="Add Movie">
+              <img th:src="@{/images/add.svg}" src="/images/add.svg" alt="" aria-hidden="true">
+            </button>
+            <button type="button" class="section-toggle-btn" title="Toggle Section" aria-label="Toggle Section" aria-expanded="true">
+              <img class="toggle-icon" th:src="@{/images/chevron-up.svg}" src="/images/chevron-up.svg" data-expanded-src="/images/chevron-up.svg" data-collapsed-src="/images/chevron-down.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
         </div>
         <div class="section-content">
           <div class="movies-table-wrapper">
@@ -275,9 +179,16 @@
 
       <!-- Manage Theaters Section -->
       <div class="admin-card">
-        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
-          <span>Manage Theaters</span>
-          <span class="toggle-icon" aria-hidden="true">^</span>
+        <div class="admin-card-title section-header section-header-with-actions">
+          <h2 class="section-title">Manage Theaters</h2>
+          <div class="section-actions">
+            <button type="button" class="add-icon-btn" id="open-add-theater-modal" title="Add Theater" aria-label="Add Theater">
+              <img th:src="@{/images/add.svg}" src="/images/add.svg" alt="" aria-hidden="true">
+            </button>
+            <button type="button" class="section-toggle-btn" title="Toggle Section" aria-label="Toggle Section" aria-expanded="true">
+              <img class="toggle-icon" th:src="@{/images/chevron-up.svg}" src="/images/chevron-up.svg" data-expanded-src="/images/chevron-up.svg" data-collapsed-src="/images/chevron-down.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
         </div>
         <div class="section-content">
           <div class="movies-table-wrapper">
@@ -339,11 +250,65 @@
         </div>
       </div>
 
+      <!-- Schedule Show Section -->
+      <div class="admin-card">
+        <div class="admin-card-title section-header section-header-with-actions">
+          <h2 class="section-title">Schedule Show</h2>
+          <div class="section-actions">
+            <button type="button" class="section-toggle-btn" title="Toggle Section" aria-label="Toggle Section" aria-expanded="true">
+              <img class="toggle-icon" th:src="@{/images/chevron-up.svg}" src="/images/chevron-up.svg" data-expanded-src="/images/chevron-up.svg" data-collapsed-src="/images/chevron-down.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </div>
+        <div class="section-content">
+          <form id="schedule-show-form" action="/admin/shows" method="post">
+            <div class="admin-row">
+              <div class="form-group">
+                <label for="show-movie-input">Select Movie</label>
+                <input type="text" id="show-movie-input" placeholder="Type to search movies" autocomplete="off">
+                <input type="hidden" id="show-movie-id" name="movie_id">
+                <div class="autocomplete-suggestions" id="show-movie-suggestions"></div>
+              </div>
+              <div class="form-group">
+                <label for="show-theater-input">Select Theatre</label>
+                <input type="text" id="show-theater-input" placeholder="Type to search theatres" autocomplete="off">
+                <input type="hidden" id="show-theater-id" name="theater_id">
+                <div class="autocomplete-suggestions" id="show-theater-suggestions"></div>
+              </div>
+            </div>
+
+            <div class="admin-row">
+              <div class="form-group">
+                <label for="show-start-date">Start Date</label>
+                <input type="date" id="show-start-date" name="start_date" required>
+              </div>
+              <div class="form-group">
+                <label for="show-end-date">End Date</label>
+                <input type="date" id="show-end-date" name="end_date" required>
+              </div>
+            </div>
+
+            <div id="timeslot-rows"></div>
+            
+            <div id="schedule-button">
+              <div class="schedule-show-button">
+                <button type="button" class="admin-btn" id="add-timeslot-btn">+ Add Timeslot</button>
+                <button type="submit" class="admin-btn">Schedule Show</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <!-- Manage Shows Section -->
       <div class="admin-card">
-        <div class="admin-card-title section-header" role="button" tabindex="0" aria-expanded="true">
-          <span>Manage Shows</span>
-          <span class="toggle-icon" aria-hidden="true">^</span>
+        <div class="admin-card-title section-header section-header-with-actions">
+          <h2 class="section-title">Manage Shows</h2>
+          <div class="section-actions">
+            <button type="button" class="section-toggle-btn" title="Toggle Section" aria-label="Toggle Section" aria-expanded="true">
+              <img class="toggle-icon" th:src="@{/images/chevron-up.svg}" src="/images/chevron-up.svg" data-expanded-src="/images/chevron-up.svg" data-collapsed-src="/images/chevron-down.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
         </div>
         <div class="section-content">
           <form id="manage-shows-filter" class="inline-form" onsubmit="return false;">
@@ -405,10 +370,107 @@
           </div>
         </div>
       </div>
+
+      <div id="add-movie-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-modal" id="close-add-movie-modal">&times;</span>
+          <h3>Add Movie</h3>
+          <form id="add-movie-form" class="admin-grid-form" action="/admin/movies" method="post" enctype="multipart/form-data">
+            <div class="form-group span-2">
+              <label for="movie-title">Movie Title</label>
+              <input type="text" id="movie-title" name="title" placeholder="Enter movie title" required>
+              <div class="field-error" id="movie-title-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="movie-language">Language</label>
+              <input type="text" id="movie-language" name="language" placeholder="English, Hindi, etc." required>
+              <div class="field-error" id="movie-language-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="movie-certification">Certification</label>
+              <select id="movie-certification" name="certification" required>
+                <option value="" disabled selected>Select Certification</option>
+                <option value="U">U</option>
+                <option value="U/A 7+">U/A 7+</option>
+                <option value="U/A 13+">U/A 13+</option>
+                <option value="U/A 16+">U/A 16+</option>
+                <option value="A">A</option>
+              </select>
+              <div class="field-error" id="movie-certification-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="movie-duration">Duration (minutes)</label>
+              <input type="number" id="movie-duration" name="duration" placeholder="120" required>
+              <div class="field-error" id="movie-duration-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="movie-poster">Movie Poster (jpg, jpeg, png)</label>
+              <input type="file" id="movie-poster" name="poster" accept=".jpg,.jpeg,.png" required>
+              <div class="field-error" id="movie-poster-error"></div>
+            </div>
+            <div class="form-group span-2">
+              <label for="movie-description">Description</label>
+              <textarea id="movie-description" name="description" rows="3" placeholder="Enter movie description"></textarea>
+              <div class="field-error" id="movie-description-error"></div>
+            </div>
+            <button type="submit" class="admin-btn">Add Movie</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="add-theater-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-modal" id="close-add-theater-modal">&times;</span>
+          <h3>Add Theater</h3>
+          <form id="add-theater-form" class="admin-grid-form" action="/admin/theaters" method="post">
+            <div class="form-group span-2">
+              <label for="theater-name">Theater Name</label>
+              <input type="text" id="theater-name" name="name" placeholder="Enter theater name" required>
+              <div class="field-error" id="theater-name-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="theater-city">City</label>
+              <input type="text" id="theater-city" name="city" placeholder="Enter city" required>
+              <div class="field-error" id="theater-city-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="screen-count">Screen Count</label>
+              <input type="number" id="screen-count" name="screen_count" placeholder="5" value="1" min="1">
+              <div class="field-error" id="screen-count-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="ticket-price">Ticket Price (Rs.)</label>
+              <input type="number" id="ticket-price" name="price" placeholder="250" value="250" min="1" required>
+              <div class="field-error" id="ticket-price-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="elite-ticket-price">Elite Ticket Price (Rs.)</label>
+              <input type="number" id="elite-ticket-price" name="elite_price" placeholder="350" value="350" min="1" required>
+              <div class="field-error" id="elite-ticket-price-error"></div>
+            </div>
+            <div class="form-group span-2">
+              <label for="theater-location">Location</label>
+              <input type="text" id="theater-location" name="location" placeholder="Area / Address" required>
+              <div class="field-error" id="theater-location-error"></div>
+            </div>
+            <button type="submit" class="admin-btn">Add Theater</button>
+          </form>
+        </div>
+      </div>
     </section>
   </main>
 
   <th:block th:replace="~{fragments/auth-modal :: authModal}"></th:block>
+
+  <div id="banner-preview-overlay" class="banner-preview-overlay" aria-hidden="true">
+    <div class="banner-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="banner-preview-name">
+      <button type="button" class="banner-preview-close" id="banner-preview-close" aria-label="Close preview" title="Close preview">&times;</button>
+      <h3 id="banner-preview-name">Banner Preview</h3>
+      <div class="banner-preview-image-wrap">
+        <img id="banner-preview-image" src="" alt="Selected banner preview">
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer>

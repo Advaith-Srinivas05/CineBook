@@ -8,6 +8,14 @@
   border-color: var(--border-color);
 }
 
+[data-theme="dark"] .admin-grid-form .form-group input,
+[data-theme="dark"] .admin-grid-form .form-group select,
+[data-theme="dark"] .admin-grid-form .form-group textarea {
+  background-color: #2a2a2a;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
 [data-theme="dark"] .movie-item {
   background-color: #2a2a2a;
   border-color: var(--border-color);
@@ -139,7 +147,7 @@
   background-color: var(--light-bg);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   margin-bottom: 2rem;
 }
 
@@ -147,7 +155,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 1.5rem;
+  margin: 0;
 }
 
 .admin-card .section-header {
@@ -156,6 +164,34 @@
   align-items: center;
   cursor: pointer;
   user-select: none;
+  min-height: 2rem;
+}
+
+.admin-card .section-header + .section-content {
+  margin-top: 1rem;
+}
+
+.admin-card .section-header + .section-content.hidden {
+  margin-top: 0;
+}
+
+.admin-card .section-header-with-actions {
+  cursor: default;
+}
+
+.section-actions,
+.section-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title {
+  margin: 0.5em 0;
+  padding-block: 0.1em;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.2;
 }
 
 .admin-card .section-header:focus-visible {
@@ -170,8 +206,99 @@
 
 .admin-card .toggle-icon {
   display: inline-block;
-  margin-left: 1rem;
   transition: transform 0.3s ease;
+}
+
+.section-toggle-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.section-toggle-btn .toggle-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  opacity: 0.9;
+}
+
+.section-toggle-btn:hover {
+  transform: scale(1.04);
+  background-color: var(--border-color);
+}
+
+.section-toggle-btn:focus-visible {
+  outline: 2px solid var(--primary-red);
+  outline-offset: 2px;
+}
+
+.add-icon-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.add-icon-btn img {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  opacity: 0.85;
+}
+
+.add-icon-btn:hover {
+  transform: scale(1.04);
+  background-color: var(--border-color);
+}
+
+.add-icon-btn:hover img {
+  opacity: 1;
+}
+
+.add-icon-btn:focus-visible {
+  outline: 2px solid var(--primary-red);
+  outline-offset: 2px;
+}
+
+.upload-icon-btn {
+  border-color: color-mix(in srgb, var(--border-color) 82%, var(--text-primary) 18%);
+}
+
+.upload-icon-btn:hover {
+  background-color: color-mix(in srgb, var(--border-color) 70%, transparent 30%);
+}
+
+.upload-icon-btn img {
+  width: 1rem;
+  height: 1rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .admin-card .toggle-icon.rotate {
@@ -370,6 +497,142 @@
   background-color: #f9f9f9;
 }
 
+#admin-banners-table .banner-preview-cell {
+  width: 6.5rem;
+}
+
+#admin-banners-table th,
+#admin-banners-table td {
+  padding: 0.65rem 0.75rem;
+  vertical-align: middle;
+  font-size: 0.92rem;
+}
+
+#admin-banners-table th:nth-child(1),
+#admin-banners-table td:nth-child(1) {
+  width: 4rem;
+}
+
+#admin-banners-table th:nth-child(3),
+#admin-banners-table td:nth-child(3),
+#admin-banners-table th:nth-child(4),
+#admin-banners-table td:nth-child(4),
+#admin-banners-table th:nth-child(5),
+#admin-banners-table td:nth-child(5),
+#admin-banners-table th:nth-child(6),
+#admin-banners-table td:nth-child(6) {
+  white-space: nowrap;
+}
+
+.banner-thumb-btn {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.15rem;
+  background-color: transparent;
+  line-height: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.banner-thumb-btn:hover {
+  transform: scale(1.03);
+  border-color: color-mix(in srgb, var(--text-primary) 25%, var(--border-color) 75%);
+  background-color: color-mix(in srgb, var(--border-color) 32%, transparent 68%);
+}
+
+.banner-thumb {
+  width: 5.5rem;
+  height: 3.5rem;
+  object-fit: contain;
+  display: block;
+  border-radius: 0.35rem;
+}
+
+.banner-preview-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2400;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.banner-preview-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.banner-preview-dialog {
+  position: relative;
+  width: min(760px, 96vw);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--border-color);
+  background-color: color-mix(in srgb, var(--light-bg) 95%, var(--border-color) 5%);
+  box-shadow: 0 24px 52px rgba(0, 0, 0, 0.35);
+  transform: scale(0.96);
+  transition: transform 0.24s ease;
+}
+
+.banner-preview-overlay.active .banner-preview-dialog {
+  transform: scale(1);
+}
+
+.banner-preview-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.banner-preview-close:hover {
+  background-color: color-mix(in srgb, var(--border-color) 46%, transparent 54%);
+}
+
+.banner-preview-close:focus-visible {
+  outline: 2px solid var(--primary-red);
+  outline-offset: 2px;
+}
+
+.banner-preview-dialog h3 {
+  margin: 0 2rem 0 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.banner-preview-image-wrap {
+  margin-top: 0.85rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--light-bg) 88%, #000 12%);
+}
+
+.banner-preview-image-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 75vh;
+  object-fit: contain;
+}
+
 .edit-btn,
 .delete-btn {
   padding: 0.4rem 0.8rem;
@@ -486,9 +749,50 @@
   opacity: 0.75;
 }
 
-#edit-movie-form, #edit-show-form, #edit-theater-form{
+#edit-movie-form, #edit-show-form, #edit-theater-form, #add-movie-form, #add-theater-form {
   margin: 0;
   margin-top: 1rem;
+}
+
+.admin-grid-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.admin-grid-form .span-2 {
+  grid-column: 1 / -1;
+}
+
+.admin-grid-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-grid-form .form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.admin-grid-form .form-group input,
+.admin-grid-form .form-group select,
+.admin-grid-form .form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: var(--light-bg);
+  color: var(--text-primary);
+}
+
+.admin-grid-form .form-group input:focus,
+.admin-grid-form .form-group select:focus,
+.admin-grid-form .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-red);
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
 }
 
 body.modal-open {

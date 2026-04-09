@@ -14,10 +14,12 @@ import com.CineBook.model.MovieBooking;
 import com.CineBook.model.ShowSchedule;
 import com.CineBook.model.Theater;
 import com.CineBook.model.User;
+import com.CineBook.model.CarouselImage;
 import com.CineBook.model.dto.PaymentRequest;
 import com.CineBook.model.dto.ShowtimesRequest;
 import com.CineBook.service.MovieService;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,6 +28,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.util.UriUtils;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -40,6 +45,9 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Base64;
+import java.util.Locale;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 import jakarta.transaction.Transactional;
 
@@ -47,6 +55,8 @@ import jakarta.transaction.Transactional;
 public class MovieController {
     private static final int ELITE_SEAT_CAPACITY = 64;
     private static final int NORMAL_SEAT_CAPACITY = 112;
+    private static final Set<String> SUPPORTED_BANNER_MIME_TYPES = Set.of("image/png", "image/jpeg", "image/jpg", "image/webp", "image/x-webp");
+    private static final Set<String> SUPPORTED_BANNER_EXTENSIONS = Set.of("png", "jpg", "jpeg", "webp");
 
     @Autowired
     private CarouselRepository repository;
@@ -505,10 +515,11 @@ public class MovieController {
     }
 
     @GetMapping("/admin")
-    public String admin(HttpSession session) {
+    public String admin(HttpSession session, Model model) {
         Object isAdmin = session.getAttribute("isAdmin");
         Object username = session.getAttribute("username");
         if (isAdmin instanceof Boolean && (Boolean) isAdmin) {
+            model.addAttribute("adminBanners", buildAdminBannerData());
             return "admin";
         }
         if (username != null) {
@@ -516,6 +527,266 @@ public class MovieController {
         }
         String returnTo = UriUtils.encode("/admin", StandardCharsets.UTF_8);
         return "redirect:/?auth=login&returnTo=" + returnTo; // not logged in -> auth modal
+    }
+
+    @GetMapping("/api/admin/banners")
+    public ResponseEntity<List<Map<String, Object>>> getAdminBanners(HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        return ResponseEntity.ok(buildAdminBannerData());
+    }
+
+    private List<Map<String, Object>> buildAdminBannerData() {
+        List<CarouselImage> banners = repository.findAll();
+        banners.sort(Comparator.comparing(CarouselImage::getId));
+
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (CarouselImage banner : banners) {
+            byte[] imageData = banner.getImageData();
+            Long sizeBytes = banner.getImageSizeBytes();
+            Integer width = banner.getImageWidth();
+            Integer height = banner.getImageHeight();
+            String aspectRatio = banner.getAspectRatio();
+            String fileType = banner.getFileType();
+
+            if (imageData != null && (sizeBytes == null || width == null || height == null || aspectRatio == null || aspectRatio.isBlank() || fileType == null || fileType.isBlank())) {
+                BannerMetadata metadata = extractBannerMetadata(imageData, banner.getImageName(), null);
+                sizeBytes = sizeBytes == null ? metadata.sizeBytes : sizeBytes;
+                width = width == null ? metadata.width : width;
+                height = height == null ? metadata.height : height;
+                aspectRatio = (aspectRatio == null || aspectRatio.isBlank()) ? metadata.aspectRatio : aspectRatio;
+                fileType = (fileType == null || fileType.isBlank()) ? metadata.fileType : fileType;
+            }
+
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", banner.getId());
+            map.put("imageName", banner.getImageName());
+            String imageBase64 = imageData == null ? "" : Base64.getEncoder().encodeToString(imageData);
+            String mimeType = resolveMimeType(fileType);
+            map.put("imageBase64", imageBase64);
+            map.put("imageDataUri", imageBase64.isBlank() ? "" : "data:" + mimeType + ";base64," + imageBase64);
+            map.put("imageSizeBytes", sizeBytes);
+            map.put("imageSizeDisplay", humanReadableSize(sizeBytes));
+            map.put("width", width);
+            map.put("height", height);
+            map.put("dimensions", buildDimensions(width, height));
+            map.put("aspectRatio", aspectRatio == null || aspectRatio.isBlank() ? "-" : aspectRatio);
+            map.put("fileType", fileType == null || fileType.isBlank() ? "-" : fileType.toUpperCase(Locale.ROOT));
+            map.put("fileTypeValue", normalizeFileType(fileType));
+            out.add(map);
+        }
+
+        return out;
+    }
+
+    @PostMapping("/admin/banners")
+    public ResponseEntity<String> uploadAdminBanner(@RequestParam("banner") MultipartFile banner,
+                                                    HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        if (banner == null || banner.isEmpty()) {
+            return ResponseEntity.badRequest().body("Banner image is required");
+        }
+
+        String contentType = banner.getContentType();
+        boolean supportedMimeType = isSupportedBannerMimeType(contentType);
+        boolean supportedExtension = isSupportedBannerExtension(banner.getOriginalFilename());
+        if (!supportedMimeType && !supportedExtension) {
+            return ResponseEntity.badRequest().body("Only PNG, JPEG, or WebP images are allowed");
+        }
+
+        if (!supportedExtension) {
+            return ResponseEntity.badRequest().body("Unsupported file extension. Allowed: .png, .jpg, .jpeg, .webp");
+        }
+
+        try {
+            byte[] imageBytes = banner.getBytes();
+            BannerMetadata metadata = extractBannerMetadata(imageBytes, banner.getOriginalFilename(), contentType);
+            CarouselImage entity = new CarouselImage();
+            String originalName = banner.getOriginalFilename();
+            entity.setImageName((originalName == null || originalName.isBlank()) ? "banner-image" : originalName.trim());
+            entity.setImageData(imageBytes);
+            entity.setImageSizeBytes(metadata.sizeBytes);
+            entity.setImageWidth(metadata.width);
+            entity.setImageHeight(metadata.height);
+            entity.setAspectRatio(metadata.aspectRatio);
+            entity.setFileType(metadata.fileType);
+            repository.save(entity);
+            return ResponseEntity.ok("OK");
+        } catch (IOException ex) {
+            return ResponseEntity.status(500).body("Failed to read uploaded image");
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
+    private static String humanReadableSize(Long sizeBytes) {
+        if (sizeBytes == null || sizeBytes < 0) return "-";
+        if (sizeBytes < 1024) return sizeBytes + " B";
+
+        double kb = sizeBytes / 1024.0;
+        if (kb < 1024) {
+            if (kb < 10) return String.format(Locale.ROOT, "%.1f KB", kb);
+            return String.format(Locale.ROOT, "%.0f KB", kb);
+        }
+
+        double mb = kb / 1024.0;
+        return String.format(Locale.ROOT, "%.1f MB", mb);
+    }
+
+    private static String buildDimensions(Integer width, Integer height) {
+        if (width == null || height == null || width <= 0 || height <= 0) return "-";
+        return width + " x " + height;
+    }
+
+    private static BannerMetadata extractBannerMetadata(byte[] imageBytes, String fileName, String contentType) {
+        if (imageBytes == null || imageBytes.length == 0) {
+            throw new IllegalArgumentException("Banner image is required");
+        }
+
+        BufferedImage bufferedImage;
+        try {
+            bufferedImage = ImageIO.read(new ByteArrayInputStream(imageBytes));
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Unable to read image dimensions");
+        }
+
+        if (bufferedImage == null || bufferedImage.getWidth() <= 0 || bufferedImage.getHeight() <= 0) {
+            throw new IllegalArgumentException("Unsupported or unreadable image file. Allowed: PNG, JPEG, WebP");
+        }
+
+        int width = bufferedImage.getWidth();
+        int height = bufferedImage.getHeight();
+        int gcd = greatestCommonDivisor(width, height);
+        String ratio = (width / gcd) + ":" + (height / gcd);
+
+        return new BannerMetadata(
+                (long) imageBytes.length,
+                width,
+                height,
+                ratio,
+                extractFileType(fileName, contentType)
+        );
+    }
+
+    private static String extractFileType(String fileName, String contentType) {
+        String fromMime = normalizeFileType(contentType);
+        if (!"unknown".equals(fromMime)) {
+            return fromMime;
+        }
+
+        if (fileName == null) return "unknown";
+        int dot = fileName.lastIndexOf('.');
+        if (dot < 0 || dot == fileName.length() - 1) return "unknown";
+        return normalizeFileType(fileName.substring(dot + 1));
+    }
+
+    private static String resolveMimeType(String fileType) {
+        if (fileType == null) return "image/png";
+        String normalized = fileType.trim().toLowerCase(Locale.ROOT);
+        switch (normalized) {
+            case "jpg":
+            case "jpeg":
+                return "image/jpeg";
+            case "webp":
+                return "image/webp";
+            case "gif":
+                return "image/gif";
+            case "bmp":
+                return "image/bmp";
+            case "svg":
+            case "svg+xml":
+                return "image/svg+xml";
+            case "png":
+            default:
+                return "image/png";
+        }
+    }
+
+    private static boolean isSupportedBannerMimeType(String contentType) {
+        if (contentType == null) return false;
+        return SUPPORTED_BANNER_MIME_TYPES.contains(contentType.trim().toLowerCase(Locale.ROOT));
+    }
+
+    private static boolean isSupportedBannerExtension(String fileName) {
+        if (fileName == null || fileName.isBlank()) return false;
+        int dot = fileName.lastIndexOf('.');
+        if (dot < 0 || dot == fileName.length() - 1) return false;
+        String ext = fileName.substring(dot + 1).trim().toLowerCase(Locale.ROOT);
+        return SUPPORTED_BANNER_EXTENSIONS.contains(ext);
+    }
+
+    private static String normalizeFileType(String rawType) {
+        if (rawType == null || rawType.isBlank()) return "unknown";
+        String normalized = rawType.trim().toLowerCase(Locale.ROOT);
+        if (normalized.contains("/")) {
+            normalized = normalized.substring(normalized.indexOf('/') + 1).trim();
+        }
+        if (normalized.contains(";")) {
+            normalized = normalized.substring(0, normalized.indexOf(';')).trim();
+        }
+
+        if ("jpg".equals(normalized)) return "jpeg";
+        if ("x-webp".equals(normalized)) return "webp";
+        if (Arrays.asList("jpeg", "png", "webp", "gif", "bmp", "svg+xml", "svg").contains(normalized)) {
+            return normalized;
+        }
+        return "unknown";
+    }
+
+    private static int greatestCommonDivisor(int a, int b) {
+        int x = Math.abs(a);
+        int y = Math.abs(b);
+        while (y != 0) {
+            int t = x % y;
+            x = y;
+            y = t;
+        }
+        return x == 0 ? 1 : x;
+    }
+
+    private static class BannerMetadata {
+        private final long sizeBytes;
+        private final int width;
+        private final int height;
+        private final String aspectRatio;
+        private final String fileType;
+
+        private BannerMetadata(long sizeBytes, int width, int height, String aspectRatio, String fileType) {
+            this.sizeBytes = sizeBytes;
+            this.width = width;
+            this.height = height;
+            this.aspectRatio = aspectRatio;
+            this.fileType = fileType;
+        }
+    }
+
+    @DeleteMapping("/admin/banners/{id}")
+    public ResponseEntity<String> deleteAdminBanner(@PathVariable("id") Long id,
+                                                    HttpSession session) {
+        Object isAdmin = session.getAttribute("isAdmin");
+        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+
+        if (!repository.existsById(id)) {
+            return ResponseEntity.status(404).body("Banner not found");
+        }
+
+        try {
+            repository.deleteById(id);
+            return ResponseEntity.ok("OK");
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body("Server error");
+        }
     }
 
     @PostMapping("/admin/movies")
