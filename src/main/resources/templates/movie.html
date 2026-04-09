@@ -18,7 +18,7 @@
         <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
       </div>
       <div class="header-right">
-        <form class="location-selector" th:action="@{/movie}" action="/movie" method="get">
+        <form class="location-selector" th:action="@{/movie}" action="/movie" method="post">
           <input type="hidden" name="movieId" th:value="${movie.id}">
           <input type="hidden" name="date" th:value="${selectedDate}">
           <label for="city-select">📍</label>
@@ -144,34 +144,44 @@
               <div class="movie-genre" th:if="${entry.location != null && !entry.location.isBlank()}" th:text="${entry.location}">Location</div>
             </div>
             <div class="showtime-list">
-                <a th:each="show : ${entry.shows}"
-                  href="/tickets"
-                  th:href="${show.bookingOpen} ? @{/tickets(movieId=${movie.id}, theaterId=${entry.theaterId}, scheduleId=${show.scheduleId}, city=${selectedCity}, date=${selectedDate})} : '#'"
-                  class="showtime-button"
-                  th:classappend="${show.bookingOpen} ? ' available' : ' sold-out booking-closed'"
-                  data-requires-auth="true"
-                  th:data-booking-open="${show.bookingOpen}"
-                  th:aria-disabled="${!show.bookingOpen}"
-                  th:tabindex="${show.bookingOpen ? 0 : -1}"
-                  th:aria-label="${'Showtime ' + #temporals.format(show.startTime, 'hh:mm a') + (show.bookingOpen ? '. Hover for ticket prices.' : '. Booking closed for this show.')}">
-                <span class="showtime-time" th:text="${#temporals.format(show.startTime, 'hh:mm a')}">Showtime</span>
-                <div class="showtime-price-popover tooltip" aria-hidden="true">
-                  <div class="popover-tier tier">
-                    <span class="tier-price price" th:text="${'₹' + #numbers.formatDecimal(show.ticketPrice, 1, 2)}">₹250.00</span>
-                    <span class="tier-type type">NORMAL</span>
-                    <span class="tier-status status"
-                          th:classappend="${' ' + show.normalStatusClass}"
-                          th:text="${show.normalStatusLabel}">Available</span>
-                  </div>
-                  <div class="popover-tier tier">
-                    <span class="tier-price price" th:text="${'₹' + #numbers.formatDecimal(show.eliteTicketPrice, 1, 2)}">₹350.00</span>
-                    <span class="tier-type type">ELITE</span>
-                    <span class="tier-status status"
-                          th:classappend="${' ' + show.eliteStatusClass}"
-                          th:text="${show.eliteStatusLabel}">Filling Fast</span>
-                  </div>
-                </div>
-              </a>
+                <form th:each="show : ${entry.shows}"
+                      th:action="@{/showtimes}"
+                      action="/showtimes"
+                      method="post"
+                      class="showtime-form">
+                  <input type="hidden" name="movieId" th:value="${movie.id}">
+                  <input type="hidden" name="theaterId" th:value="${entry.theaterId}">
+                  <input type="hidden" name="scheduleId" th:value="${show.scheduleId}">
+                  <input type="hidden" name="selectedDate" th:value="${selectedDate}">
+                  <input type="hidden" name="city" th:value="${selectedCity}">
+                  <button type="submit"
+                          class="showtime-button"
+                          th:classappend="${show.bookingOpen} ? ' available' : ' sold-out booking-closed'"
+                          data-requires-auth="true"
+                          th:data-booking-open="${show.bookingOpen}"
+                          th:aria-disabled="${!show.bookingOpen}"
+                          th:tabindex="${show.bookingOpen ? 0 : -1}"
+                          th:disabled="${!show.bookingOpen}"
+                          th:aria-label="${'Showtime ' + #temporals.format(show.startTime, 'hh:mm a') + (show.bookingOpen ? '. Hover for ticket prices.' : '. Booking closed for this show.')}">
+                    <span class="showtime-time" th:text="${#temporals.format(show.startTime, 'hh:mm a')}">Showtime</span>
+                    <div class="showtime-price-popover tooltip" aria-hidden="true">
+                      <div class="popover-tier tier">
+                        <span class="tier-price price" th:text="${'₹' + #numbers.formatDecimal(show.ticketPrice, 1, 2)}">₹250.00</span>
+                        <span class="tier-type type">NORMAL</span>
+                        <span class="tier-status status"
+                              th:classappend="${' ' + show.normalStatusClass}"
+                              th:text="${show.normalStatusLabel}">Available</span>
+                      </div>
+                      <div class="popover-tier tier">
+                        <span class="tier-price price" th:text="${'₹' + #numbers.formatDecimal(show.eliteTicketPrice, 1, 2)}">₹350.00</span>
+                        <span class="tier-type type">ELITE</span>
+                        <span class="tier-status status"
+                              th:classappend="${' ' + show.eliteStatusClass}"
+                              th:text="${show.eliteStatusLabel}">Filling Fast</span>
+                      </div>
+                    </div>
+                  </button>
+                </form>
             </div>
           </div>
         </article>

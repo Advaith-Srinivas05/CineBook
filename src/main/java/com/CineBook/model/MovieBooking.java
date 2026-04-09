@@ -11,6 +11,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "movie_bookings")
@@ -40,6 +41,9 @@ public class MovieBooking {
     @Column(name = "seat_numbers", nullable = false, columnDefinition = "TEXT")
     private String seatNumbers;
 
+    @Column(name = "public_id", nullable = false, unique = true, length = 64)
+    private String publicId;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -47,6 +51,9 @@ public class MovieBooking {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = OffsetDateTime.now();
+        }
+        if (publicId == null || publicId.isBlank()) {
+            publicId = UUID.randomUUID().toString();
         }
     }
 
@@ -104,6 +111,14 @@ public class MovieBooking {
 
     public void setSeatNumbers(String seatNumbers) {
         this.seatNumbers = seatNumbers;
+    }
+
+    public String getPublicId() {
+        return publicId;
+    }
+
+    public void setPublicId(String publicId) {
+        this.publicId = publicId;
     }
 
     public OffsetDateTime getCreatedAt() {

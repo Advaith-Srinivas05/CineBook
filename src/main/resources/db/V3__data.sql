@@ -44,6 +44,18 @@ BEGIN
 END
 $$;
 
+INSERT INTO theaters (name, city, location, screen_count) VALUES
+('PVR Nexus', 'Bengaluru', 'Koramangala', 8),
+('INOX Mantri Square', 'Bengaluru', 'Malleshwaram', 7),
+('Cinepolis Forum', 'Hyderabad', 'Kukatpally', 6),
+('AGS Cinemas', 'Chennai', 'T. Nagar', 5),
+('Lulu PVR', 'Kochi', 'Edappally', 9),
+('SPI Escape', 'Chennai', 'Royapettah', 4),
+('Miraj Cinemas', 'Mysuru', 'Jayalakshmipuram', 4),
+('Carnival City Center', 'Mangaluru', 'Hampankatta', 4),
+('Asian GPR Multiplex', 'Vijayawada', 'MG Road', 6),
+('Sathyam Cinemas', 'Chennai', 'Royapettah', 5);
+
 DO $$
 DECLARE
     d INT;

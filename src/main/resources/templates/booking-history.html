@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Booking History - CineBook</title>
   <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" href="/css/booking-history.css" th:href="@{/css/booking-history.css}">
   <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
   <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
   <link rel="icon" type="image/png" href="/images/favicon.png">
@@ -47,6 +48,17 @@
 
         <div th:if="${!#lists.isEmpty(bookingHistory)}" class="history-list">
           <article class="history-card" th:each="booking : ${bookingHistory}">
+            <a class="history-ticket-link"
+               href="/ticket/public-id"
+               th:href="@{'/ticket/' + ${booking.publicId}}"
+               title="View Ticket"
+               aria-label="View Ticket">
+              <img class="history-ticket-icon"
+                   src="/images/external-link.svg"
+                   th:src="@{/images/external-link.svg}"
+                   alt="View Ticket"
+                   title="View Ticket">
+            </a>
             <h3 th:text="${booking.show.movie.title}">Movie Name</h3>
             <p><strong>Theater:</strong> <span th:text="${booking.show.theater.name}">Theater</span></p>
             <p>
@@ -65,5 +77,6 @@
       <p>&copy; 2026 CineBook. All rights reserved.</p>
     </footer>
   </div>
+  <script src="/js/booking-history.js" th:src="@{/js/booking-history.js}"></script>
 </body>
 </html>

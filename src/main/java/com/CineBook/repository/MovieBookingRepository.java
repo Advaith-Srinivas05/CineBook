@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface MovieBookingRepository extends JpaRepository<MovieBooking, Long> {
 
+        Optional<MovieBooking> findByPublicId(String publicId);
+
     @Query(value = "SELECT TRIM(seat_value) AS seat_number " +
             "FROM movie_bookings mb " +
             "CROSS JOIN LATERAL UNNEST(string_to_array(COALESCE(mb.seat_numbers, ''), ',')) AS seat_value " +

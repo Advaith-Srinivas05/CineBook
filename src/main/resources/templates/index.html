@@ -74,14 +74,18 @@
     <section>
       <h1 class="section-title" th:text="${selectedCity != null ? 'Recommended Movies - ' + selectedCity : 'Recommended Movies'}">Recommended Movies</h1>
       <div id="movies-grid" th:if="${!#lists.isEmpty(movies)}">
-        <a th:each="movie : ${movies}" th:href="@{/movie(movieId=${movie.id}, city=${selectedCity})}" class="movie-card" th:attr="data-movie-id=${movie.id}">
-          <img class="movie-poster" th:src="@{/movie/poster/{id}(id=${movie.id})}" th:alt="${movie.title + ' poster'}" />
-          <div class="movie-info">
-            <h2 class="movie-title" th:text="${movie.title}">Movie Title</h2>
-            <p class="movie-genre" th:text="${movie.language != null ? movie.language : 'Language not available'}">Language</p>
-            <p class="movie-rating" data-rating-label="true">⭐ --</p>
-          </div>
-        </a>
+        <form th:each="movie : ${movies}" th:action="@{/movie}" action="/movie" method="post" class="movie-card" th:attr="data-movie-id=${movie.id}">
+          <input type="hidden" name="movieId" th:value="${movie.id}">
+          <input type="hidden" name="city" th:value="${selectedCity}">
+          <button type="submit" style="all: unset; display: block; width: 100%; cursor: pointer;">
+            <img class="movie-poster" th:src="@{/movie/poster/{id}(id=${movie.id})}" th:alt="${movie.title + ' poster'}" />
+            <div class="movie-info">
+              <h2 class="movie-title" th:text="${movie.title}">Movie Title</h2>
+              <p class="movie-genre" th:text="${movie.language != null ? movie.language : 'Language not available'}">Language</p>
+              <p class="movie-rating" data-rating-label="true">⭐ --</p>
+            </div>
+          </button>
+        </form>
       </div>
       <div th:if="${#lists.isEmpty(movies)}">
         <p>No movies available for the selected location.</p>

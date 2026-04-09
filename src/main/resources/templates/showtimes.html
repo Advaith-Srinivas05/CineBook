@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Confirmed - CineBook</title>
+  <title>Select Showtimes - CineBook</title>
   <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" href="/css/showtimes.css" th:href="@{/css/showtimes.css}">
   <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
   <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
   <link rel="icon" type="image/png" href="/images/favicon.png">
@@ -39,14 +40,9 @@
 
   <!-- Main Content -->
   <main>
-    <!-- Confirmation Message -->
-    <section class="confirmation-box">
-      <div class="confirmation-icon">✓</div>
-      <div class="confirmation-message">Booking Confirmed!</div>
-      <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">Your ticket has been successfully booked.</p>
-
-      <!-- Booking Summary -->
-      <div class="booking-summary" style="max-width: 500px; margin: 0 auto;">
+    <!-- Booking Summary -->
+    <section>
+      <div class="booking-summary">
         <div class="summary-item">
           <span class="summary-label">Movie</span>
           <span class="summary-value" th:text="${movie.title}">Movie</span>
@@ -57,29 +53,38 @@
         </div>
         <div class="summary-item">
           <span class="summary-label">Showtime</span>
-          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen + ' | ' + #temporals.format(showDate, 'dd MMM yyyy')}">Showtime</span>
+          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen}">Showtime</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">Seats</span>
-          <span class="summary-value" th:text="${selectedSeats}">Seats</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Ticket Count</span>
-          <span class="summary-value" th:text="${ticketCount}">1</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Total Amount</span>
-          <span class="summary-value" th:text="'Rs. ' + ${totalAmount}">Rs. 0</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Booking ID</span>
-          <span class="summary-value" th:text="'CB-' + ${bookingId}">CB-0</span>
+          <span class="summary-label">Date</span>
+          <span class="summary-value" th:text="${#temporals.format(showDate, 'dd MMM yyyy')}">Date</span>
         </div>
       </div>
+    </section>
 
-      <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 2rem;">A confirmation email has been sent to your registered email address.</p>
-      
-      <a href="/" th:href="@{/}" class="btn btn-primary" style="margin-top: 2rem; max-width: 300px;">Back to Home</a>
+    <!-- Ticket Selection -->
+    <section id="ticket-selector">
+      <h1 class="section-title">Select Number of Tickets</h1>
+      <!-- POST keeps booking context out of query parameters. -->
+      <form th:action="@{/seats}" action="/seats" method="post">
+        <input type="hidden" name="movieId" th:value="${movie.id}">
+        <input type="hidden" name="theaterId" th:value="${theater.id}">
+        <input type="hidden" name="scheduleId" th:value="${schedule.id}">
+        <input type="hidden" name="showDate" th:value="${showDate}">
+
+        <div class="ticket-count-grid">
+          <button type="submit" class="ticket-count" name="ticketCount" value="1">1</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="2">2</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="3">3</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="4">4</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="5">5</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="6">6</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="7">7</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="8">8</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="9">9</button>
+          <button type="submit" class="ticket-count" name="ticketCount" value="10">10</button>
+        </div>
+      </form>
     </section>
   </main>
 
@@ -89,5 +94,6 @@
   <footer>
     <p>&copy; 2026 CineBook. All rights reserved.</p>
   </footer>
+  <script src="/js/showtimes.js" th:src="@{/js/showtimes.js}"></script>
 </body>
 </html>

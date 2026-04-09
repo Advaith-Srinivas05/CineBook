@@ -74,6 +74,7 @@ CREATE TABLE movie_bookings (
   seat_count INTEGER NOT NULL CHECK (seat_count > 0),
   total_price INTEGER NOT NULL CHECK (total_price > 0),
   seat_numbers TEXT NOT NULL,
+  public_id VARCHAR(64) NOT NULL UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

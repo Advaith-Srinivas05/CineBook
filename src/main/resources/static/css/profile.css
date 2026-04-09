@@ -1,0 +1,129 @@
+/* Profile page specific styles */
+.profile-alert {
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+.profile-alert.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.profile-alert.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.profile-avatar-button {
+  position: relative;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  width: 96px;
+  height: 96px;
+  overflow: hidden;
+}
+
+.profile-avatar-large {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+}
+
+.profile-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.34);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.73rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.profile-avatar-button:hover .profile-avatar-overlay,
+.profile-avatar-button:focus-visible .profile-avatar-overlay {
+  opacity: 1;
+}
+
+.profile-identity h2 {
+  margin-bottom: 0.15rem;
+}
+
+.profile-identity p {
+  color: var(--text-secondary);
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-form-card {
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.profile-form-card input {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  background: #fff;
+}
+
+.profile-password-card {
+  margin-top: 0;
+}
+
+.profile-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 9px;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 350;
+}
+
+.profile-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.profile-toast.success {
+  background: #166534;
+}
+
+.profile-toast.error {
+  background: #991b1b;
+}
+
+.profile-hint {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+}

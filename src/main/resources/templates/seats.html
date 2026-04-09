@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Select Seats - CineBook</title>
   <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" href="/css/seats.css" th:href="@{/css/seats.css}">
   <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
   <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
   <link rel="icon" type="image/png" href="/images/favicon.png">
@@ -401,15 +402,17 @@
       </div>
 
       <br>
-      <form id="proceed-payment-form" th:action="@{/payment}" action="/payment" method="get">
+      <form id="proceed-payment-form" th:action="@{/payments}" action="/payments" method="post">
         <input type="hidden" name="movieId" th:value="${movie.id}">
         <input type="hidden" name="theaterId" th:value="${theater.id}">
         <input type="hidden" name="scheduleId" th:value="${schedule.id}">
-        <input type="hidden" name="date" th:value="${showDate}">
+        <input type="hidden" name="showDate" th:value="${showDate}">
         <input type="hidden" name="ticketCount" th:value="${ticketCount}">
         <input type="hidden" id="selected-seats-input" name="selectedSeats" value="">
         <button id="proceed-payment" type="submit" class="btn btn-primary">Proceed to Payment</button>
       </form>
+
+      <p th:if="${seatSelectionError != null}" th:text="${seatSelectionError}" style="margin-top: 1rem; color: #b91c1c; font-weight: 600; text-align: center;">Seat selection error</p>
     </section>
   </main>
 

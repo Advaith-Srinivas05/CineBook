@@ -246,6 +246,10 @@
   flex-wrap: nowrap;
 }
 
+.date-form {
+  display: contents;
+}
+
 .date-button {
   min-width: 88px;
   flex: 1 0 calc((100% - (6 * 0.75rem)) / 7);
@@ -356,6 +360,10 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   margin-left: auto;
+}
+
+.showtime-form {
+  margin: 0;
 }
 
 .showtime-button {

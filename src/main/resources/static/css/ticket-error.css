@@ -1,0 +1,16 @@
+/* Ticket error page specific styles */
+.ticket-error-main {
+  max-width: 700px;
+  margin: 4rem auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.ticket-error-title {
+  margin-bottom: 1rem;
+}
+
+.ticket-error-message {
+  margin-bottom: 2rem;
+  color: #334155;
+}

@@ -62,18 +62,34 @@ document.addEventListener("DOMContentLoaded", function() {
         .toLocaleDateString("en-US", { month: "short" })
         .toUpperCase();
 
-      const queryParams = new URLSearchParams({
-        movieId: String(movieId),
-        date: isoDate
-      });
+      const form = document.createElement("form");
+      form.method = "post";
+      form.action = "/movie";
+      form.className = "date-form";
+
+      const movieInput = document.createElement("input");
+      movieInput.type = "hidden";
+      movieInput.name = "movieId";
+      movieInput.value = String(movieId);
+      form.appendChild(movieInput);
+
+      const dateInput = document.createElement("input");
+      dateInput.type = "hidden";
+      dateInput.name = "date";
+      dateInput.value = isoDate;
+      form.appendChild(dateInput);
 
       if (selectedCity) {
-        queryParams.set("city", selectedCity);
+        const cityInput = document.createElement("input");
+        cityInput.type = "hidden";
+        cityInput.name = "city";
+        cityInput.value = selectedCity;
+        form.appendChild(cityInput);
       }
 
-      const link = document.createElement("a");
+      const link = document.createElement("button");
+      link.type = "submit";
       link.className = "date-button";
-      link.href = `/movie?${queryParams.toString()}`;
       link.setAttribute("aria-label", `${dayText} ${dateText} ${monthText}`);
 
       const isSelected = selectedDate ? selectedDate === isoDate : i === 0;
@@ -109,7 +125,8 @@ document.addEventListener("DOMContentLoaded", function() {
         link.appendChild(currentDateIcon);
       }
 
-      dateSelector.appendChild(link);
+      form.appendChild(link);
+      dateSelector.appendChild(form);
     }
   }());
 

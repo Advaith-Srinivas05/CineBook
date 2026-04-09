@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Not Found - CineBook</title>
+  <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" href="/css/ticket-error.css" th:href="@{/css/ticket-error.css}">
+</head>
+<body>
+  <main class="ticket-error-main">
+    <h1 class="ticket-error-title">Unable To Load Ticket</h1>
+    <p th:text="${ticketError != null ? ticketError : 'Ticket was not found.'}" class="ticket-error-message">
+      Ticket was not found.
+    </p>
+    <a href="/booking-history" th:href="@{/booking-history}" class="btn btn-primary">Back to Booking History</a>
+  </main>
+  <script src="/js/ticket-error.js" th:src="@{/js/ticket-error.js}"></script>
+</body>
+</html>

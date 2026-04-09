@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment - CineBook</title>
+  <title>Ticket Details - CineBook</title>
   <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
-  <link rel="stylesheet" href="/css/payment.css" th:href="@{/css/payment.css}">
+  <link rel="stylesheet" href="/css/ticket.css" th:href="@{/css/ticket.css}">
   <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
   <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
   <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
-<body>
+<body class="ticket-page-body">
   <!-- Header -->
   <header>
     <div class="header-top">
@@ -19,7 +19,7 @@
         <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
       </div>
       <div class="header-right">
-        <div class="location-selector">
+        <div class="location-selector" style="visibility: hidden;">
           📍 Select Location
         </div>
         <th:block th:replace="~{fragments/header-user-controls :: userControls}"></th:block>
@@ -38,10 +38,30 @@
     </nav> -->
   </header>
 
+  <div class="ticket-top-bar">
+    <a href="/booking-history"
+       th:href="@{/booking-history}"
+       class="ticket-back-link"
+       title="Back to booking history">
+      <img src="/images/arrow-left.svg"
+           th:src="@{/images/arrow-left.svg}"
+           class="ticket-back-icon"
+           alt="Back to booking history">
+      <span>Back to booking history</span>
+    </a>
+  </div>
+
   <!-- Main Content -->
-  <main>
-    <!-- Booking Summary -->
-    <section>
+  <main class="ticket-main">
+    <!-- Confirmation Message -->
+    <section class="confirmation-box">
+      <div class="confirmation-header">
+        <span class="confirmation-icon" aria-hidden="true">✓</span>
+        <h1 class="confirmation-message">Booking Confirmed!</h1>
+      </div>
+      <p class="confirmation-subtext">Your ticket has been successfully booked.</p>
+
+      <!-- Booking Summary -->
       <div class="booking-summary">
         <div class="summary-item">
           <span class="summary-label">Movie</span>
@@ -53,7 +73,7 @@
         </div>
         <div class="summary-item">
           <span class="summary-label">Showtime</span>
-          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen}">Showtime</span>
+          <span class="summary-value" th:text="${#temporals.format(schedule.startTime, 'hh:mm a') + ' | Screen ' + schedule.screen + ' | ' + #temporals.format(showDate, 'dd MMM yyyy')}">Showtime</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Seats</span>
@@ -64,56 +84,28 @@
           <span class="summary-value" th:text="${ticketCount}">1</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">Normal (Rows E-K)</span>
-          <span class="summary-value" th:text="${normalSeatCount + ' x Rs. ' + ticketPrice}">0 x Rs. 250</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Premium (Rows A-D)</span>
-          <span class="summary-value" th:text="${eliteSeatCount + ' x Rs. ' + eliteTicketPrice}">1 x Rs. 350</span>
-        </div>
-        <div class="summary-item">
           <span class="summary-label">Total Amount</span>
           <span class="summary-value" th:text="'Rs. ' + ${totalAmount}">Rs. 0</span>
         </div>
+        <div class="share-link-container">
+          <button type="button"
+                  id="share-ticket-link"
+                  class="share-link-btn"
+                  th:attr="data-public-id=${publicBookingId}"
+                  aria-label="Share ticket link"
+                  title="Copy ticket link">
+            <span class="share-link-label">Share Link</span>
+            <img class="share-link-icon"
+                 src="/images/share.svg"
+                 th:src="@{/images/share.svg}"
+                 alt="Share Link"
+                 title="Copy ticket link">
+          </button>
+          <p id="share-link-feedback" class="share-link-feedback" aria-live="polite"></p>
+        </div>
       </div>
-    </section>
 
-    <!-- Payment Form -->
-    <section id="payment-form">
-      <h1 class="section-title">Payment Details</h1>
-      <p th:if="${paymentError != null}" th:text="${paymentError}" class="payment-error">Payment validation failed.</p>
-      
-      <form th:action="@{/payments/confirm}" action="/payments/confirm" method="post">
-        <input type="hidden" name="movieId" th:value="${movie.id}">
-        <input type="hidden" name="theaterId" th:value="${theater.id}">
-        <input type="hidden" name="scheduleId" th:value="${schedule.id}">
-        <input type="hidden" name="showDate" th:value="${showDate}">
-        <input type="hidden" name="ticketCount" th:value="${ticketCount}">
-        <input type="hidden" name="selectedSeats" th:value="${selectedSeats}">
-
-        <div class="form-group">
-          <label for="cardholder">Name on Card</label>
-          <input type="text" id="cardholder" placeholder="John Doe" required>
-        </div>
-
-        <div class="form-group">
-          <label for="cardnumber">Card Number</label>
-          <input type="text" id="cardnumber" placeholder="1234 5678 9012 3456" required>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="expiry">Expiry Date</label>
-            <input type="text" id="expiry" placeholder="MM/YY" required>
-          </div>
-          <div class="form-group">
-            <label for="cvv">CVV</label>
-            <input type="text" id="cvv" placeholder="123" required>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Pay Now</button>
-      </form>
+      <p class="confirmation-email-note">A confirmation email has been sent to your registered email address.</p>
     </section>
   </main>
 
@@ -123,6 +115,6 @@
   <footer>
     <p>&copy; 2026 CineBook. All rights reserved.</p>
   </footer>
-  <script src="/js/payment.js" th:src="@{/js/payment.js}"></script>
+  <script src="/js/ticket.js" th:src="@{/js/ticket.js}"></script>
 </body>
 </html>

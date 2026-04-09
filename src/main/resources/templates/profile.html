@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile - CineBook</title>
   <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" href="/css/profile.css" th:href="@{/css/profile.css}">
   <script src="/js/ui.js" th:src="@{/js/ui.js}"></script>
   <script src="/js/theme.js" th:src="@{/js/theme.js}"></script>
   <link rel="icon" type="image/png" href="/images/favicon.png">
@@ -33,8 +34,8 @@
       <nav>
         <ul class="nav-links">
           <li th:if="${session.isAdmin}"><a href="/admin" th:href="@{/admin}">Admin</a></li>
-          <li><a href="/profile" th:href="@{/profile}">Profile</a></li>
           <li th:if="${session.isAdmin == null or !session.isAdmin}"><a href="/" th:href="@{/}">Movies</a></li>
+          <li><a href="/profile" th:href="@{/profile}">Profile</a></li>
           <li th:if="${session.isAdmin == null or !session.isAdmin}"><a href="/rating-history" th:href="@{/rating-history}">Rating History</a></li>
           <li th:if="${session.isAdmin == null or !session.isAdmin}"><a href="/booking-history" th:href="@{/booking-history}">Booking History</a></li>
         </ul>

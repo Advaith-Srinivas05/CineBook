@@ -34,7 +34,9 @@ public class AuthController {
                           RedirectAttributes redirectAttributes) {
         String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
         Optional<User> maybeUser = userRepository.findByEmail(normalizedEmail);
+        Long loginUserId = maybeUser.map(User::getId).orElse(null);
         boolean success = false;
+        boolean isAdmin = false;
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
             String hash = hash(password);
@@ -44,15 +46,22 @@ public class AuthController {
                 session.setAttribute("username", user.getUsername());
                 session.setAttribute("userId", user.getId());
                 if ("Admin".equals(user.getUsername())) {
+                    isAdmin = true;
                     session.setAttribute("isAdmin", true);
-                    loginAttemptRepository.save(new LoginAttempt(normalizedEmail, true));
-                    return "redirect:/admin";
+                } else {
+                    session.removeAttribute("isAdmin");
                 }
             }
         }
-        loginAttemptRepository.save(new LoginAttempt(normalizedEmail, success));
+
+        // Persist every login request exactly once, regardless of success or failure.
+        loginAttemptRepository.save(new LoginAttempt(normalizedEmail, loginUserId, success));
+
         String redirectTarget = resolveRedirectTarget(returnTo, request.getHeader("Referer"));
         if (success) {
+            if (isAdmin) {
+                return "redirect:/admin";
+            }
             return "redirect:" + redirectTarget;
         }
         redirectAttributes.addFlashAttribute("error", "Invalid credentials");

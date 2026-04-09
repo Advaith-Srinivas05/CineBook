@@ -1,0 +1,11 @@
+/* Payment page specific styles */
+#payment-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.payment-error {
+  margin-bottom: 1rem;
+  color: #b91c1c;
+  font-weight: 600;
+}
