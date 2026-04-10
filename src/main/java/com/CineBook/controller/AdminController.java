@@ -4,10 +4,12 @@ import com.CineBook.model.CarouselImage;
 import com.CineBook.model.Movie;
 import com.CineBook.model.ShowSchedule;
 import com.CineBook.model.Theater;
+import com.CineBook.model.User;
 import com.CineBook.repository.CarouselRepository;
 import com.CineBook.repository.MovieRepository;
 import com.CineBook.repository.ShowScheduleRepository;
 import com.CineBook.repository.TheaterRepository;
+import com.CineBook.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,15 +63,16 @@ public class AdminController {
     @Autowired
     private ShowScheduleRepository showScheduleRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/admin")
     public String admin(HttpSession session, Model model) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        Object username = session.getAttribute("username");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) {
+        if (isAdmin(session)) {
             model.addAttribute("adminBanners", buildAdminBannerData());
             return "admin";
         }
-        if (username != null) {
+        if (getAuthenticatedUser(session).isPresent()) {
             return "redirect:/";
         }
         String returnTo = UriUtils.encode("/admin", StandardCharsets.UTF_8);
@@ -78,8 +81,7 @@ public class AdminController {
 
     @GetMapping("/api/admin/banners")
     public ResponseEntity<List<Map<String, Object>>> getAdminBanners(HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).build();
         }
 
@@ -89,8 +91,7 @@ public class AdminController {
     @PostMapping("/admin/banners")
     public ResponseEntity<String> uploadAdminBanner(@RequestParam("banner") MultipartFile banner,
                                                     HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -135,8 +136,7 @@ public class AdminController {
     @DeleteMapping("/admin/banners/{id}")
     public ResponseEntity<String> deleteAdminBanner(@PathVariable("id") Long id,
                                                     HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -160,8 +160,7 @@ public class AdminController {
                                            @RequestParam(value = "description", required = false) String description,
                                            @RequestParam("poster") MultipartFile poster,
                                            HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -189,8 +188,7 @@ public class AdminController {
 
     @GetMapping("/api/admin/movies")
     public ResponseEntity<List<Map<String, Object>>> listAllMovies(HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).build();
         }
         List<Movie> list = movieRepository.findAll();
@@ -263,8 +261,7 @@ public class AdminController {
                                               @RequestParam(value = "description", required = false) String description,
                                               @RequestParam(value = "poster", required = false) MultipartFile poster,
                                               HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -294,8 +291,7 @@ public class AdminController {
     @PostMapping("/admin/movies/{id}/delete")
     public ResponseEntity<String> deleteMovie(@PathVariable("id") Long id,
                                               HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -316,8 +312,7 @@ public class AdminController {
                                              @RequestParam(value = "price", required = false) Integer price,
                                              @RequestParam(value = "elite_price", required = false) Integer elitePrice,
                                              HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -358,8 +353,7 @@ public class AdminController {
 
     @GetMapping("/api/admin/theaters")
     public ResponseEntity<List<Map<String, Object>>> getAdminTheaters(HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).build();
         }
 
@@ -391,8 +385,7 @@ public class AdminController {
                                                 @RequestParam(value = "price", required = false) Integer price,
                                                 @RequestParam(value = "elite_price", required = false) Integer elitePrice,
                                                 HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -448,8 +441,7 @@ public class AdminController {
     @PostMapping("/admin/theaters/{id}/delete")
     public ResponseEntity<String> deleteTheater(@PathVariable("id") Long id,
                                                 HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -466,7 +458,12 @@ public class AdminController {
 
     @GetMapping("/api/admin/shows")
     public ResponseEntity<List<Map<String, Object>>> getShows(@RequestParam("theater_id") Long theaterId,
-                                                              @RequestParam("movie_id") Long movieId) {
+                                                              @RequestParam("movie_id") Long movieId,
+                                                              HttpSession session) {
+        if (!isAdmin(session)) {
+            return ResponseEntity.status(403).build();
+        }
+
         List<Object[]> results = showScheduleRepository.findScheduledShowsByTheaterAndMovie(theaterId, movieId);
 
         List<Map<String, Object>> response = new ArrayList<>();
@@ -491,8 +488,7 @@ public class AdminController {
                                                       @RequestParam("end_date") String endDateStr,
                                                       @RequestParam("screen") Integer screen,
                                                       HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -560,8 +556,7 @@ public class AdminController {
                                                @RequestParam("timeslot_time") List<String> timeslotTimes,
                                                @RequestParam("timeslot_screen") List<Integer> timeslotScreens,
                                                HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -683,8 +678,7 @@ public class AdminController {
     @Transactional
     public ResponseEntity<String> deleteScheduledSlot(@PathVariable("id") Long scheduleId,
                                                       HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (!(isAdmin instanceof Boolean && (Boolean) isAdmin)) {
+        if (!isAdmin(session)) {
             return ResponseEntity.status(403).body("Forbidden");
         }
 
@@ -877,6 +871,30 @@ public class AdminController {
 
         return firstStartDateTime.isBefore(secondEndDateTime)
                 && secondStartDateTime.isBefore(firstEndDateTime);
+    }
+
+    private boolean isAdmin(HttpSession session) {
+        return getAuthenticatedUser(session)
+                .map(User::getRole)
+                .filter(role -> role == User.Role.ADMIN)
+                .isPresent();
+    }
+
+    private Optional<User> getAuthenticatedUser(HttpSession session) {
+        Object userIdAttr = session.getAttribute("userId");
+        if (userIdAttr instanceof Number number) {
+            Optional<User> byId = userRepository.findById(number.longValue());
+            if (byId.isPresent()) {
+                return byId;
+            }
+        }
+
+        Object usernameAttr = session.getAttribute("username");
+        if (!(usernameAttr instanceof String username) || username.isBlank()) {
+            return Optional.empty();
+        }
+
+        return userRepository.findByUsername(username);
     }
 
     private static class BannerMetadata {

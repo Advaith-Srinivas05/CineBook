@@ -6,7 +6,9 @@ CREATE TABLE users (
   profile_image VARCHAR(255),
   phone_number VARCHAR(20),
   location VARCHAR(120),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+  role VARCHAR(20) NOT NULL DEFAULT 'USER',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  CONSTRAINT chk_users_role CHECK (role IN ('ADMIN', 'USER'))
 );
 
 CREATE TABLE login_attempts (

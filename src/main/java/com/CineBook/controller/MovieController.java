@@ -60,8 +60,7 @@ public class MovieController {
     public String indexString(@RequestParam(value = "city", required = false) String city,
                               Model model,
                               HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) {
+        if (isAdmin(session)) {
             return "redirect:/admin";
         }
         try {
@@ -146,8 +145,7 @@ public class MovieController {
                                    LocalDate selectedDateInput,
                                    Model model,
                                    HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+        if (isAdmin(session)) return "redirect:/admin";
 
         Optional<Movie> movieOpt = movieRepository.findById(movieId);
         if (movieOpt.isEmpty()) {
@@ -413,5 +411,12 @@ public class MovieController {
             return Optional.empty();
         }
         return userRepository.findByUsername(username);
+    }
+
+    private boolean isAdmin(HttpSession session) {
+        return getAuthenticatedUser(session)
+                .map(User::getRole)
+                .filter(role -> role == User.Role.ADMIN)
+                .isPresent();
     }
 }

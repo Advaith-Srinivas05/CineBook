@@ -2,8 +2,10 @@ package com.CineBook.controller;
 
 import com.CineBook.model.Movie;
 import com.CineBook.model.Theater;
+import com.CineBook.model.User;
 import com.CineBook.repository.MovieRepository;
 import com.CineBook.repository.TheaterRepository;
+import com.CineBook.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class CatalogController {
@@ -25,12 +28,14 @@ public class CatalogController {
     @Autowired
     private TheaterRepository theaterRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/login")
     public String login(HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        Object username = session.getAttribute("username");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
-        if (username != null) return "redirect:/";
+        Optional<User> userOpt = getAuthenticatedUser(session);
+        if (userOpt.isPresent() && userOpt.get().getRole() == User.Role.ADMIN) return "redirect:/admin";
+        if (userOpt.isPresent()) return "redirect:/";
         return "redirect:/?auth=login";
     }
 
@@ -65,5 +70,22 @@ public class CatalogController {
             out.add(map);
         }
         return ResponseEntity.ok(out);
+    }
+
+    private Optional<User> getAuthenticatedUser(HttpSession session) {
+        Object userIdAttr = session.getAttribute("userId");
+        if (userIdAttr instanceof Number number) {
+            Optional<User> byId = userRepository.findById(number.longValue());
+            if (byId.isPresent()) {
+                return byId;
+            }
+        }
+
+        Object usernameAttr = session.getAttribute("username");
+        if (!(usernameAttr instanceof String username) || username.isBlank()) {
+            return Optional.empty();
+        }
+
+        return userRepository.findByUsername(username);
     }
 }

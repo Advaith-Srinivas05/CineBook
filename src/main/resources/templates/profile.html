@@ -17,10 +17,10 @@
         <div class="header-side-left">
           <a href="/" th:href="@{/}" class="logo"><img src="/images/title-nobg.png" alt="CineBook" style="height: 40px; margin-top: -5px;"></a>
         </div>
-        <div th:if="${session.isAdmin}" style="display:flex; justify-content:center; align-items:center; width:100%;">
+        <div th:if="${currentUserRecord != null and currentUserRecord.role != null and currentUserRecord.role.name() == 'ADMIN'}" style="display:flex; justify-content:center; align-items:center; width:100%;">
           <h1 class="admin-title admin-title-profile">Admin Dashboard</h1>
         </div>
-        <div th:if="${session.isAdmin == null or !session.isAdmin}" class="search-bar search-bar-center">
+        <div th:if="${currentUserRecord == null or currentUserRecord.role == null or currentUserRecord.role.name() != 'ADMIN'}" class="search-bar search-bar-center">
           <input type="text" placeholder="Search for Movies, Events, Plays, Sports and Activities">
         </div>
         <div class="header-right header-side-right">
@@ -33,11 +33,11 @@
       </div>
       <nav>
         <ul class="nav-links">
-          <li th:if="${session.isAdmin}"><a href="/admin" th:href="@{/admin}">Admin</a></li>
-          <li th:if="${session.isAdmin == null or !session.isAdmin}"><a href="/" th:href="@{/}">Movies</a></li>
+          <li th:if="${currentUserRecord != null and currentUserRecord.role != null and currentUserRecord.role.name() == 'ADMIN'}"><a href="/admin" th:href="@{/admin}">Admin</a></li>
+          <li th:if="${currentUserRecord == null or currentUserRecord.role == null or currentUserRecord.role.name() != 'ADMIN'}"><a href="/" th:href="@{/}">Movies</a></li>
           <li><a href="/profile" th:href="@{/profile}">Profile</a></li>
-          <li th:if="${session.isAdmin == null or !session.isAdmin}"><a href="/rating-history" th:href="@{/rating-history}">Rating History</a></li>
-          <li th:if="${session.isAdmin == null or !session.isAdmin}"><a href="/booking-history" th:href="@{/booking-history}">Booking History</a></li>
+          <li th:if="${currentUserRecord == null or currentUserRecord.role == null or currentUserRecord.role.name() != 'ADMIN'}"><a href="/rating-history" th:href="@{/rating-history}">Rating History</a></li>
+          <li th:if="${currentUserRecord == null or currentUserRecord.role == null or currentUserRecord.role.name() != 'ADMIN'}"><a href="/booking-history" th:href="@{/booking-history}">Booking History</a></li>
         </ul>
       </nav>
     </header>

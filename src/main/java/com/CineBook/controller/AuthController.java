@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.CineBook.repository.UserRepository;
 import com.CineBook.repository.LoginAttemptRepository;
 import com.CineBook.model.User;
+import com.CineBook.model.User.Role;
 import com.CineBook.model.LoginAttempt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -36,21 +37,17 @@ public class AuthController {
         Optional<User> maybeUser = userRepository.findByEmail(normalizedEmail);
         Long loginUserId = maybeUser.map(User::getId).orElse(null);
         boolean success = false;
-        boolean isAdmin = false;
+        Role role = null;
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
             String hash = hash(password);
             if (hash != null && hash.equals(user.getPasswordHash())) {
                 success = true;
+                role = user.getRole();
                 HttpSession session = request.getSession(true);
                 session.setAttribute("username", user.getUsername());
                 session.setAttribute("userId", user.getId());
-                if ("Admin".equals(user.getUsername())) {
-                    isAdmin = true;
-                    session.setAttribute("isAdmin", true);
-                } else {
-                    session.removeAttribute("isAdmin");
-                }
+                session.setAttribute("userRole", role == null ? Role.USER.name() : role.name());
             }
         }
 
@@ -59,7 +56,7 @@ public class AuthController {
 
         String redirectTarget = resolveRedirectTarget(returnTo, request.getHeader("Referer"));
         if (success) {
-            if (isAdmin) {
+            if (role == Role.ADMIN) {
                 return "redirect:/admin";
             }
             return "redirect:" + redirectTarget;
@@ -94,7 +91,7 @@ public class AuthController {
         HttpSession session = request.getSession(true);
         session.setAttribute("username", saved.getUsername());
         session.setAttribute("userId", saved.getId());
-        session.removeAttribute("isAdmin");
+        session.setAttribute("userRole", saved.getRole() == null ? Role.USER.name() : saved.getRole().name());
         return "redirect:" + redirectTarget;
     }
 

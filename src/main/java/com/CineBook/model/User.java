@@ -5,6 +5,11 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "users")
 public class User {
+    public enum Role {
+        ADMIN,
+        USER
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,6 +22,10 @@ public class User {
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.USER;
 
     @Column(name = "profile_image")
     private String profileImage;
@@ -33,6 +42,7 @@ public class User {
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
+        this.role = Role.USER;
     }
 
     public Long getId() { return id; }
@@ -46,6 +56,9 @@ public class User {
 
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 
     public String getProfileImage() { return profileImage; }
     public void setProfileImage(String profileImage) { this.profileImage = profileImage; }

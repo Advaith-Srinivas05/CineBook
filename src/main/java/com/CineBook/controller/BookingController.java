@@ -50,8 +50,7 @@ public class BookingController {
     public String showtimes(@ModelAttribute ShowtimesRequest request,
                             Model model,
                             HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+        if (isAdmin(session)) return "redirect:/admin";
         if (getAuthenticatedUser(session).isEmpty()) return "redirect:/?auth=login";
 
         if (request.getMovieId() == null || request.getTheaterId() == null || request.getScheduleId() == null) {
@@ -84,8 +83,7 @@ public class BookingController {
                         @RequestParam(value = "ticketCount", required = false, defaultValue = "1") Integer ticketCount,
                         Model model,
                         HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+        if (isAdmin(session)) return "redirect:/admin";
         if (getAuthenticatedUser(session).isEmpty()) return "redirect:/?auth=login";
 
         Optional<ShowSchedule> scheduleOpt = resolveSchedule(movieId, theaterId, scheduleId);
@@ -119,8 +117,7 @@ public class BookingController {
     public String payments(@ModelAttribute PaymentRequest request,
                            Model model,
                            HttpSession session) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+        if (isAdmin(session)) return "redirect:/admin";
 
         Optional<User> userOpt = getAuthenticatedUser(session);
         if (userOpt.isEmpty()) return "redirect:/?auth=login";
@@ -180,8 +177,7 @@ public class BookingController {
     public String confirmPayment(@ModelAttribute PaymentRequest request,
                                  HttpSession session,
                                  Model model) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+        if (isAdmin(session)) return "redirect:/admin";
 
         Optional<User> userOpt = getAuthenticatedUser(session);
         if (userOpt.isEmpty()) return "redirect:/?auth=login";
@@ -236,8 +232,7 @@ public class BookingController {
     public String ticket(@org.springframework.web.bind.annotation.PathVariable("publicId") String publicId,
                          HttpSession session,
                          Model model) {
-        Object isAdmin = session.getAttribute("isAdmin");
-        if (isAdmin instanceof Boolean && (Boolean) isAdmin) return "redirect:/admin";
+        if (isAdmin(session)) return "redirect:/admin";
 
         Optional<User> userOpt = getAuthenticatedUser(session);
         if (userOpt.isEmpty()) return "redirect:/?auth=login";
@@ -317,6 +312,13 @@ public class BookingController {
             return Optional.empty();
         }
         return userRepository.findByUsername(username);
+    }
+
+    private boolean isAdmin(HttpSession session) {
+        return getAuthenticatedUser(session)
+                .map(User::getRole)
+                .filter(role -> role == User.Role.ADMIN)
+                .isPresent();
     }
 
     private void populateBookingContext(Model model,

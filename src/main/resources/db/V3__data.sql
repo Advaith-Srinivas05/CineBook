@@ -17,8 +17,8 @@ BEGIN
 END
 $$;
 
-INSERT INTO users (username, email, password_hash)
-VALUES ('Admin','admin@admin.com','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918');
+INSERT INTO users (username, email, password_hash, role)
+VALUES ('Admin','admin@admin.com','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'ADMIN');
 
 DO $$
 DECLARE
