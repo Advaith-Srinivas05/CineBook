@@ -499,6 +499,7 @@
 
 #admin-banners-table .banner-preview-cell {
   width: 6.5rem;
+  position: relative;
 }
 
 #admin-banners-table th,
@@ -543,9 +544,57 @@
 .banner-thumb {
   width: 5.5rem;
   height: 3.5rem;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
   border-radius: 0.35rem;
+  background-color: color-mix(in srgb, var(--light-bg) 82%, #000 18%);
+}
+
+.banner-hover-preview {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2500;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
+}
+
+.banner-hover-preview.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.banner-hover-preview-card {
+  width: min(460px, 72vw);
+  border-radius: 0.8rem;
+  border: 1px solid var(--border-color);
+  background-color: color-mix(in srgb, var(--light-bg) 94%, #000 6%);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.26);
+  overflow: hidden;
+}
+
+.banner-hover-preview-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+  object-fit: cover;
+}
+
+.banner-hover-preview-card span {
+  display: block;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .banner-preview-overlay {

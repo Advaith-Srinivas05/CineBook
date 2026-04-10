@@ -81,8 +81,8 @@
                   <td th:text="${banner.aspectRatio}">3:1</td>
                   <td th:text="${banner.fileType}">PNG</td>
                   <td class="banner-preview-cell">
-                    <button type="button" class="banner-thumb-btn" th:attr="data-image-src=${'data:image/' + banner.fileTypeValue + ';base64,' + banner.imageBase64},data-image-name=${banner.imageName}">
-                      <img class="banner-thumb" th:src="${'data:image/' + banner.fileTypeValue + ';base64,' + banner.imageBase64}" alt="Banner thumbnail">
+                    <button type="button" class="banner-thumb-btn" th:attr="data-image-src=@{'/admin/banner/' + ${banner.id}},data-image-name=${banner.imageName}">
+                      <img class="banner-thumb" th:src="@{'/admin/banner/' + ${banner.id}}" alt="Banner thumbnail" loading="lazy" decoding="async">
                     </button>
                   </td>
                   <td>
@@ -469,6 +469,13 @@
       <div class="banner-preview-image-wrap">
         <img id="banner-preview-image" src="" alt="Selected banner preview">
       </div>
+    </div>
+  </div>
+
+  <div id="banner-hover-preview" class="banner-hover-preview" aria-hidden="true">
+    <div class="banner-hover-preview-card">
+      <img id="banner-hover-preview-image" src="" alt="Banner quick preview">
+      <span id="banner-hover-preview-name">Banner Preview</span>
     </div>
   </div>
 

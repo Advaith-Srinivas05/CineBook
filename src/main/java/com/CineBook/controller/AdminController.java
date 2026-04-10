@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -31,12 +32,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -149,6 +150,37 @@ public class AdminController {
             return ResponseEntity.ok("OK");
         } catch (Exception ex) {
             return ResponseEntity.status(500).body("Server error");
+        }
+    }
+
+    @GetMapping("/admin/banner/{id}")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<byte[]> getAdminBannerImage(@PathVariable("id") Long id,
+                                                       HttpSession session) {
+        if (!isAdmin(session)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        try {
+            Optional<CarouselRepository.BannerBinaryProjection> bannerOpt = repository.findBannerBinaryById(id);
+            if (bannerOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            CarouselRepository.BannerBinaryProjection banner = bannerOpt.get();
+            byte[] imageData = banner.getImageData();
+            if (imageData == null || imageData.length == 0) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String mimeType = resolveMimeType(banner.getFileType());
+            MediaType mediaType = MediaType.parseMediaType(mimeType);
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .cacheControl(CacheControl.maxAge(Duration.ofHours(6)).cachePublic().mustRevalidate())
+                    .body(imageData);
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -692,34 +724,20 @@ public class AdminController {
     }
 
     private List<Map<String, Object>> buildAdminBannerData() {
-        List<CarouselImage> banners = repository.findAll();
-        banners.sort(Comparator.comparing(CarouselImage::getId));
+        List<CarouselRepository.BannerListProjection> banners = repository.findAllBannerListData();
 
         List<Map<String, Object>> out = new ArrayList<>();
-        for (CarouselImage banner : banners) {
-            byte[] imageData = banner.getImageData();
+        for (CarouselRepository.BannerListProjection banner : banners) {
             Long sizeBytes = banner.getImageSizeBytes();
             Integer width = banner.getImageWidth();
             Integer height = banner.getImageHeight();
             String aspectRatio = banner.getAspectRatio();
             String fileType = banner.getFileType();
 
-            if (imageData != null && (sizeBytes == null || width == null || height == null || aspectRatio == null || aspectRatio.isBlank() || fileType == null || fileType.isBlank())) {
-                BannerMetadata metadata = extractBannerMetadata(imageData, banner.getImageName(), null);
-                sizeBytes = sizeBytes == null ? metadata.sizeBytes : sizeBytes;
-                width = width == null ? metadata.width : width;
-                height = height == null ? metadata.height : height;
-                aspectRatio = (aspectRatio == null || aspectRatio.isBlank()) ? metadata.aspectRatio : aspectRatio;
-                fileType = (fileType == null || fileType.isBlank()) ? metadata.fileType : fileType;
-            }
-
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("id", banner.getId());
             map.put("imageName", banner.getImageName());
-            String imageBase64 = imageData == null ? "" : Base64.getEncoder().encodeToString(imageData);
-            String mimeType = resolveMimeType(fileType);
-            map.put("imageBase64", imageBase64);
-            map.put("imageDataUri", imageBase64.isBlank() ? "" : "data:" + mimeType + ";base64," + imageBase64);
+            map.put("imageUrl", "/admin/banner/" + banner.getId());
             map.put("imageSizeBytes", sizeBytes);
             map.put("imageSizeDisplay", humanReadableSize(sizeBytes));
             map.put("width", width);
@@ -727,7 +745,6 @@ public class AdminController {
             map.put("dimensions", buildDimensions(width, height));
             map.put("aspectRatio", aspectRatio == null || aspectRatio.isBlank() ? "-" : aspectRatio);
             map.put("fileType", fileType == null || fileType.isBlank() ? "-" : fileType.toUpperCase(Locale.ROOT));
-            map.put("fileTypeValue", normalizeFileType(fileType));
             out.add(map);
         }
 
