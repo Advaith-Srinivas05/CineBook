@@ -43,6 +43,22 @@ public class Movie {
 		if (createdAt == null) createdAt = OffsetDateTime.now();
 	}
 
+	public static Movie createForCatalog(String title,
+								 Integer durationMinutes,
+								 String language,
+								 String certification,
+								 String description,
+								 byte[] poster) {
+		Movie movie = new Movie();
+		movie.setTitle(title);
+		movie.setDurationMinutes(durationMinutes);
+		movie.setLanguage(language);
+		movie.setCertification(certification);
+		movie.setDescription(description);
+		movie.setPoster(poster);
+		return movie;
+	}
+
 	// getters and setters
 	public Long getId() { return id; }
 	public void setId(Long id) { this.id = id; }

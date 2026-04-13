@@ -128,4 +128,51 @@ public class MovieBooking {
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private final MovieBooking booking = new MovieBooking();
+
+        public Builder show(ShowSchedule show) {
+            booking.setShow(show);
+            return this;
+        }
+
+        public Builder user(User user) {
+            booking.setUser(user);
+            return this;
+        }
+
+        public Builder showDate(LocalDate showDate) {
+            booking.setShowDate(showDate);
+            return this;
+        }
+
+        public Builder seatCount(Integer seatCount) {
+            booking.setSeatCount(seatCount);
+            return this;
+        }
+
+        public Builder totalPrice(Integer totalPrice) {
+            booking.setTotalPrice(totalPrice);
+            return this;
+        }
+
+        public Builder seatNumbers(String seatNumbers) {
+            booking.setSeatNumbers(seatNumbers);
+            return this;
+        }
+
+        public Builder publicId(String publicId) {
+            booking.setPublicId(publicId);
+            return this;
+        }
+
+        public MovieBooking build() {
+            return booking;
+        }
+    }
 }

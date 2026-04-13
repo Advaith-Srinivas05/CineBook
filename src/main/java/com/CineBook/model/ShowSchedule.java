@@ -51,6 +51,22 @@ public class ShowSchedule {
         }
     }
 
+    public static ShowSchedule of(Movie movie,
+                                  Theater theater,
+                                  LocalDate startDate,
+                                  LocalDate endDate,
+                                  LocalTime startTime,
+                                  Integer screen) {
+        ShowSchedule schedule = new ShowSchedule();
+        schedule.setMovie(movie);
+        schedule.setTheater(theater);
+        schedule.setStartDate(startDate);
+        schedule.setEndDate(endDate);
+        schedule.setStartTime(startTime);
+        schedule.setScreen(screen);
+        return schedule;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

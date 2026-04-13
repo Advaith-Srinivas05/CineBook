@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.CineBook.repository.UserRepository;
 import com.CineBook.repository.LoginAttemptRepository;
+import com.CineBook.service.PasswordHashService;
 import com.CineBook.model.User;
 import com.CineBook.model.User.Role;
 import com.CineBook.model.LoginAttempt;
@@ -13,8 +14,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriUtils;
 import org.springframework.web.util.UriComponentsBuilder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import java.nio.charset.StandardCharsets;
 
@@ -26,6 +25,9 @@ public class AuthController {
 
     @Autowired
     private LoginAttemptRepository loginAttemptRepository;
+
+    @Autowired
+    private PasswordHashService passwordHashService;
 
     @PostMapping("/login")
     public String doLogin(@RequestParam String email,
@@ -40,7 +42,7 @@ public class AuthController {
         Role role = null;
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
-            String hash = hash(password);
+            String hash = passwordHashService.hashSha256(password);
             if (hash != null && hash.equals(user.getPasswordHash())) {
                 success = true;
                 role = user.getRole();
@@ -85,26 +87,14 @@ public class AuthController {
             return "redirect:" + withAuthParam(redirectTarget, "signup");
         }
 
-        String hash = hash(password);
-        User u = new User(username, normalizedEmail, hash);
+        String hash = passwordHashService.hashSha256(password);
+        User u = User.registeredUser(username, normalizedEmail, hash);
         User saved = userRepository.save(u);
         HttpSession session = request.getSession(true);
         session.setAttribute("username", saved.getUsername());
         session.setAttribute("userId", saved.getId());
         session.setAttribute("userRole", saved.getRole() == null ? Role.USER.name() : saved.getRole().name());
         return "redirect:" + redirectTarget;
-    }
-
-    private String hash(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : digest) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            return null;
-        }
     }
 
     @PostMapping("/logout")

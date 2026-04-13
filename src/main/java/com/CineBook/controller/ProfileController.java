@@ -6,6 +6,7 @@ import com.CineBook.model.User;
 import com.CineBook.repository.MovieBookingRepository;
 import com.CineBook.repository.MovieRatingRepository;
 import com.CineBook.repository.UserRepository;
+import com.CineBook.service.PasswordHashService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -46,6 +45,9 @@ public class ProfileController {
 
     @Autowired
     private MovieRatingRepository movieRatingRepository;
+
+    @Autowired
+    private PasswordHashService passwordHashService;
 
     @GetMapping("/profile")
     public String profile(Model model, HttpSession session) {
@@ -187,13 +189,13 @@ public class ProfileController {
             return "redirect:/profile";
         }
 
-        String currentHash = hash(current);
+        String currentHash = passwordHashService.hashSha256(current);
         if (currentHash == null || !currentHash.equals(user.getPasswordHash())) {
             redirectAttributes.addFlashAttribute("passwordError", "Current password is incorrect.");
             return "redirect:/profile";
         }
 
-        String newHash = hash(next);
+        String newHash = passwordHashService.hashSha256(next);
         if (newHash == null) {
             redirectAttributes.addFlashAttribute("passwordError", "Failed to update password.");
             return "redirect:/profile";
@@ -269,17 +271,4 @@ public class ProfileController {
         return ".png";
     }
 
-    private String hash(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : digest) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            return null;
-        }
-    }
 }

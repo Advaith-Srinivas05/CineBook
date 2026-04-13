@@ -367,24 +367,28 @@ public class MovieController {
         public String getCssClass() {
             return cssClass;
         }
+
+        public static TierStatus fromAvailability(int bookedSeats, int totalSeats) {
+            if (totalSeats <= 0) {
+                return new TierStatus("Sold Out", "sold-out");
+            }
+
+            int remainingSeats = Math.max(0, totalSeats - Math.max(0, bookedSeats));
+            if (remainingSeats == 0) {
+                return new TierStatus("Sold Out", "sold-out");
+            }
+
+            double remainingRatio = remainingSeats / (double) totalSeats;
+            if (remainingRatio <= 0.25d) {
+                return new TierStatus("Filling Fast", "filling");
+            }
+
+            return new TierStatus("Available", "available");
+        }
     }
 
     private TierStatus resolveTierStatus(int bookedSeats, int totalSeats) {
-        if (totalSeats <= 0) {
-            return new TierStatus("Sold Out", "sold-out");
-        }
-
-        int remainingSeats = Math.max(0, totalSeats - Math.max(0, bookedSeats));
-        if (remainingSeats == 0) {
-            return new TierStatus("Sold Out", "sold-out");
-        }
-
-        double remainingRatio = remainingSeats / (double) totalSeats;
-        if (remainingRatio <= 0.25d) {
-            return new TierStatus("Filling Fast", "filling");
-        }
-
-        return new TierStatus("Available", "available");
+        return TierStatus.fromAvailability(bookedSeats, totalSeats);
     }
 
     private boolean isBookingOpen(ShowSchedule schedule, LocalDate showDate) {

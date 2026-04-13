@@ -45,6 +45,10 @@ public class User {
         this.role = Role.USER;
     }
 
+    public static User registeredUser(String username, String email, String passwordHash) {
+        return new User(username, email, passwordHash);
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

@@ -54,14 +54,15 @@ public class MovieService {
 			throw new IllegalStateException("One or more selected seats were already booked.");
 		}
 
-		MovieBooking booking = new MovieBooking();
-		booking.setShow(schedule);
-		booking.setUser(user);
-		booking.setShowDate(showDate);
-		booking.setSeatCount(boundedTicketCount);
-		booking.setTotalPrice(calculateBookingTotal(selectedSeats, schedule.getTheater()));
-		booking.setSeatNumbers(String.join(",", selectedSeats));
-		booking.setPublicId(generatePublicId());
+		MovieBooking booking = MovieBooking.builder()
+				.show(schedule)
+				.user(user)
+				.showDate(showDate)
+				.seatCount(boundedTicketCount)
+				.totalPrice(calculateBookingTotal(selectedSeats, schedule.getTheater()))
+				.seatNumbers(String.join(",", selectedSeats))
+				.publicId(generatePublicId())
+				.build();
 
 		MovieBooking savedBooking = movieBookingRepository.save(booking);
 		return savedBooking.getPublicId();

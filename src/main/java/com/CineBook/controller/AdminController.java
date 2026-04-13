@@ -200,15 +200,11 @@ public class AdminController {
             if (movieRepository.findByTitle(title).isPresent()) {
                 return ResponseEntity.status(409).body("Movie with this title already exists");
             }
-            Movie m = new Movie();
-            m.setTitle(title);
-            m.setDurationMinutes(duration);
-            m.setLanguage(language);
-            m.setCertification(certification);
-            m.setDescription(description);
+            byte[] posterBytes = null;
             if (poster != null && !poster.isEmpty()) {
-                m.setPoster(poster.getBytes());
+                posterBytes = poster.getBytes();
             }
+            Movie m = Movie.createForCatalog(title, duration, language, certification, description, posterBytes);
             movieRepository.save(m);
             return ResponseEntity.ok("OK");
         } catch (IOException ex) {
@@ -683,13 +679,14 @@ public class AdminController {
 
             List<ShowSchedule> schedulesToSave = new ArrayList<>();
             for (int i = 0; i < parsedTimes.size(); i++) {
-                ShowSchedule schedule = new ShowSchedule();
-                schedule.setMovie(movie);
-                schedule.setTheater(theater);
-                schedule.setStartDate(startDate);
-                schedule.setEndDate(endDate);
-                schedule.setStartTime(parsedTimes.get(i));
-                schedule.setScreen(parsedScreens.get(i));
+                ShowSchedule schedule = ShowSchedule.of(
+                        movie,
+                        theater,
+                        startDate,
+                        endDate,
+                        parsedTimes.get(i),
+                        parsedScreens.get(i)
+                );
                 schedulesToSave.add(schedule);
             }
 
